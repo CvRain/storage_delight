@@ -1,4 +1,4 @@
-![](./storage_delight_placeholder.png)
+![storage_delight_placeholder](storage_delight_placeholder.png)
 
 # Storage Delight
 
