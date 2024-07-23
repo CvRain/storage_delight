@@ -4,9 +4,22 @@
 
 #include "hello.hpp"
 
-namespace storage_delight::core{
+#include <iostream>
 
-    const char *Hello::say_hello() {
-        return "Hello world!";
+namespace storage_delight::core {
+
+    pplx::task<void> Hello::say_hello() {
+        web::http::client::http_client client(U("http://localhost:3000"));
+
+        web::http::uri_builder builder(U("/api/hello/say"));
+
+        const auto result = client.request(web::http::methods::GET, builder.to_string())
+                .then([](const web::http::http_response &response) {
+                    return response.extract_json();
+                }).then([](const web::json::value &jsonValue) {
+                    std::cout << "GET Response " << jsonValue.serialize() << std::endl;
+                });
+
+        return result;
     }
 }

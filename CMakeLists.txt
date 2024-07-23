@@ -3,3 +3,4 @@ project(storage_delight VERSION 0.1.0)
 
 add_subdirectory(application)
 add_subdirectory(core)
+add_subdirectory(storage_server)
