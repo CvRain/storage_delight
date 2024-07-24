@@ -4,6 +4,8 @@
   "dependencies": [
     "cpprestsdk",
     "nlohmann-json",
-    "drogon"
+    "drogon",
+    "minio-cpp",
+    "spdlog"
   ]
 }

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(storage_server CXX VERSION 0.1.0)
+project(storage_server VERSION 0.1.0)
 
 include(CheckIncludeFileCXX)
 

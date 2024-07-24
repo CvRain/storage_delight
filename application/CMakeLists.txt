@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+find_package(miniocpp CONFIG REQUIRED)
+
 add_executable(storage_delight_app src/app.cpp)
 
-target_link_libraries(storage_delight_app storage_delight_core)
+target_link_libraries(storage_delight_app storage_delight_core miniocpp::miniocpp)
