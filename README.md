@@ -11,3 +11,57 @@
   - server: 存储服务器
   - doc: 项目文档
   - vcpkg: 第三方库(sub module)
+
+# 功能实现
+## storage_delight::core
+  - [x] BucketExists
+  - [ ] ComposeObject
+  - [ ] CopyObject
+  - [x] DeleteBucketEncryption
+  - [x] DeleteBucketLifecycle
+  - [x] DeleteBucketNotification
+  - [x] DeleteBucketPolicy
+  - [x] DeleteBucketReplication
+  - [x] DeleteBucketTags
+  - [ ] DeleteObjectLockConfig
+  - [ ] DeleteObjectTags
+  - [ ] DisableObjectLegalHold
+  - [ ] DownloadObject
+  - [ ] EnableObjectLegalHold
+  - [ ] GetBucketEncryption
+  - [ ] GetBucketLifecycle
+  - [ ] GetBucketNotification
+  - [ ] GetBucketPolicy
+  - [ ] GetBucketReplication
+  - [ ] GetBucketTags
+  - [ ] GetBucketVersioning
+  - [ ] GetObject
+  - [ ] GetObjectLockConfig
+  - [ ] GetObjectProgress
+  - [ ] GetObjectRetention
+  - [ ] GetObjectTags
+  - [ ] GetPresignedObjectUrl
+  - [ ] GetPresignedPostFormData
+  - [ ] IsObjectLegalHoldEnabled
+  - [x] ListBuckets
+  - [ ] ListenBucketNotification
+  - [ ] ListObjects
+  - [ ] MakeBucket
+  - [ ] PutObject
+  - [ ] PutObjectProgress
+  - [ ] RemoveBucket
+  - [ ] RemoveObject
+  - [ ] RemoveObjects
+  - [ ] SelectObjectContent
+  - [ ] SetBucketEncryption
+  - [ ] SetBucketLifecycle
+  - [ ] SetBucketNotification
+  - [ ] SetBucketPolicy
+  - [ ] SetBucketReplication
+  - [ ] SetBucketTags
+  - [ ] SetBucketVersioning
+  - [ ] SetObjectLockConfig
+  - [ ] SetObjectRetention
+  - [ ] SetObjectTags
+  - [ ] StatObject
+  - [ ] UploadObject

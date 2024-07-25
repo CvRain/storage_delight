@@ -12,10 +12,14 @@ find_package(spdlog CONFIG REQUIRED)
 
 set(SRC_HEADER
         include/client.hpp
+        include/bucket_operation.hpp
+        src/base_operation.cpp
+        include/base_operation.hpp
 )
 
 set(SRC_CPP
         src/client.cpp
+        src/bucket_operation.cpp
 )
 
 add_library(storage_delight_core ${SRC_HEADER} ${SRC_CPP})

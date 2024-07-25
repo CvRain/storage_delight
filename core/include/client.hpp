@@ -6,26 +6,22 @@
 #define CLIENT_H
 
 #include <miniocpp/client.h>
-#include <list>
-#include <optional>
-#include <spdlog/spdlog.h>
+#include <memory>
+
+#include "bucket_operation.hpp"
+
 
 namespace storage_delight::core {
     class Client {
     public:
         explicit Client(minio::s3::BaseUrl base_url, minio::creds::StaticProvider &provider);
 
-        std::optional<std::list<minio::s3::Bucket>> listBuckets();
+        BucketOperation& getBucketOperation();
 
-        void setLogEnable(bool enable = false);
-
-    protected:
-        template<typename Func>
-        auto logDecorator(Func f, const std::string_view &funcName) ;
 
     private:
         minio::s3::Client client;
-        bool isEnableLog = false;
+        std::unique_ptr<BucketOperation> bucket_operation;
     };
 }
 
