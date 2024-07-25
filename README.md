@@ -28,12 +28,12 @@
   - [ ] DisableObjectLegalHold
   - [ ] DownloadObject
   - [ ] EnableObjectLegalHold
-  - [ ] GetBucketEncryption
-  - [ ] GetBucketLifecycle
-  - [ ] GetBucketNotification
-  - [ ] GetBucketPolicy
-  - [ ] GetBucketReplication
-  - [ ] GetBucketTags
+  - [x] GetBucketEncryption
+  - [x] GetBucketLifecycle
+  - [x] GetBucketNotification
+  - [x] GetBucketPolicy
+  - [x] GetBucketReplication
+  - [x] GetBucketTags
   - [ ] GetBucketVersioning
   - [ ] GetObject
   - [ ] GetObjectLockConfig

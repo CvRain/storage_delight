@@ -9,6 +9,7 @@
 #include <miniocpp/client.h>
 #include <list>
 #include <optional>
+#include <map>
 
 namespace storage_delight::core {
     class BucketOperation : public BaseOperation {
@@ -30,6 +31,18 @@ namespace storage_delight::core {
         void deleteBucketReplication(const std::string &bucketName);
 
         void deleteBucketTags(const std::string &bucketName);
+
+        std::optional<minio::s3::SseConfig> getBucketEncryption(const std::string &bucketName);
+
+        std::optional<minio::s3::LifecycleConfig> getBucketLiftCycle(const std::string &bucketName);
+
+        std::optional<minio::s3::NotificationConfig> getBucketNotification(const std::string &bucketName);
+
+        std::optional<std::basic_string<char>> getBucketPolicy(const std::string &bucketName);
+
+        std::optional<std::string_view> getBucketReplication(const std::string &bucketName);
+
+        std::optional<std::map<std::string , std::string>> getBucketTags(const std::string &bucketName);
     private:
         minio::s3::Client &client;
     };

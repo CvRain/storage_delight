@@ -148,4 +148,111 @@ namespace storage_delight::core {
         }, "Delete bucket tags");
         log(spdlog::level::info, fmt::format("Bucket {} tags deleted", bucketName));
     }
+
+    std::optional<minio::s3::SseConfig> BucketOperation::getBucketEncryption(const std::string &bucketName) {
+        minio::s3::GetBucketEncryptionArgs args;
+        args.bucket = bucketName;
+
+        const auto response = executeOperation([this, args]() {
+            return client.GetBucketEncryption(args);
+        }, "Get bucket encryption");
+
+        if (response) {
+            auto config = response.config;
+            log(spdlog::level::info, fmt::format("SSE Algorithm: {}", config.sse_algorithm));
+            log(spdlog::level::info, fmt::format("KMS Master Key ID: {}", config.kms_master_key_id));
+            return config;
+        }
+        log(spdlog::level::info, fmt::format("Bucket {} encryption not found", bucketName));
+        return std::nullopt;
+    }
+
+    std::optional<minio::s3::LifecycleConfig> BucketOperation::getBucketLiftCycle(const std::string &bucketName) {
+        minio::s3::GetBucketLifecycleArgs args;
+        args.bucket = bucketName;
+
+        const auto response = executeOperation([this, args]() {
+            return client.GetBucketLifecycle(args);
+        }, "Get bucket lifecycle");
+
+        if (response) {
+            auto lifecycle = response.config;
+            log(spdlog::level::info, fmt::format("Lifecycle configuration: {}", lifecycle.ToXML()));
+            return lifecycle;
+        }
+        log(spdlog::level::info,
+            fmt::format("Bucket {} lifecycle not found: {}", bucketName, response.Error().String()));
+        return std::nullopt;
+    }
+
+    std::optional<minio::s3::NotificationConfig> BucketOperation::getBucketNotification(const std::string &bucketName) {
+        minio::s3::GetBucketNotificationArgs args;
+        args.bucket = bucketName;
+
+        const auto response = executeOperation([this, args]() {
+            return client.GetBucketNotification(args);
+        }, "Get bucket notification");
+
+        if (response) {
+            auto notification = response.config;
+            log(spdlog::level::info, fmt::format("Notification configuration: {}", notification.ToXML()));
+            return notification;
+        }
+        log(spdlog::level::info,
+            fmt::format("Bucket {} notification not found: {}", bucketName, response.Error().String()));
+        return std::nullopt;
+    }
+
+    std::optional<std::basic_string<char>> BucketOperation::getBucketPolicy(const std::string &bucketName) {
+        minio::s3::GetBucketPolicyArgs args;
+        args.bucket = bucketName;
+
+        const auto response = executeOperation([this, args]() {
+            return client.GetBucketPolicy(args);
+        }, "Get bucket policy");
+
+        if (response) {
+            auto policy = response.policy;
+            log(spdlog::level::info, fmt::format("Policy: {}", policy));
+            return policy;
+        }
+        log(spdlog::level::info, fmt::format("Bucket {} policy not found: {}", bucketName, response.Error().String()));
+        return std::nullopt;
+    }
+
+    std::optional<std::string_view> BucketOperation::getBucketReplication(const std::string &bucketName) {
+        const auto response = executeOperation([&]() {
+            minio::s3::GetBucketReplicationArgs args;
+            args.bucket = bucketName;
+            return client.GetBucketReplication(args);
+        }, "Get bucket replication");
+
+        if (response) {
+            auto replication = response.config.ToXML();
+            log(spdlog::level::info, fmt::format("Replication: {}", replication));
+            return replication;
+        }
+        log(spdlog::level::info,
+            fmt::format("Bucket {} replication not found: {}", bucketName, response.Error().String()));
+        return std::nullopt;
+    }
+
+    std::optional<std::map<std::string , std::string>> BucketOperation::getBucketTags(const std::string &bucketName) {
+        minio::s3::GetBucketTagsArgs args;
+        args.bucket = bucketName;
+
+        const auto response = executeOperation([this, args]() {
+            return client.GetBucketTags(args);
+        }, "Get bucket tags");
+
+        if (response) {
+            auto tags = response.tags;
+            for(const auto& [key, value] : tags){
+                log(spdlog::level::info, fmt::format("Tag: {} = {}", key, value));
+            }
+            return tags;
+        }
+        log(spdlog::level::info, fmt::format("Bucket {} tags not found: {}", bucketName, response.Error().String()));
+        return std::nullopt;
+    }
 }
