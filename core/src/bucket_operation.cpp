@@ -237,22 +237,39 @@ namespace storage_delight::core {
         return std::nullopt;
     }
 
-    std::optional<std::map<std::string , std::string>> BucketOperation::getBucketTags(const std::string &bucketName) {
-        minio::s3::GetBucketTagsArgs args;
-        args.bucket = bucketName;
-
-        const auto response = executeOperation([this, args]() {
+    std::optional<std::map<std::string, std::string>> BucketOperation::getBucketTags(const std::string &bucketName) {
+        const auto response = executeOperation([&]() {
+            minio::s3::GetBucketTagsArgs args;
+            args.bucket = bucketName;
             return client.GetBucketTags(args);
         }, "Get bucket tags");
 
         if (response) {
             auto tags = response.tags;
-            for(const auto& [key, value] : tags){
+            for (const auto &[key, value]: tags) {
                 log(spdlog::level::info, fmt::format("Tag: {} = {}", key, value));
             }
             return tags;
         }
         log(spdlog::level::info, fmt::format("Bucket {} tags not found: {}", bucketName, response.Error().String()));
+        return std::nullopt;
+    }
+
+    std::optional<std::string> BucketOperation::getBucketVersioning(const std::string &bucketName) {
+        const auto response = executeOperation([&]() {
+            minio::s3::GetBucketVersioningArgs args;
+            args.bucket = bucketName;
+            return client.GetBucketVersioning(args);
+        }, "Get bucket versioning");
+
+        if (response) {
+            auto versioning = response.Status();
+            log(spdlog::level::info, fmt::format("Versioning: {}", versioning));
+            return versioning;
+        }
+        log(spdlog::level::info,
+            fmt::format("Bucket {} versioning not found: {}", bucketName, response.Error().String())
+        );
         return std::nullopt;
     }
 }

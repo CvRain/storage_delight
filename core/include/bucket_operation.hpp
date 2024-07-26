@@ -43,6 +43,8 @@ namespace storage_delight::core {
         std::optional<std::string_view> getBucketReplication(const std::string &bucketName);
 
         std::optional<std::map<std::string , std::string>> getBucketTags(const std::string &bucketName);
+
+        std::optional<std::string> getBucketVersioning(const std::string &bucketName);
     private:
         minio::s3::Client &client;
     };

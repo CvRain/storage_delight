@@ -15,11 +15,13 @@ set(SRC_HEADER
         include/bucket_operation.hpp
         src/base_operation.cpp
         include/base_operation.hpp
+        include/object_operation.hpp
 )
 
 set(SRC_CPP
         src/client.cpp
         src/bucket_operation.cpp
+        src/object_operation.cpp
 )
 
 add_library(storage_delight_core ${SRC_HEADER} ${SRC_CPP})

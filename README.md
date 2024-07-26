@@ -34,12 +34,12 @@
   - [x] GetBucketPolicy
   - [x] GetBucketReplication
   - [x] GetBucketTags
-  - [ ] GetBucketVersioning
-  - [ ] GetObject
-  - [ ] GetObjectLockConfig
-  - [ ] GetObjectProgress
-  - [ ] GetObjectRetention
-  - [ ] GetObjectTags
+  - [x] GetBucketVersioning
+  - [x] GetObject
+  - [x] GetObjectLockConfig
+  - [x] GetObjectProgress
+  - [x] GetObjectRetention
+  - [x] GetObjectTags
   - [ ] GetPresignedObjectUrl
   - [ ] GetPresignedPostFormData
   - [ ] IsObjectLegalHoldEnabled
