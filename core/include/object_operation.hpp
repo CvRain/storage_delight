@@ -16,18 +16,23 @@ namespace storage_delight::core {
     public:
         explicit ObjectOperation(minio::s3::Client &client);
 
-        std::optional<minio::s3::Response>
+        minio::s3::Response
+        CopyObject(const std::string_view &buckName, const std::string_view &objectName,
+                   const std::string_view &distBuck, const std::string_view &distObject);
+
+        minio::s3::GetObjectResponse
         getObject(const std::string_view &bucketName, const std::string_view &objectName);
 
-        std::optional<const minio::s3::ObjectLockConfig> getObjectLockConfig(const std::string_view &bucketName);
+        minio::s3::GetObjectLockConfigResponse
+        getObjectLockConfig(const std::string_view &bucketName);
 
-        std::optional<minio::s3::Response>
+        minio::s3::GetObjectResponse
         getObjectProgress(const std::string_view &bucketName, const std::string_view &objectName);
 
-        std::optional<minio::s3::GetObjectRetentionResponse>
+        minio::s3::GetObjectRetentionResponse
         getObjectRetention(const std::string_view &bucketName, const std::string_view &objectName);
 
-        std::optional<minio::s3::GetObjectTagsResponse>
+        minio::s3::GetObjectTagsResponse
         getObjectTags(const std::string_view &bucketName, const std::string_view &objectName);
 
     private:
