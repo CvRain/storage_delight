@@ -11,10 +11,29 @@ namespace storage_delight::core {
 
     }
 
+    minio::s3::ComposeObjectResponse
+    ObjectOperation::compose_object(const minio::s3::ComposeObjectArgs &composeObjectArgs,
+                                    const std::list<minio::s3::ComposeSource> &sources) {
+        return execute_operation([&]() {
+            auto args = minio::s3::ComposeObjectArgs(composeObjectArgs);
+            args.sources = sources;
+            return client.ComposeObject(args);
+        }, "ComposeObject");
+    }
+
+    minio::s3::ComposeObjectResponse
+    ObjectOperation::compose_object(const minio::s3::ComposeObjectArgs &composeObjectArgs,
+                                    const std::initializer_list<minio::s3::ComposeSource> &sources) {
+        return execute_operation([&]() {
+            std::list<minio::s3::ComposeSource> list{sources};
+            return compose_object(composeObjectArgs, list);
+        }, "ComposeObject");
+    }
+
     minio::s3::Response
-    ObjectOperation::CopyObject(const std::string_view &buckName, const std::string_view &objectName,
-                                const std::string_view &distBuck, const std::string_view &distObject) {
-        return executeOperation([&]() {
+    ObjectOperation::copy_object(const std::string_view &buckName, const std::string_view &objectName,
+                                 const std::string_view &distBuck, const std::string_view &distObject) {
+        return execute_operation([&]() {
             minio::s3::CopyObjectArgs args;
             args.bucket = buckName;
             args.object = objectName;
@@ -23,13 +42,23 @@ namespace storage_delight::core {
             source.bucket = distBuck;
             source.object = distObject;
             args.source = source;
-            return client.CopyObject(args);
+
+            return copy_object(args, source);
         }, "CopyObject");
     }
 
+    minio::s3::Response
+    ObjectOperation::copy_object(const minio::s3::CopyObjectArgs &copyArgs, const minio::s3::CopySource &source) {
+        return execute_operation([&]() {
+            auto cloneArgs = copyArgs;
+            cloneArgs.source = source;
+            return client.CopyObject(cloneArgs);
+        }, "copy_object");
+    }
+
     minio::s3::GetObjectResponse
-    ObjectOperation::getObject(const std::string_view &bucketName, const std::string_view &objectName) {
-        return executeOperation([&]() {
+    ObjectOperation::get_object(const std::string_view &bucketName, const std::string_view &objectName) {
+        return execute_operation([&]() {
             minio::s3::GetObjectArgs args;
             args.bucket = bucketName;
             args.object = objectName;
@@ -39,20 +68,20 @@ namespace storage_delight::core {
             };
 
             return client.GetObject(args);
-        }, "getObject");
+        }, "get_object");
     }
 
     minio::s3::GetObjectLockConfigResponse
-    ObjectOperation::getObjectLockConfig(const std::string_view &bucketName) {
-        return executeOperation([&]() {
+    ObjectOperation::get_object_config(const std::string_view &bucketName) {
+        return execute_operation([&]() {
             minio::s3::GetObjectLockConfigArgs args;
             args.bucket = bucketName;
             return client.GetObjectLockConfig(args);
-        }, "getObjectLockConfig");
+        }, "get_object_config");
     }
 
     minio::s3::GetObjectResponse
-    ObjectOperation::getObjectProgress(const std::string_view &bucketName, const std::string_view &objectName) {
+    ObjectOperation::get_object_progress(const std::string_view &bucketName, const std::string_view &objectName) {
         minio::s3::GetObjectArgs args;
         args.bucket = bucketName;
         args.object = objectName;
@@ -74,22 +103,70 @@ namespace storage_delight::core {
     }
 
     minio::s3::GetObjectRetentionResponse
-    ObjectOperation::getObjectRetention(const std::string_view &bucketName, const std::string_view &objectName) {
-        return executeOperation([&]() {
+    ObjectOperation::get_object_retention(const std::string_view &bucketName, const std::string_view &objectName) {
+        return execute_operation([&]() {
             minio::s3::GetObjectRetentionArgs args;
             args.bucket = bucketName;
             args.object = objectName;
             return client.GetObjectRetention(args);
-        }, "getObjectRetention");
+        }, "get_object_retention");
     }
 
     minio::s3::GetObjectTagsResponse
-    ObjectOperation::getObjectTags(const std::string_view &bucketName, const std::string_view &objectName) {
-        return executeOperation([&]() {
+    ObjectOperation::get_object_tags(const std::string_view &bucketName, const std::string_view &objectName) {
+        return execute_operation([&]() {
             minio::s3::GetObjectTagsArgs args;
             args.bucket = bucketName;
             args.object = objectName;
             return client.GetObjectTags(args);
-        }, "getObjectTags");
+        }, "get_object_tags");
+    }
+
+    minio::s3::DeleteObjectLockConfigResponse
+    ObjectOperation::delete_object_config(const std::string_view &bucketName) {
+        return execute_operation([&]() {
+            minio::s3::DeleteObjectLockConfigArgs args;
+            args.bucket = bucketName;
+            return client.DeleteObjectLockConfig(args);
+        }, "delete_object_config");
+    }
+
+    minio::s3::DisableObjectLegalHoldResponse
+    ObjectOperation::disable_object_legal_hold(const std::string_view &bucketName, const std::string_view &objectName) {
+        return execute_operation([&]() {
+            minio::s3::DisableObjectLegalHoldArgs args;
+            args.bucket = bucketName;
+            args.object = objectName;
+            return client.DisableObjectLegalHold(args);
+        }, "disable_object_legal_hold");
+    }
+
+    minio::s3::DownloadObjectResponse
+    ObjectOperation::download_object(const minio::s3::DownloadObjectArgs &args) {
+        return execute_operation([&]() {
+            return client.DownloadObject(args);
+        }, "download_object");
+    }
+
+    minio::s3::DownloadObjectResponse
+    ObjectOperation::download_object(const std::string_view &bucketName, const std::string_view &objectName,
+                                     const std::string_view &fileName) {
+        return download_object([&]() {
+            minio::s3::DownloadObjectArgs args;
+            args.bucket = bucketName;
+            args.object = objectName;
+            args.filename = fileName;
+            return args;
+        }());
+    }
+
+    minio::s3::EnableObjectLegalHoldResponse
+    ObjectOperation::enable_object_legal_hold(const std::string_view &bucketName, const std::string_view &objectName) {
+        return execute_operation([&]() {
+            minio::s3::EnableObjectLegalHoldArgs args;
+            args.bucket = bucketName;
+            args.object = objectName;
+            return client.EnableObjectLegalHold(args);
+        }, "enable_object_legal_hold");
     }
 }

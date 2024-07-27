@@ -7,19 +7,13 @@
 #include <spdlog/spdlog.h>
 
 namespace storage_delight::core {
-
-    template<typename Func>
-    void responseCallback(minio::s3::Response *response, Func func) {
-
-    }
-
     BucketOperation::BucketOperation(minio::s3::Client &client)
             : client{client} {
 
     }
 
     std::optional<std::list<minio::s3::Bucket>> BucketOperation::listBuckets() {
-        auto result = executeOperation([this]() {
+        auto result = execute_operation([this]() {
             return client.ListBuckets();
         }, "List buckets");
 
@@ -32,11 +26,11 @@ namespace storage_delight::core {
         return std::nullopt;
     }
 
-    bool BucketOperation::bucketExists(const std::string &bucketName) {
+    bool BucketOperation::bucket_exists(const std::string &bucketName) {
         minio::s3::BucketExistsArgs args;
         args.bucket = bucketName;
 
-        auto result = executeOperation([this, args]() {
+        auto result = execute_operation([this, args]() {
             return client.BucketExists(args);
         }, "Bucket exists");
 
@@ -48,36 +42,36 @@ namespace storage_delight::core {
         return false;
     }
 
-    void BucketOperation::deleteBucketEncryption(const std::string &bucketName) {
-        if (!bucketExists(bucketName)) {
+    void BucketOperation::delete_bucket_encryption(const std::string &bucketName) {
+        if (!bucket_exists(bucketName)) {
             log(spdlog::level::info, fmt::format("Bucket {} does not exist", bucketName));
             return;
         }
 
         minio::s3::DeleteBucketEncryptionArgs args;
         args.bucket = bucketName;
-        executeOperation([this, args]() {
+        execute_operation([this, args]() {
             return client.DeleteBucketEncryption(args);
         }, "Delete bucket encryption");
         log(spdlog::level::info, fmt::format("Bucket {} encryption deleted", bucketName));
     }
 
-    void BucketOperation::deleteBucketLifecycle(const std::string &bucketName) {
-        if (!bucketExists(bucketName)) {
+    void BucketOperation::delete_bucket_lifecycle(const std::string &bucketName) {
+        if (!bucket_exists(bucketName)) {
             log(spdlog::level::info, fmt::format("Bucket {} does not exist", bucketName));
             return;
         }
 
         minio::s3::DeleteBucketLifecycleArgs args;
         args.bucket = bucketName;
-        executeOperation([this, args]() {
+        execute_operation([this, args]() {
             return client.DeleteBucketLifecycle(args);
         }, "Delete bucket lifecycle");
         log(spdlog::level::info, fmt::format("Bucket {} lifecycle deleted", bucketName));
     }
 
-    void BucketOperation::deleteBucketNotifications(const std::string &bucketName) {
-        if (!bucketExists(bucketName)) {
+    void BucketOperation::delete_bucket_notifications(const std::string &bucketName) {
+        if (!bucket_exists(bucketName)) {
             log(spdlog::level::info, fmt::format("Bucket {} does not exist", bucketName));
             return;
         }
@@ -85,7 +79,7 @@ namespace storage_delight::core {
         minio::s3::DeleteBucketNotificationArgs args;
         args.bucket = bucketName;
 
-        auto response = executeOperation([this, args]() {
+        auto response = execute_operation([this, args]() {
             return client.DeleteBucketNotification(args);
         }, "Delete bucket notifications");
 
@@ -97,8 +91,8 @@ namespace storage_delight::core {
 
     }
 
-    void BucketOperation::deleteBucketPolicy(const std::string &bucketName) {
-        if (!bucketExists(bucketName)) {
+    void BucketOperation::delete_bucket_policy(const std::string &bucketName) {
+        if (!bucket_exists(bucketName)) {
             log(spdlog::level::info, fmt::format("Bucket {} does not exist", bucketName));
             return;
         }
@@ -106,7 +100,7 @@ namespace storage_delight::core {
         minio::s3::DeleteBucketPolicyArgs args;
         args.bucket = bucketName;
 
-        auto response = executeOperation([this, args]() {
+        auto response = execute_operation([this, args]() {
             return client.DeleteBucketPolicy(args);
         }, "Delete bucket policy");
         if (response) {
@@ -116,8 +110,8 @@ namespace storage_delight::core {
         }
     }
 
-    void BucketOperation::deleteBucketReplication(const std::string &bucketName) {
-        if (!bucketExists(bucketName)) {
+    void BucketOperation::delete_bucket_replication(const std::string &bucketName) {
+        if (!bucket_exists(bucketName)) {
             log(spdlog::level::info, fmt::format("Bucket {} does not exist", bucketName));
             return;
         }
@@ -125,7 +119,7 @@ namespace storage_delight::core {
         minio::s3::DeleteBucketReplicationArgs args;
         args.bucket = bucketName;
 
-        auto response = executeOperation([this, args]() {
+        auto response = execute_operation([this, args]() {
             return client.DeleteBucketReplication(args);
         }, "Delete bucket replication");
         if (response) {
@@ -135,25 +129,25 @@ namespace storage_delight::core {
         }
     }
 
-    void BucketOperation::deleteBucketTags(const std::string &bucketName) {
-        if (!bucketExists(bucketName)) {
+    void BucketOperation::delete_bucket_tags(const std::string &bucketName) {
+        if (!bucket_exists(bucketName)) {
             log(spdlog::level::info, fmt::format("Bucket {} does not exist", bucketName));
             return;
         }
 
         minio::s3::DeleteBucketTagsArgs args;
         args.bucket = bucketName;
-        executeOperation([this, args]() {
+        execute_operation([this, args]() {
             return client.DeleteBucketTags(args);
         }, "Delete bucket tags");
         log(spdlog::level::info, fmt::format("Bucket {} tags deleted", bucketName));
     }
 
-    std::optional<minio::s3::SseConfig> BucketOperation::getBucketEncryption(const std::string &bucketName) {
+    std::optional<minio::s3::SseConfig> BucketOperation::get_bucket_encryption(const std::string &bucketName) {
         minio::s3::GetBucketEncryptionArgs args;
         args.bucket = bucketName;
 
-        const auto response = executeOperation([this, args]() {
+        const auto response = execute_operation([this, args]() {
             return client.GetBucketEncryption(args);
         }, "Get bucket encryption");
 
@@ -167,11 +161,11 @@ namespace storage_delight::core {
         return std::nullopt;
     }
 
-    std::optional<minio::s3::LifecycleConfig> BucketOperation::getBucketLiftCycle(const std::string &bucketName) {
+    std::optional<minio::s3::LifecycleConfig> BucketOperation::get_bucket_lifecycle(const std::string &bucketName) {
         minio::s3::GetBucketLifecycleArgs args;
         args.bucket = bucketName;
 
-        const auto response = executeOperation([this, args]() {
+        const auto response = execute_operation([this, args]() {
             return client.GetBucketLifecycle(args);
         }, "Get bucket lifecycle");
 
@@ -185,11 +179,12 @@ namespace storage_delight::core {
         return std::nullopt;
     }
 
-    std::optional<minio::s3::NotificationConfig> BucketOperation::getBucketNotification(const std::string &bucketName) {
+    std::optional<minio::s3::NotificationConfig>
+    BucketOperation::get_bucket_notification(const std::string &bucketName) {
         minio::s3::GetBucketNotificationArgs args;
         args.bucket = bucketName;
 
-        const auto response = executeOperation([this, args]() {
+        const auto response = execute_operation([this, args]() {
             return client.GetBucketNotification(args);
         }, "Get bucket notification");
 
@@ -203,11 +198,11 @@ namespace storage_delight::core {
         return std::nullopt;
     }
 
-    std::optional<std::basic_string<char>> BucketOperation::getBucketPolicy(const std::string &bucketName) {
+    std::optional<std::basic_string<char>> BucketOperation::get_bucket_policy(const std::string &bucketName) {
         minio::s3::GetBucketPolicyArgs args;
         args.bucket = bucketName;
 
-        const auto response = executeOperation([this, args]() {
+        const auto response = execute_operation([this, args]() {
             return client.GetBucketPolicy(args);
         }, "Get bucket policy");
 
@@ -220,8 +215,8 @@ namespace storage_delight::core {
         return std::nullopt;
     }
 
-    std::optional<std::string_view> BucketOperation::getBucketReplication(const std::string &bucketName) {
-        const auto response = executeOperation([&]() {
+    std::optional<std::string_view> BucketOperation::get_bucket_replication(const std::string &bucketName) {
+        const auto response = execute_operation([&]() {
             minio::s3::GetBucketReplicationArgs args;
             args.bucket = bucketName;
             return client.GetBucketReplication(args);
@@ -237,8 +232,8 @@ namespace storage_delight::core {
         return std::nullopt;
     }
 
-    std::optional<std::map<std::string, std::string>> BucketOperation::getBucketTags(const std::string &bucketName) {
-        const auto response = executeOperation([&]() {
+    std::optional<std::map<std::string, std::string>> BucketOperation::get_bucket_tags(const std::string &bucketName) {
+        const auto response = execute_operation([&]() {
             minio::s3::GetBucketTagsArgs args;
             args.bucket = bucketName;
             return client.GetBucketTags(args);
@@ -255,8 +250,8 @@ namespace storage_delight::core {
         return std::nullopt;
     }
 
-    std::optional<std::string> BucketOperation::getBucketVersioning(const std::string &bucketName) {
-        const auto response = executeOperation([&]() {
+    std::optional<std::string> BucketOperation::get_bucket_versioning(const std::string &bucketName) {
+        const auto response = execute_operation([&]() {
             minio::s3::GetBucketVersioningArgs args;
             args.bucket = bucketName;
             return client.GetBucketVersioning(args);

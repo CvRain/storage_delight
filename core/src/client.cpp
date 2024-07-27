@@ -5,7 +5,6 @@
 #include "client.hpp"
 
 #include <miniocpp/client.h>
-#include <spdlog/spdlog.h>
 
 namespace storage_delight::core {
     Client::Client(minio::s3::BaseUrl base_url, minio::creds::StaticProvider &provider)
@@ -15,5 +14,9 @@ namespace storage_delight::core {
 
     BucketOperation &Client::getBucketOperation() {
         return *bucket_operation;
+    }
+
+    ObjectOperation &Client::getObjectOperation() {
+        return *object_operation;
     }
 }

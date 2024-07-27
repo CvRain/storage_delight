@@ -13,26 +13,26 @@ namespace storage_delight::core {
         void log(spdlog::level::level_enum level, const std::string_view &message) const;
 
         template<typename Func, typename... Args>
-        auto executeOperation(Func &&operation, const std::string_view &operationName, Args &&...args)
+        auto execute_operation(Func &&operation, const std::string_view &operation_name, Args &&...args)
         -> decltype(operation(std::forward<Args>(args)...)) {
             const auto result = operation(std::forward<Args>(args)...);
 
             if (!result) {
-                log(spdlog::level::err, fmt::format("{} operation failed", operationName));
+                log(spdlog::level::err, fmt::format("{} operation failed", operation_name));
                 return result;
             }
 
-            log(spdlog::level::info, fmt::format("{} operation successful", operationName));
+            log(spdlog::level::info, fmt::format("{} operation successful", operation_name));
             return result;
         }
 
-        void setEnableLogOutputToConsole(bool enable);
+        void set_enable_log_to_console(bool enable);
 
-        void setEnableLogOutputToFile(bool enable);
+        void set_enable_log_file(bool enable);
 
     private:
-        bool enableLogOutputToConsole = false;
-        bool enableLogOutputToFile = false;
+        bool enable_log_to_console = false;
+        bool enable_log_to_file = false;
     };
 }
 

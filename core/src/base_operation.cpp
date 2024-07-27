@@ -7,19 +7,19 @@
 namespace storage_delight::core {
 
     void BaseOperation::log(spdlog::level::level_enum level, const std::string_view &message) const {
-        if(enableLogOutputToConsole){
+        if (enable_log_to_console) {
             spdlog::log(level, message);
         }
-        if(enableLogOutputToFile){
+        if (enable_log_to_file) {
             //todo
         }
     }
 
-    void BaseOperation::setEnableLogOutputToConsole(bool enable) {
-        enableLogOutputToConsole = enable;
+    void BaseOperation::set_enable_log_to_console(bool enable) {
+        enable_log_to_console = enable;
     }
 
-    void BaseOperation::setEnableLogOutputToFile(bool enable) {
-        enableLogOutputToFile = enable;
+    void BaseOperation::set_enable_log_file(bool enable) {
+        enable_log_to_file = enable;
     }
 }

@@ -6,48 +6,56 @@
 #define STORAGE_DELIGHT_BUCKET_OPERATION_HPP
 
 #include "base_operation.hpp"
-#include <miniocpp/client.h>
 #include <list>
-#include <optional>
 #include <map>
+#include <miniocpp/client.h>
+#include <optional>
 
 namespace storage_delight::core {
     class BucketOperation : public BaseOperation {
     public:
         explicit BucketOperation(minio::s3::Client &client);
 
-        bool bucketExists(const std::string &bucketName);
+        bool bucket_exists(const std::string &bucketName);
 
         std::optional<std::list<minio::s3::Bucket>> listBuckets();
 
-        void deleteBucketEncryption(const std::string &bucketName);
+        void delete_bucket_encryption(const std::string &bucketName);
 
-        void deleteBucketLifecycle(const std::string &bucketName);
+        void delete_bucket_lifecycle(const std::string &bucketName);
 
-        void deleteBucketNotifications(const std::string &bucketName);
+        void delete_bucket_notifications(const std::string &bucketName);
 
-        void deleteBucketPolicy(const std::string &bucketName);
+        void delete_bucket_policy(const std::string &bucketName);
 
-        void deleteBucketReplication(const std::string &bucketName);
+        void delete_bucket_replication(const std::string &bucketName);
 
-        void deleteBucketTags(const std::string &bucketName);
+        void delete_bucket_tags(const std::string &bucketName);
 
-        std::optional<minio::s3::SseConfig> getBucketEncryption(const std::string &bucketName);
+        std::optional<minio::s3::SseConfig>
+        get_bucket_encryption(const std::string &bucketName);
 
-        std::optional<minio::s3::LifecycleConfig> getBucketLiftCycle(const std::string &bucketName);
+        std::optional<minio::s3::LifecycleConfig>
+        get_bucket_lifecycle(const std::string &bucketName);
 
-        std::optional<minio::s3::NotificationConfig> getBucketNotification(const std::string &bucketName);
+        std::optional<minio::s3::NotificationConfig>
+        get_bucket_notification(const std::string &bucketName);
 
-        std::optional<std::basic_string<char>> getBucketPolicy(const std::string &bucketName);
+        std::optional<std::basic_string<char>>
+        get_bucket_policy(const std::string &bucketName);
 
-        std::optional<std::string_view> getBucketReplication(const std::string &bucketName);
+        std::optional<std::string_view>
+        get_bucket_replication(const std::string &bucketName);
 
-        std::optional<std::map<std::string , std::string>> getBucketTags(const std::string &bucketName);
+        std::optional<std::map<std::string, std::string>>
+        get_bucket_tags(const std::string &bucketName);
 
-        std::optional<std::string> getBucketVersioning(const std::string &bucketName);
+        std::optional<std::string>
+        get_bucket_versioning(const std::string &bucketName);
+
     private:
         minio::s3::Client &client;
     };
-}
+} // namespace storage_delight::core
 
-#endif //STORAGE_DELIGHT_BUCKET_OPERATION_HPP
+#endif // STORAGE_DELIGHT_BUCKET_OPERATION_HPP

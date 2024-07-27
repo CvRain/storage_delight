@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "bucket_operation.hpp"
-
+#include "object_operation.hpp"
 
 namespace storage_delight::core {
     class Client {
@@ -17,11 +17,13 @@ namespace storage_delight::core {
         explicit Client(minio::s3::BaseUrl base_url, minio::creds::StaticProvider &provider);
 
         BucketOperation& getBucketOperation();
+        ObjectOperation& getObjectOperation();
 
 
     private:
         minio::s3::Client client;
         std::unique_ptr<BucketOperation> bucket_operation;
+        std::unique_ptr<ObjectOperation> object_operation;
     };
 }
 

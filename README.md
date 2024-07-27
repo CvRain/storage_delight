@@ -15,16 +15,16 @@
 # 功能实现
 ## storage_delight::core
   - [x] BucketExists
-  - [ ] ComposeObject
-  - [ ] CopyObject
+  - [x] ComposeObject
+  - [x] CopyObject
   - [x] DeleteBucketEncryption
   - [x] DeleteBucketLifecycle
   - [x] DeleteBucketNotification
   - [x] DeleteBucketPolicy
   - [x] DeleteBucketReplication
   - [x] DeleteBucketTags
-  - [ ] DeleteObjectLockConfig
-  - [ ] DeleteObjectTags
+  - [x] DeleteObjectLockConfig
+  - [x] DeleteObjectTags
   - [ ] DisableObjectLegalHold
   - [ ] DownloadObject
   - [ ] EnableObjectLegalHold
