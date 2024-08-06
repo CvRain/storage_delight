@@ -9,18 +9,18 @@
 #     # [Options, -SessionTicket],
 #     # [Options, Compression]
 #   ]
-# listeners:
-#     # address: Ip address,0.0.0.0 by default
-#   - address: 0.0.0.0
-#     # port: Port number
-#     port: 80
-#     # https: If true, use https for security,false by default
-#     https: false
+ listeners:
+     # address: Ip address,0.0.0.0 by default
+   - address: 0.0.0.0
+     # port: Port number
+     port: 3000
+     # https: If true, use https for security,false by default
+     https: false
 #   - address: 0.0.0.0
 #     port: 443
 #     https: true
-#     # cert,key: Cert file path and key file path, empty by default,
-#     # if empty, use the global setting
+     # cert,key: Cert file path and key file path, empty by default,
+     # if empty, use the global setting
 #     cert: ''
 #     key: ''
 #     # use_old_tls: enable the TLS1.0/1.1, false by default

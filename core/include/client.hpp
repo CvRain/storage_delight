@@ -14,10 +14,13 @@
 namespace storage_delight::core {
     class Client {
     public:
-        explicit Client(minio::s3::BaseUrl base_url, minio::creds::StaticProvider &provider);
+        explicit Client(minio::s3::BaseUrl base_url, minio::creds::StaticProvider *provider);
 
-        BucketOperation& getBucketOperation();
-        ObjectOperation& getObjectOperation();
+        static minio::creds::StaticProvider make_provider(const std::string &access_key, const std::string &secret_key);
+
+        BucketOperation &getBucketOperation();
+
+        ObjectOperation &getObjectOperation();
 
 
     private:

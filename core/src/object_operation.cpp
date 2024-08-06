@@ -169,4 +169,25 @@ namespace storage_delight::core {
             return client.EnableObjectLegalHold(args);
         }, "enable_object_legal_hold");
     }
+
+    minio::s3::ListObjectsResult ObjectOperation::list_objects(const std::string_view &bucketName) {
+        return execute_operation([&]() {
+            minio::s3::ListObjectsArgs args;
+            args.bucket = bucketName;
+            return client.ListObjects(args);
+        }, "list_objects");
+    }
+
+    minio::s3::GetPresignedObjectUrlResponse
+    ObjectOperation::get_presigned_object_url(const std::string_view &bucketName, const std::string_view &objectName) {
+        return execute_operation([&]() {
+            minio::s3::GetPresignedObjectUrlArgs args;
+            args.bucket = bucketName;
+            args.object = objectName;
+            args.method = minio::http::Method::kGet;
+            args.expiry_seconds = 60 * 60 * 24; // 24 hours
+
+            return client.GetPresignedObjectUrl(args);
+        },"get_presigned_object_url");
+    }
 }

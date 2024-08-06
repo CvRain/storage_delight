@@ -25,9 +25,9 @@
   - [x] DeleteBucketTags
   - [x] DeleteObjectLockConfig
   - [x] DeleteObjectTags
-  - [ ] DisableObjectLegalHold
-  - [ ] DownloadObject
-  - [ ] EnableObjectLegalHold
+  - [x] DisableObjectLegalHold
+  - [x] DownloadObject
+  - [x] EnableObjectLegalHold
   - [x] GetBucketEncryption
   - [x] GetBucketLifecycle
   - [x] GetBucketNotification
@@ -40,12 +40,12 @@
   - [x] GetObjectProgress
   - [x] GetObjectRetention
   - [x] GetObjectTags
-  - [ ] GetPresignedObjectUrl
+  - [x] GetPresignedObjectUrl
   - [ ] GetPresignedPostFormData
   - [ ] IsObjectLegalHoldEnabled
   - [x] ListBuckets
   - [ ] ListenBucketNotification
-  - [ ] ListObjects
+  - [x] ListObjects
   - [ ] MakeBucket
   - [ ] PutObject
   - [ ] PutObjectProgress

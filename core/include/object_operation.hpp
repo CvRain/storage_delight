@@ -80,6 +80,17 @@ namespace storage_delight::core {
 
         minio::s3::EnableObjectLegalHoldResponse
         enable_object_legal_hold(const std::string_view &bucketName, const std::string_view &objectName);
+
+        minio::s3::ListObjectsResult
+        list_objects(const std::string_view& bucketName);
+
+        minio::s3::GetPresignedObjectUrlResponse
+        get_presigned_object_url(const std::string_view &bucketName, const std::string_view &objectName);
+
+        //todo
+//        minio::s3::GetPresignedPostFormDataResponse
+//        get_presigned_post_form_data(const std::string_view &bucketName, const std::string_view &objectName);
+
     private:
         minio::s3::Client &client;
     };

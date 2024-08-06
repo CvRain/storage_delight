@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+find_package(ZLIB REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(miniocpp CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
@@ -27,6 +28,7 @@ set(SRC_CPP
 add_library(storage_delight_core ${SRC_HEADER} ${SRC_CPP})
 
 target_link_libraries(storage_delight_core PUBLIC
+        ZLIB::ZLIB
         nlohmann_json::nlohmann_json
         miniocpp::miniocpp
         spdlog::spdlog)

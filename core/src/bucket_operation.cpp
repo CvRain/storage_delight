@@ -12,34 +12,21 @@ namespace storage_delight::core {
 
     }
 
-    std::optional<std::list<minio::s3::Bucket>> BucketOperation::listBuckets() {
-        auto result = execute_operation([this]() {
+    minio::s3::ListBucketsResponse
+    BucketOperation::listBuckets() {
+        return execute_operation([&]() {
             return client.ListBuckets();
         }, "List buckets");
-
-        if (result) {
-            for (const auto &bucket: result.buckets) {
-                log(spdlog::level::info, "Bucket: " + bucket.name);
-            }
-            return result.buckets;
-        }
-        return std::nullopt;
     }
 
-    bool BucketOperation::bucket_exists(const std::string &bucketName) {
-        minio::s3::BucketExistsArgs args;
-        args.bucket = bucketName;
-
-        auto result = execute_operation([this, args]() {
+    minio::s3::BucketExistsResponse
+    BucketOperation::bucket_exists(const std::string_view &bucketName) {
+        auto response = execute_operation([&]() {
+            minio::s3::BucketExistsArgs args;
+            args.bucket = bucketName.data();
             return client.BucketExists(args);
         }, "Bucket exists");
-
-        if (result) {
-            log(spdlog::level::info,
-                fmt::format("Bucket {} {}", bucketName, result.exist ? "exists" : "does not exist"));
-            return result.exist;
-        }
-        return false;
+        return response;
     }
 
     void BucketOperation::delete_bucket_encryption(const std::string &bucketName) {

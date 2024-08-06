@@ -1,11 +1,22 @@
 {
-  "version": "0.1.0",
   "name": "storage-delight",
+  "version": "0.1.0",
   "dependencies": [
     "cpprestsdk",
     "nlohmann-json",
-    "drogon",
-    "minio-cpp",
-    "spdlog"
+    {
+      "name": "minio-cpp"
+    },
+    "spdlog",
+    "zlib",
+    {
+      "name": "drogon",
+      "features": [
+        "ctl"
+      ]
+    },
+    "curlpp",
+    "openssl",
+    "yaml-cpp"
   ]
 }

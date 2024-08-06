@@ -1,14 +1,21 @@
 #include "client.hpp"
-
 #include <miniocpp/client.h>
 
+using namespace storage_delight;
+
 int main() {
-    auto base_url = minio::s3::BaseUrl{"http://127.0.0.1:9000", false};
-    minio::creds::StaticProvider provider{"exjJK7R9buUmW46lNpwx", "aDGaikn07kPMIUKnVY3v58BDrsnh2uf0Q9TNmfig"};
+//    auto provider = core::Client::make_provider("H4UMCiwa8ZgE0OorsFxX", "PyhL7fFAkVPnT1esNTIbBUuhp2ZztEz2qD8muv86");
+//    minio::s3::BaseUrl url{"http://127.0.0.1:10567", false};
 
-    storage_delight::core::Client client{base_url, provider};
-    client.getBucketOperation().set_enable_log_to_console(true);
-    client.getBucketOperation().listBuckets();
-    client.getBucketOperation().bucket_exists("aaa");
+    auto provider = core::Client::make_provider("uiJ2kXR4V1ceWJPkHNfT", "7KBobqxCWyLQKhARhs6paIsmI4rwx1kx8Zpjghhd");
+    minio::s3::BaseUrl url{"http://server.cloudvl.cn:10569", false};
 
+    auto client = core::Client{url, &provider};
+
+    const auto response = client.getBucketOperation().listBuckets();
+    for (const auto &it: response.buckets) {
+        std::cout << it.name << std::endl;
+    }
+
+    return 0;
 }

@@ -16,9 +16,11 @@ namespace storage_delight::core {
     public:
         explicit BucketOperation(minio::s3::Client &client);
 
-        bool bucket_exists(const std::string &bucketName);
+        minio::s3::BucketExistsResponse
+        bucket_exists(const std::string_view &bucketName);
 
-        std::optional<std::list<minio::s3::Bucket>> listBuckets();
+        minio::s3::ListBucketsResponse
+        listBuckets();
 
         void delete_bucket_encryption(const std::string &bucketName);
 
