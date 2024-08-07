@@ -38,7 +38,7 @@ namespace storage_delight::core {
         minio::s3::DeleteBucketEncryptionArgs args;
         args.bucket = bucketName;
         execute_operation([this, args]() {
-            return client.DeleteBucketEncryption(args);
+            return client.DeleteBucketEncryption(args);`
         }, "Delete bucket encryption");
         log(spdlog::level::info, fmt::format("Bucket {} encryption deleted", bucketName));
     }
@@ -253,5 +253,22 @@ namespace storage_delight::core {
             fmt::format("Bucket {} versioning not found: {}", bucketName, response.Error().String())
         );
         return std::nullopt;
+    }
+
+    minio::s3::ListenBucketNotificationResponse
+    BucketOperation::listen_bucket_notification(const std::string &bucketName) {
+        return execute_operation([&]() {
+            minio::s3::ListenBucketNotificationArgs args;
+            args.bucket = bucketName;
+            return client.ListenBucketNotification(args);
+        }, "Listen bucket notification");
+    }
+
+    minio::s3::MakeBucketResponse BucketOperation::make_bucket(const std::string &bucketName) {
+        return execute_operation([&]() {
+            minio::s3::MakeBucketArgs args;
+            args.bucket = bucketName;
+            return client.MakeBucket(args);
+        }, "Make bucket");
     }
 }

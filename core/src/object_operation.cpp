@@ -4,6 +4,10 @@
 
 #include "object_operation.hpp"
 
+#include <fstream>
+#include <sstream>
+#include <string>
+
 namespace storage_delight::core {
 
     ObjectOperation::ObjectOperation(minio::s3::Client &client)
@@ -190,4 +194,39 @@ namespace storage_delight::core {
             return client.GetPresignedObjectUrl(args);
         },"get_presigned_object_url");
     }
+
+    minio::s3::IsObjectLegalHoldEnabledResponse
+    ObjectOperation::is_object_legal_hold_enabled(const std::string_view &bucketName,
+                                                  const std::string_view &objectName) {
+        return execute_operation([&]() {
+            minio::s3::IsObjectLegalHoldEnabledArgs args;
+            args.bucket = bucketName;
+            args.object = objectName;
+            return client.IsObjectLegalHoldEnabled(args);
+        }, "is_object_legal_hold_enabled");
+    }
+
+    minio::s3::PutObjectResponse
+    ObjectOperation::put_object(const std::string_view &bucketName, const std::string_view &objectName,
+                                std::istream file) {
+        return execute_operation([&]() {
+            const auto file_size = file.seekg(0, std::ios::end).tellg();
+            minio::s3::PutObjectArgs args(file, file_size, 0);
+            args.bucket = bucketName;
+            args.object = objectName;
+            return client.PutObject(args);
+        }, "put_object");
+    }
+
+    minio::s3::PutObjectResponse
+    ObjectOperation::put_object(const std::string_view &bucketName, const std::string_view &objectName,
+                                std::istringstream fileStream) {
+        return execute_operation([&]() {
+            minio::s3::PutObjectArgs args(fileStream, 11,0);
+            args.bucket = bucketName;
+            args.object = objectName;
+            return client.PutObject(args);
+        }, "put_object");
+    }
+
 }

@@ -91,6 +91,14 @@ namespace storage_delight::core {
 //        minio::s3::GetPresignedPostFormDataResponse
 //        get_presigned_post_form_data(const std::string_view &bucketName, const std::string_view &objectName);
 
+        minio::s3::IsObjectLegalHoldEnabledResponse
+        is_object_legal_hold_enabled(const std::string_view &bucketName, const std::string_view &objectName);
+
+        minio::s3::PutObjectResponse
+        put_object(const std::string_view &bucketName, const std::string_view &objectName, std::istream file);
+
+        minio::s3::PutObjectResponse
+        put_object(const std::string_view& bucketName, const std::string_view& objectName, std::istringstream fileStream);
     private:
         minio::s3::Client &client;
     };

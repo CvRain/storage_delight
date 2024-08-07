@@ -55,6 +55,12 @@ namespace storage_delight::core {
         std::optional<std::string>
         get_bucket_versioning(const std::string &bucketName);
 
+        minio::s3::ListenBucketNotificationResponse
+        listen_bucket_notification(const std::string &bucketName);
+
+        minio::s3::MakeBucketResponse
+        make_bucket(const std::string &bucketName);
+
     private:
         minio::s3::Client &client;
     };

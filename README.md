@@ -42,11 +42,11 @@
   - [x] GetObjectTags
   - [x] GetPresignedObjectUrl
   - [ ] GetPresignedPostFormData
-  - [ ] IsObjectLegalHoldEnabled
+  - [x] IsObjectLegalHoldEnabled
   - [x] ListBuckets
-  - [ ] ListenBucketNotification
+  - [x] ListenBucketNotification
   - [x] ListObjects
-  - [ ] MakeBucket
+  - [x] MakeBucket
   - [ ] PutObject
   - [ ] PutObjectProgress
   - [ ] RemoveBucket
