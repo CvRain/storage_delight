@@ -98,7 +98,7 @@ namespace storage_delight::core {
         put_object(const std::string_view &bucketName, const std::string_view &objectName, std::istream file);
 
         minio::s3::PutObjectResponse
-        put_object(const std::string_view& bucketName, const std::string_view& objectName, std::istringstream fileStream);
+        put_object(const std::string_view& bucketName, const std::string_view& objectName, std::basic_string_view<char> fileContent);
     private:
         minio::s3::Client &client;
     };

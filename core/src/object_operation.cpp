@@ -7,6 +7,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <string_view>
 
 namespace storage_delight::core {
 
@@ -220,9 +221,15 @@ namespace storage_delight::core {
 
     minio::s3::PutObjectResponse
     ObjectOperation::put_object(const std::string_view &bucketName, const std::string_view &objectName,
-                                std::istringstream fileStream) {
+                                std::basic_string_view<char> fileContent) {
         return execute_operation([&]() {
-            minio::s3::PutObjectArgs args(fileStream, 11,0);
+            const auto file_size = fileContent.size();
+
+            //std::basic_string_view to std::istream
+            std::string str(fileContent.data(), fileContent.size());
+            std::istringstream file(str);
+
+            minio::s3::PutObjectArgs args(file, static_cast<long>(file_size), 0);
             args.bucket = bucketName;
             args.object = objectName;
             return client.PutObject(args);

@@ -38,7 +38,7 @@ namespace storage_delight::core {
         minio::s3::DeleteBucketEncryptionArgs args;
         args.bucket = bucketName;
         execute_operation([this, args]() {
-            return client.DeleteBucketEncryption(args);`
+            return client.DeleteBucketEncryption(args);
         }, "Delete bucket encryption");
         log(spdlog::level::info, fmt::format("Bucket {} encryption deleted", bucketName));
     }
