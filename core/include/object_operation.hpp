@@ -6,12 +6,15 @@
 #define STORAGE_DELIGHT_OBJECT_OPERATION_HPP
 
 #include "base_operation.hpp"
+#include "basic_types.hpp"
+
 #include <miniocpp/client.h>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <list>
 #include <initializer_list>
+#include <functional>
 
 namespace storage_delight::core {
     class ObjectOperation : public BaseOperation {
@@ -72,7 +75,7 @@ namespace storage_delight::core {
         disable_object_legal_hold(const std::string_view &bucketName, const std::string_view &objectName);
 
         minio::s3::DownloadObjectResponse
-        download_object(const minio::s3::DownloadObjectArgs& args);
+        download_object(const minio::s3::DownloadObjectArgs &args);
 
         minio::s3::DownloadObjectResponse
         download_object(const std::string_view &bucketName, const std::string_view &objectName,
@@ -82,7 +85,7 @@ namespace storage_delight::core {
         enable_object_legal_hold(const std::string_view &bucketName, const std::string_view &objectName);
 
         minio::s3::ListObjectsResult
-        list_objects(const std::string_view& bucketName);
+        list_objects(const std::string_view &bucketName);
 
         minio::s3::GetPresignedObjectUrlResponse
         get_presigned_object_url(const std::string_view &bucketName, const std::string_view &objectName);
@@ -98,7 +101,41 @@ namespace storage_delight::core {
         put_object(const std::string_view &bucketName, const std::string_view &objectName, std::istream file);
 
         minio::s3::PutObjectResponse
-        put_object(const std::string_view& bucketName, const std::string_view& objectName, std::basic_string_view<char> fileContent);
+        put_object(const std::string_view &bucketName, const std::string_view &objectName,
+                   std::basic_string_view<char> fileContent);
+
+        minio::s3::PutObjectResponse
+        put_object(const std::string_view &bucketName, const std::string_view &objectName, types::file_content file);
+
+        minio::s3::PutObjectResponse
+        put_object_response(const std::string_view &bucketName, const std::string_view &objectName,
+                            std::basic_string_view<char> fileContent,
+                            std::function<bool(minio::http::ProgressFunctionArgs)> progressCallback);
+
+        minio::s3::PutObjectResponse
+        put_object_response(const std::string_view &bucketName, const std::string_view &objectName,
+                            types::file_content file,
+                            std::function<bool(minio::http::ProgressFunctionArgs)> progressCallback);
+
+        minio::s3::RemoveObjectResponse
+        remove_object(const std::string_view &bucketName, const std::string_view &objectName);
+
+        minio::s3::RemoveObjectsResult
+        remove_object(const std::string_view &bucketName, const std::vector<std::string_view> &objectName);
+
+        minio::s3::SetObjectLockConfigResponse
+        set_object_lock_config(const std::string_view &bucketName, minio::s3::SetObjectLockConfigArgs config);
+
+        minio::s3::SetObjectTagsResponse
+        set_object_tags(const std::string_view &bucketName, const std::string_view &objectName,
+                        const std::map<std::string, std::string> &tags);
+
+        minio::s3::StatObjectResponse
+        stat_object(const std::string_view &bucketName, const std::string_view &objectName);
+
+        minio::s3::UploadObjectResponse
+        upload_object(const std::string_view &bucketName, const std::string_view &objectName,
+                      types::file_content fileContent);
     private:
         minio::s3::Client &client;
     };

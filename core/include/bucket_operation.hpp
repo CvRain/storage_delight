@@ -61,6 +61,37 @@ namespace storage_delight::core {
         minio::s3::MakeBucketResponse
         make_bucket(const std::string &bucketName);
 
+        minio::s3::RemoveBucketResponse
+        remove_bucket(const std::string &bucketName);
+
+        minio::s3::SetBucketEncryptionResponse
+        set_bucket_encryption(const std::string &bucketName, const minio::s3::SseConfig &sseConfig);
+
+        minio::s3::SetBucketLifecycleResponse
+        set_bucket_lifecycle(const std::string &bucketName,
+                             minio::s3::LifecycleConfig lifecycleConfig,
+                             std::vector<minio::s3::LifecycleRule> rules = {});
+
+        minio::s3::SetBucketNotificationResponse
+        set_bucket_notification(const std::string &bucketName,
+                                minio::s3::NotificationConfig config,
+                                std::vector<minio::s3::QueueConfig> queueConfigs = {});
+
+        minio::s3::SetBucketPolicyResponse
+        set_bucket_policy(const std::string &bucketName, const std::string_view &policy);
+
+        minio::s3::SetBucketReplicationResponse
+        set_bucket_replication(const std::string &bucketName,
+                               const minio::s3::ReplicationConfig &replicationConfig,
+                               std::vector<minio::s3::ReplicationRule> rules = {});
+
+        minio::s3::SetBucketTagsResponse
+        set_bucket_tags(const std::string &bucketName,
+                        const std::map<std::string, std::string> &tags);
+
+        minio::s3::SetBucketVersioningResponse
+        set_bucket_versioning(const std::string &bucketName, bool status = true);
+
     private:
         minio::s3::Client &client;
     };

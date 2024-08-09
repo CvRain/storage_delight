@@ -93,20 +93,20 @@ Storage Delight 是一个用于构建个人网盘或云盘的项目，旨在提�
   - [x] ListObjects
   - [x] MakeBucket
   - [x] PutObject
-  - [ ] PutObjectProgress
-  - [ ] RemoveBucket
-  - [ ] RemoveObject
-  - [ ] RemoveObjects
+  - [x] PutObjectProgress
+  - [x] RemoveBucket
+  - [x] RemoveObject
+  - [x] RemoveObjects
   - [ ] SelectObjectContent
-  - [ ] SetBucketEncryption
-  - [ ] SetBucketLifecycle
-  - [ ] SetBucketNotification
-  - [ ] SetBucketPolicy
-  - [ ] SetBucketReplication
-  - [ ] SetBucketTags
-  - [ ] SetBucketVersioning
-  - [ ] SetObjectLockConfig
+  - [x] SetBucketEncryption
+  - [x] SetBucketLifecycle
+  - [x] SetBucketNotification
+  - [x] SetBucketPolicy
+  - [x] SetBucketReplication
+  - [x] SetBucketTags
+  - [x] SetBucketVersioning
+  - [x] SetObjectLockConfig
   - [ ] SetObjectRetention
-  - [ ] SetObjectTags
-  - [ ] StatObject
-  - [ ] UploadObject
+  - [x] SetObjectTags
+  - [x] StatObject
+  - [x] UploadObject

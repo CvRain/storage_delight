@@ -224,16 +224,145 @@ namespace storage_delight::core {
                                 std::basic_string_view<char> fileContent) {
         return execute_operation([&]() {
             const auto file_size = fileContent.size();
-
-            //std::basic_string_view to std::istream
             std::string str(fileContent.data(), fileContent.size());
-            std::istringstream file(str);
+            std::istringstream data(str);
 
-            minio::s3::PutObjectArgs args(file, static_cast<long>(file_size), 0);
+            minio::s3::PutObjectArgs args(data, static_cast<long>(file_size), 0);
             args.bucket = bucketName;
             args.object = objectName;
             return client.PutObject(args);
         }, "put_object");
+    }
+
+    minio::s3::PutObjectResponse
+    ObjectOperation::put_object(const std::string_view &bucketName, const std::string_view &objectName,
+                                const types::file_content file) {
+        return execute_operation([&]() {
+            std::istringstream data(file.content);
+            minio::s3::PutObjectArgs args(data, static_cast<long>(file.size), 0);
+            args.bucket = bucketName;
+            args.object = objectName;
+            return client.PutObject(args);
+        }, "put_object");
+    }
+
+    minio::s3::PutObjectResponse
+    ObjectOperation::put_object_response(const std::string_view &bucketName, const std::string_view &objectName,
+                                         std::basic_string_view<char> fileContent,
+                                         std::function<bool(minio::http::ProgressFunctionArgs)> progressCallback) {
+        return execute_operation([&]() {
+            const auto file_size = fileContent.size();
+            std::string str(fileContent.data(), fileContent.size());
+            std::istringstream data(str);
+
+            minio::s3::PutObjectArgs args(data, static_cast<long>(file_size), 0);
+            args.bucket = bucketName;
+            args.object = objectName;
+
+            if(progressCallback!= nullptr){
+                args.progressfunc = progressCallback;
+            }
+
+            return client.PutObject(args);
+        }, "put_object_response");
+    }
+
+    minio::s3::PutObjectResponse
+    ObjectOperation::put_object_response(const std::string_view &bucketName, const std::string_view &objectName,
+                                         types::file_content file,
+                                         std::function<bool(minio::http::ProgressFunctionArgs)> progressCallback) {
+        return execute_operation([&]() {
+            std::istringstream data(file.content);
+
+            minio::s3::PutObjectArgs args(data, static_cast<long>(file.size), 0);
+            args.bucket = bucketName;
+            args.object = objectName;
+            if(progressCallback!= nullptr){
+                args.progressfunc = progressCallback;
+            }
+
+            return client.PutObject(args);
+        }, "put_object_response");
+    }
+
+    minio::s3::RemoveObjectResponse
+    ObjectOperation::remove_object(const std::string_view &bucketName, const std::string_view &objectName) {
+        return execute_operation([&]() {
+            minio::s3::RemoveObjectArgs args;
+            args.bucket = bucketName;
+            args.object = objectName;
+            return client.RemoveObject(args);
+        }, "remove_object");
+    }
+
+    minio::s3::RemoveObjectsResult
+    ObjectOperation::remove_object(const std::string_view &bucketName, const std::vector<std::string_view> &objectName){
+        return execute_operation([&]() {
+            std::list<minio::s3::DeleteObject> objects;
+            for(const auto &name : objectName){
+                minio::s3::DeleteObject object;
+                object.name = name;
+                objects.push_back(object);
+            }
+            auto i = objects.begin();
+
+            minio::s3::RemoveObjectsArgs args;
+            args.bucket = bucketName;
+            args.func = [&](minio::s3::DeleteObject& obj){
+                if (i == objects.end()) {
+                    return false;
+                }
+                obj = *i;
+                i++;
+                return true;
+            };
+
+            return client.RemoveObjects(args);
+        }, "remove_object");
+    }
+
+    minio::s3::SetObjectLockConfigResponse
+    ObjectOperation::set_object_lock_config(const std::string_view &bucketName, minio::s3::SetObjectLockConfigArgs config) {
+        return execute_operation([&]() {
+            minio::s3::SetObjectLockConfigArgs args;
+            args.bucket = bucketName;
+            return client.SetObjectLockConfig(args);
+        }, "set_object_config");
+    }
+
+    minio::s3::SetObjectTagsResponse
+    ObjectOperation::set_object_tags(const std::string_view &bucketName, const std::string_view &objectName,
+                                     const std::map<std::string, std::string> &tags) {
+        return execute_operation([&]() {
+            minio::s3::SetObjectTagsArgs args;
+            args.bucket = bucketName;
+            args.object = objectName;
+            args.tags = tags;
+            return client.SetObjectTags(args);
+        }, "set_object_tags");
+    }
+
+    minio::s3::StatObjectResponse
+    ObjectOperation::stat_object(const std::string_view &bucketName, const std::string_view &objectName) {
+        return execute_operation([&]() {
+            minio::s3::StatObjectArgs args;
+            args.bucket = bucketName;
+            args.object = objectName;
+            return client.StatObject(args);
+        }, "stat_object");
+    }
+
+    minio::s3::UploadObjectResponse
+    ObjectOperation::upload_object(const std::string_view &bucketName, const std::string_view &objectName,
+                                   types::file_content fileContent) {
+        return execute_operation([&]() {
+            minio::s3::UploadObjectArgs args;
+            args.bucket = bucketName;
+            args.object = objectName;
+            args.filename = fileContent.name;
+
+            return client.UploadObject(args);
+        }, "upload_object");
     }
 
 }

@@ -26,6 +26,20 @@ namespace storage_delight::core {
             return result;
         }
 
+        template<typename Func, typename... Args>
+        auto execute_operation(Func &&operation, std::function<std::string_view (void)> operationFunc, Args &&...args)
+        -> decltype(operation(std::forward<Args>(args)...)) {
+            const auto result = operation(std::forward<Args>(args)...);
+
+            if (!result) {
+                log(spdlog::level::err, fmt::format("{}", operationFunc()));
+                return result;
+            }
+
+            log(spdlog::level::info, fmt::format("{}", operationFunc()));
+            return result;
+        }
+
         void set_enable_log_to_console(bool enable);
 
         void set_enable_log_file(bool enable);

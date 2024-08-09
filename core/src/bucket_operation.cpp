@@ -271,4 +271,96 @@ namespace storage_delight::core {
             return client.MakeBucket(args);
         }, "Make bucket");
     }
+
+    minio::s3::RemoveBucketResponse BucketOperation::remove_bucket(const std::string &bucketName) {
+        return execute_operation([&]() {
+            minio::s3::RemoveBucketArgs args;
+            args.bucket = bucketName;
+            return client.RemoveBucket(args);
+        }, "Remove bucket");
+    }
+
+    minio::s3::SetBucketEncryptionResponse
+    BucketOperation::set_bucket_encryption(const std::string &bucketName, const minio::s3::SseConfig &sseConfig) {
+        return execute_operation([&]() {
+            auto config = sseConfig;
+            minio::s3::SetBucketEncryptionArgs args{config};
+            args.bucket = bucketName;
+
+            return client.SetBucketEncryption(args);
+        }, "Set bucket encryption");
+    }
+
+    minio::s3::SetBucketLifecycleResponse
+    BucketOperation::set_bucket_lifecycle(const std::string &bucketName,
+                                          minio::s3::LifecycleConfig lifecycleConfig,
+                                          std::vector<minio::s3::LifecycleRule> rules) {
+        return execute_operation([&]() {
+            for (const auto &it: rules) {
+                lifecycleConfig.rules.push_back(it);
+            }
+            minio::s3::SetBucketLifecycleArgs args{lifecycleConfig};
+            args.bucket = bucketName;
+
+            return client.SetBucketLifecycle(args);
+        }, "Set bucket lifecycle");
+    }
+
+    minio::s3::SetBucketNotificationResponse
+    BucketOperation::set_bucket_notification(const std::string &bucketName, minio::s3::NotificationConfig config,
+                                             std::vector<minio::s3::QueueConfig> queueConfigs) {
+        return execute_operation([&]() {
+            for (const auto &it: queueConfigs) {
+                config.queue_config_list.push_back(it);
+            }
+            minio::s3::SetBucketNotificationArgs args{config};
+            args.bucket = bucketName;
+            return client.SetBucketNotification(args);
+        }, "Set bucket notification");
+    }
+
+    minio::s3::SetBucketPolicyResponse
+    BucketOperation::set_bucket_policy(const std::string &bucketName, const std::string_view &policy) {
+        return execute_operation([&]() {
+            minio::s3::SetBucketPolicyArgs args;
+            args.bucket = bucketName;
+            args.policy = policy;
+            return client.SetBucketPolicy(args);
+        }, "Set bucket policy");
+    }
+
+    minio::s3::SetBucketReplicationResponse
+    BucketOperation::set_bucket_replication(const std::string &bucketName,
+                                            const minio::s3::ReplicationConfig &replicationConfig,
+                                            std::vector<minio::s3::ReplicationRule> rules) {
+        return execute_operation([&]() {
+            auto config = replicationConfig;
+            for (const auto &it: rules) {
+                config.rules.push_back(it);
+            }
+            minio::s3::SetBucketReplicationArgs args{config};
+            args.bucket = bucketName;
+            return client.SetBucketReplication(args);
+        }, "Set bucket replication");
+    }
+
+    minio::s3::SetBucketTagsResponse
+    BucketOperation::set_bucket_tags(const std::string &bucketName, const std::map<std::string, std::string> &tags) {
+        return execute_operation([&]() {
+            minio::s3::SetBucketTagsArgs args;
+            args.bucket = bucketName;
+            args.tags = tags;
+            return client.SetBucketTags(args);
+        }, "Set bucket tags");
+    }
+
+    minio::s3::SetBucketVersioningResponse
+    BucketOperation::set_bucket_versioning(const std::string &bucketName, bool status) {
+        return execute_operation([&]() {
+            minio::s3::SetBucketVersioningArgs args;
+            args.bucket = bucketName;
+            args.status = status;
+            return client.SetBucketVersioning(args);
+        }, "Set bucket versioning");
+    }
 }

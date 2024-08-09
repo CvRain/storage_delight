@@ -17,6 +17,7 @@ set(SRC_HEADER
         src/base_operation.cpp
         include/base_operation.hpp
         include/object_operation.hpp
+        include/basic_types.hpp
 )
 
 set(SRC_CPP
