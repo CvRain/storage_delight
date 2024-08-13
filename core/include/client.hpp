@@ -8,6 +8,7 @@
 #include <miniocpp/client.h>
 #include <memory>
 #include <vector>
+#include <mutex>
 #include <map>
 
 #include "bucket_operation.hpp"
@@ -27,8 +28,8 @@ namespace storage_delight::core {
 
     private:
         minio::s3::Client client;
-        std::unique_ptr<BucketOperation> bucket_operation;
-        std::unique_ptr<ObjectOperation> object_operation;
+        std::shared_ptr<BucketOperation> bucket_operation;
+        std::shared_ptr<ObjectOperation> object_operation;
     };
 
     class ClientGroup {
@@ -53,6 +54,7 @@ namespace storage_delight::core {
 
     private:
         std::unordered_map<std::string, std::shared_ptr<Client>> clients = {};
+        mutable std::mutex mutex;
     };
 }
 

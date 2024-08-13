@@ -9,7 +9,11 @@
 namespace storage_delight::core {
     Client::Client(minio::s3::BaseUrl base_url, minio::creds::StaticProvider *provider)
             : client(base_url, provider),
-              bucket_operation(std::make_unique<BucketOperation>(client)) {
+              bucket_operation(std::make_shared<BucketOperation>(client)),
+              object_operation(std::make_shared<ObjectOperation>(client)) {
+        if(!provider){
+            throw std::invalid_argument("Provider cannot be null");
+        }
     }
 
     BucketOperation &Client::getBucketOperation() {
@@ -25,25 +29,27 @@ namespace storage_delight::core {
     }
 
     std::optional<std::shared_ptr<Client>> ClientGroup::get_client(const std::string_view &clientName) {
-        if (const auto result = clients.find(clientName.data()); result == clients.end()) {
-            return std::nullopt;
-        }
-        return clients.at(clientName.data());
+        std::lock_guard<std::mutex> lock(mutex);
+        const auto it = clients.find(clientName.data());
+        return it != clients.end() ? std::make_optional(it->second) : std::nullopt;
     }
 
     std::optional<std::shared_ptr<Client>> ClientGroup::operator[](const std::string_view &clientName) {
         return get_client(clientName);
     }
 
-    void ClientGroup::push_back(std::pair<std::string, std::shared_ptr<Client>>&& client) {
+    void ClientGroup::push_back(std::pair<std::string, std::shared_ptr<Client>> &&client) {
+        std::lock_guard<std::mutex> lock(mutex);
         clients.emplace(std::move(client));
     }
 
     void ClientGroup::push_back(std::string &&clientName, std::shared_ptr<Client> &&client) {
+        std::lock_guard<std::mutex> lock(mutex);
         clients.insert(std::make_pair(std::move(clientName), std::move(client)));
     }
 
     void ClientGroup::clear() {
+        std::lock_guard<std::mutex> lock(mutex);
         clients.clear();
     }
 
@@ -52,6 +58,7 @@ namespace storage_delight::core {
     }
 
     std::vector<std::string> ClientGroup::get_client_names() {
+        std::lock_guard<std::mutex> lock(mutex);
         std::vector<std::string> names;
         names.reserve(clients.size());
 
@@ -63,6 +70,7 @@ namespace storage_delight::core {
     }
 
     void ClientGroup::remove(const std::string_view &clientName) {
+        std::lock_guard<std::mutex> lock(mutex);
         clients.erase(clientName.data());
     }
 }

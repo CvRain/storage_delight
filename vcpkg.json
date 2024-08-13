@@ -4,10 +4,10 @@
   "dependencies": [
     "cpprestsdk",
     "nlohmann-json",
-    {
-      "name": "minio-cpp"
-    },
+    "minio-cpp",
     "spdlog",
+    "sqlite3",
+    "sqlite-orm",
     "zlib",
     {
       "name": "drogon",
@@ -16,7 +16,6 @@
       ]
     },
     "curlpp",
-    "openssl",
-    "yaml-cpp"
+    "openssl"
   ]
 }
