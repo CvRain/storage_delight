@@ -4,20 +4,22 @@
 
 using namespace drogon;
 
-namespace api
-{
-class user : public drogon::HttpController<user>
-{
-  public:
-    METHOD_LIST_BEGIN
-    // use METHOD_ADD to add your custom processing function here;
-    // METHOD_ADD(user::get, "/{2}/{1}", Get); // path is /api/user/{arg2}/{arg1}
-    // METHOD_ADD(user::your_method_name, "/{1}/{2}/list", Get); // path is /api/user/{arg1}/{arg2}/list
-    // ADD_METHOD_TO(user::your_method_name, "/absolute/path/{1}/{2}/list", Get); // path is /absolute/path/{arg1}/{arg2}/list
+namespace api {
+    class User : public drogon::HttpController<User> {
+    public:
+        METHOD_LIST_BEGIN
+            METHOD_ADD(User::add_user, "/add", Post);
+            METHOD_ADD(User::find_user_by_id, "/id", Get);
+            METHOD_ADD(User::find_user_by_name, "/name", Get);
 
-    METHOD_LIST_END
-    // your declaration of processing function maybe like this:
-    // void get(const HttpRequestPtr& req, std::function<void (const HttpResponsePtr &)> &&callback, int p1, std::string p2);
-    // void your_method_name(const HttpRequestPtr& req, std::function<void (const HttpResponsePtr &)> &&callback, double p1, int p2) const;
-};
+        METHOD_LIST_END
+
+        void add_user(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
+
+        void find_user_by_id(const HttpRequestPtr &req,
+                             std::function<void(const HttpResponsePtr &)> &&callback);
+
+        void find_user_by_name(const HttpRequestPtr &req,
+                               std::function<void(const HttpResponsePtr &)> &&callback);
+    };
 }

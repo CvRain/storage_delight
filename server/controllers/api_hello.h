@@ -13,9 +13,9 @@ namespace api {
             METHOD_ADD(Hello::hello, "/hello", Post);
         METHOD_LIST_END
 
-        void say(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
-        void echo(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback, const std::string& message);
-        void hello(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
+        static void say(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
+        static void echo(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback, const std::string& message);
+        static void hello(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
 
     };
 }

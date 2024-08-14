@@ -10,19 +10,19 @@
 
 namespace schema {
     enum UserRole : int {
-        AdminRole = 0,
-        UserRole = 1,
+        TypeAdmin= 0,
+        TypeUser = 1,
     };
 
-    struct BaseUser{
+    struct BaseUser {
         int role;
         std::string user_name;
         std::string password;
     };
 
     struct User {
-        int id;
-        int role;
+        int id = -1;
+        int role = UserRole::TypeUser;
         std::string user_name;
         std::string password;
         std::string create_time;

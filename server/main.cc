@@ -1,23 +1,39 @@
 #include <drogon/drogon.h>
-
-#include "service/sqlite_service.h"
+#include <spdlog/spdlog.h>
+#include <nlohmann/json.hpp>
+#include <fstream>
 
 int main() {
+    spdlog::info("Hello storage delight server!");
 //    auto provider = core::Client::make_provider("uiJ2kXR4V1ceWJPkHNfT", "7KBobqxCWyLQKhARhs6paIsmI4rwx1kx8Zpjghhd");
-//    minio::s3::BaseUrl url{"http://server.cloudvl.cn:10569", false};
-//
-//    auto client = core::Client{url, &provider};
-//
-//    const auto response = client.getBucketOperation().listBuckets();
-//    for (const auto &it: response.buckets) {
-//        std::cout << it.name << std::endl;
-//    }
+//    minio::s3::BaseUrl url{"http://server.cloudvl.cn:10569", false}
+    const std::string setting_path = "config.json";
 
-    SqliteService sqlite_service;
+    //读取【config.json】配置文件
+    std::ifstream config_file(setting_path);
+    if (!config_file.is_open()) {
+        spdlog::error("Failed to open config file: {}", setting_path);
+        return 1;
+    }
+    nlohmann::json config_json;
+    config_file >> config_json;
+
+    if (!config_json.contains("listeners")) {
+        spdlog::error("Failed to find listeners in config file: {}", setting_path);
+    }
+    for (const auto &listener: config_json["listeners"]) {
+        std::string address = listener.value("address", "0.0.0.0");
+        int port = listener.value("port", 80);
+        bool https = listener.value("https", false);
+        spdlog::info("Listening on address: {}, port: {}, {}", address, port, https ? "HTTPS" : "HTTP");
+    }
+
 
     //Set HTTP listener address and port
-    drogon::app().loadConfigFile("config.json");
+    drogon::app().loadConfigFile(setting_path);
+
     drogon::app().run();
+
 
     return 0;
 }

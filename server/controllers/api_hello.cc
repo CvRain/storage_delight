@@ -16,11 +16,12 @@ void Hello::say(const HttpRequestPtr &req, std::function<void(const HttpResponse
 
 void Hello::echo(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback,
                  const std::string &message) {
-    callback(HttpResponse::newHttpJsonResponse(util_delight::BaseResponse{}
-                                                       .set_code(k200OK)
-                                                       .set_message(message)
-                                                       .set_result("Ok")
-                                                       .to_jsoncpp_json()));
+    callback(HttpResponse::newHttpJsonResponse(
+            util_delight::BaseResponse{}
+                    .set_code(k200OK)
+                    .set_message(message)
+                    .set_result("Ok")
+                    .to_jsoncpp_json()));
 }
 
 void Hello::hello(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
@@ -35,9 +36,10 @@ void Hello::hello(const HttpRequestPtr &req, std::function<void(const HttpRespon
     const auto text = parser.getParameter<std::string>("text");
     spdlog::info("text: {}", text);
 
-    callback(HttpResponse::newHttpJsonResponse(util_delight::BaseResponse{}
-                                                       .set_code(k200OK)
-                                                       .set_message(result.getFileName())
-                                                       .set_result("Ok")
-                                                       .to_jsoncpp_json()));
+    callback(HttpResponse::newHttpJsonResponse(
+            util_delight::BaseResponse{}
+                    .set_code(k200OK)
+                    .set_message(result.getFileName())
+                    .set_result("Ok")
+                    .to_jsoncpp_json()));
 }

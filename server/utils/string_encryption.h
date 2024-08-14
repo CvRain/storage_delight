@@ -11,8 +11,29 @@
 #include <iomanip>
 
 namespace util_delight {
+    template<typename Num>
+    concept IsIntegral = std::is_integral_v<Num>
+                         || std::is_same_v<Num, uint8_t>
+                         || std::is_same_v<Num, uint16_t>
+                         || std::is_same_v<Num, uint32_t>
+                         || std::is_same_v<Num, uint64_t>
+                         || std::is_same_v<Num, int8_t>
+                         || std::is_same_v<Num, int16_t>
+                         || std::is_same_v<Num, int32_t>;
+
     class StringEncryption {
     public:
+        template<IsIntegral T>
+        static T to_number(const std::string_view &str) {
+            std::istringstream iss(str.data());
+            T num;
+            iss >> num;
+            if (iss.fail()) {
+                throw std::invalid_argument("Invalid number format");
+            }
+            return num;
+        }
+
         static std::string sha256(const std::string &str) {
             unsigned char hash[SHA256_DIGEST_LENGTH];
             EVP_MD_CTX *ctx = EVP_MD_CTX_new();
