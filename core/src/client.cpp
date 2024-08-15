@@ -4,6 +4,7 @@
 
 #include "client.hpp"
 
+#include <algorithm>
 #include <miniocpp/client.h>
 
 namespace storage_delight::core {
@@ -16,11 +17,13 @@ namespace storage_delight::core {
         }
     }
 
-    BucketOperation &Client::getBucketOperation() {
+    BucketOperation &Client::get_bucket_operation() const
+    {
         return *bucket_operation;
     }
 
-    ObjectOperation &Client::getObjectOperation() {
+    ObjectOperation &Client::get_object_operation() const
+    {
         return *object_operation;
     }
 
@@ -53,7 +56,8 @@ namespace storage_delight::core {
         clients.clear();
     }
 
-    std::size_t ClientGroup::size() {
+    std::size_t ClientGroup::size() const
+    {
         return clients.size();
     }
 
@@ -62,10 +66,10 @@ namespace storage_delight::core {
         std::vector<std::string> names;
         names.reserve(clients.size());
 
-        std::transform(clients.begin(), clients.end(), names.begin(),
-                       [=](const std::pair<std::string, std::shared_ptr<Client>> &it) {
-                           return it.first;
-                       });
+        std::ranges::transform(clients, names.begin(),
+                               [=](const std::pair<std::string, std::shared_ptr<Client>> &it) {
+	                               return it.first;
+                               });
         return names;
     }
 

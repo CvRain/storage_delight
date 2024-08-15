@@ -12,7 +12,7 @@ int main() {
 
     auto client = core::Client{url, &provider};
 
-    const auto response = client.getBucketOperation().listBuckets();
+    const auto response = client.get_bucket_operation().listBuckets();
     for (const auto &it: response.buckets) {
         std::cout << it.name << std::endl;
     }

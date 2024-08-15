@@ -2,12 +2,19 @@
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
 #include <fstream>
+#include <cstdlib>
+
+#include "service/sqlite_service.h"
 
 int main() {
     spdlog::info("Hello storage delight server!");
 //    auto provider = core::Client::make_provider("uiJ2kXR4V1ceWJPkHNfT", "7KBobqxCWyLQKhARhs6paIsmI4rwx1kx8Zpjghhd");
 //    minio::s3::BaseUrl url{"http://server.cloudvl.cn:10569", false}
     const std::string setting_path = "config.json";
+
+    //初始化数据库
+    spdlog::info("Initialize database");
+    SqliteServiceProvider::get_instance().get_sqlite_service();
 
     //读取【config.json】配置文件
     std::ifstream config_file(setting_path);
@@ -24,7 +31,7 @@ int main() {
     for (const auto &listener: config_json["listeners"]) {
         std::string address = listener.value("address", "0.0.0.0");
         int port = listener.value("port", 80);
-        bool https = listener.value("https", false);
+        const bool https = listener.value("https", false);
         spdlog::info("Listening on address: {}, port: {}, {}", address, port, https ? "HTTPS" : "HTTP");
     }
 

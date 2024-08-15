@@ -5,7 +5,7 @@
 using namespace drogon;
 
 namespace api {
-    class User : public drogon::HttpController<User> {
+    class User final : public drogon::HttpController<User> {
     public:
         METHOD_LIST_BEGIN
             METHOD_ADD(User::add_user, "/add", Post);
@@ -14,12 +14,12 @@ namespace api {
 
         METHOD_LIST_END
 
-        void add_user(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
+        static void add_user(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr&)>&& callback);
 
-        void find_user_by_id(const HttpRequestPtr &req,
-                             std::function<void(const HttpResponsePtr &)> &&callback);
+		static void find_user_by_id(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback);
 
-        void find_user_by_name(const HttpRequestPtr &req,
-                               std::function<void(const HttpResponsePtr &)> &&callback);
+		static void find_user_by_name(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback);
+
+        static void get_user(const HttpRequest& request, std::function<void(const HttpResponse&)>&& callback);
     };
 }

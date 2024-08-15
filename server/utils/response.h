@@ -1,54 +1,25 @@
-#ifndef RESPONSE_H
-#define RESPONSE_H
+#pragma once
 
-#include <json/json.h>
-#include <nlohmann/json.hpp>
 #include <string>
-#include <concepts>
-#include <type_traits>
+#include <functional>
+#include <drogon/HttpResponse.h>
 
-namespace util_delight
-{
-    class BaseResponse{
-    public:
-        std::string m_result;
-        std::string m_message;
-        int m_code;
+#include "models/base_response.hpp"
+#include "utils/format.h"
 
-        BaseResponse& set_result(const std::string& result){
-            m_result = result;
-            return *this;
-        }
+namespace util_delight {
+	class PrettyResponse {
+	public:
+		static void send_base_response(const std::string& message, const int code,
+			const std::function<void(const HttpResponsePtr&)>& callback);
+	};
 
-        BaseResponse& set_message(const std::string& message){
-            m_message = message;
-            return *this;
-        }
-
-        BaseResponse& set_code(int code){
-            m_code = code;
-            return *this;
-        }
-
-        virtual nlohmann::json to_nlohmann_json(){
-            return nlohmann::json {
-                {"result", m_result},
-                {"message", m_message},
-                {"code", m_code}
-            };
-        }
-
-        virtual Json::Value to_jsoncpp_json(){
-            Json::Value json;
-            json["result"] = m_result;
-            json["message"] = m_message;
-            json["code"] = m_code;
-            
-            return json;
-        }
-        
-    };
-} // namespace utils
-
-
-#endif
+	inline void PrettyResponse::send_base_response(const std::string& message, const int code,
+		const std::function<void(const HttpResponsePtr&)>& callback) {
+		const auto response = model_delight::BaseResponse{}
+			.set_code(code)
+			.set_message(message)
+			.to_json();
+		callback(HttpResponse::newHttpJsonResponse(util_delight::Format::to_jsoncpp_json(response)));
+	}
+}

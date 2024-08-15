@@ -15,6 +15,7 @@ add_executable(storage_server main.cc)
 # target_link_libraries(storage_server PRIVATE drogon)
 #
 # and comment out the following lines
+find_package(fmt CONFIG REQUIRED)
 find_package(Drogon CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(unofficial-sqlite3 CONFIG REQUIRED)
@@ -25,6 +26,7 @@ target_link_libraries(storage_server PRIVATE storage_delight_core)
 target_link_libraries(storage_server PUBLIC nlohmann_json::nlohmann_json
         unofficial::sqlite3::sqlite3
         sqlite_orm::sqlite_orm
+        fmt::fmt
 )
 
 target_compile_features(storage_server PUBLIC cxx_std_20)

@@ -21,9 +21,9 @@ namespace storage_delight::core {
 
         static minio::creds::StaticProvider make_provider(const std::string &access_key, const std::string &secret_key);
 
-        BucketOperation &getBucketOperation();
+        BucketOperation &get_bucket_operation() const;
 
-        ObjectOperation &getObjectOperation();
+        ObjectOperation &get_object_operation() const;
 
 
     private:
@@ -48,7 +48,7 @@ namespace storage_delight::core {
 
         void clear();
 
-        std::size_t size();
+        std::size_t size() const;
 
         std::vector<std::string> get_client_names();
 
