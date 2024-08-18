@@ -20,6 +20,6 @@ namespace util_delight {
 			.set_code(code)
 			.set_message(message)
 			.to_json();
-		callback(HttpResponse::newHttpJsonResponse(util_delight::Format::to_jsoncpp_json(response)));
+		callback(HttpResponse::newHttpJsonResponse(response));
 	}
 }

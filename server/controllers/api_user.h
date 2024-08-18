@@ -1,6 +1,8 @@
 #pragma once
 
 #include <drogon/HttpController.h>
+#include "models/user_request.hpp"
+#include "models/db_schema.hpp"
 
 using namespace drogon;
 
@@ -9,17 +11,17 @@ namespace api {
     public:
         METHOD_LIST_BEGIN
             METHOD_ADD(User::add_user, "/add", Post);
-            METHOD_ADD(User::find_user_by_id, "/id", Get);
-            METHOD_ADD(User::find_user_by_name, "/name", Get);
+			METHOD_ADD(User::login, "/login", Post);
 
         METHOD_LIST_END
 
-        static void add_user(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr&)>&& callback);
+        static void add_user(const HttpRequestPtr &req,
+                             std::function<void(const HttpResponsePtr &)> &&callback,
+                             schema::BaseUser &&user_request);
 
-		static void find_user_by_id(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback);
-
-		static void find_user_by_name(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback);
-
-        static void get_user(const HttpRequest& request, std::function<void(const HttpResponse&)>&& callback);
+        static void
+        login(const HttpRequestPtr &req,
+              std::function<void(const HttpResponsePtr &)> &&callback,
+              schema::BaseUser &&user_request);
     };
 }

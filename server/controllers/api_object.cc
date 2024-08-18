@@ -12,7 +12,7 @@ void Object::upload(const HttpRequestPtr& req, std::function<void (const HttpRes
             .set_code(513)
             .set_message("file upload failed")
             .set_result("error")
-            .to_json().dump()
+            .to_json()
         );
         callback(response);
         return;
@@ -26,6 +26,6 @@ void Object::upload(const HttpRequestPtr& req, std::function<void (const HttpRes
         .set_code(200)
         .set_message(md5)
         .set_result("Ok")
-        .to_json().dump()
+        .to_json()
     ));
 }

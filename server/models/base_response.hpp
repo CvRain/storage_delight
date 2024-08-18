@@ -1,8 +1,8 @@
 #ifndef RESPONSE_H
 #define RESPONSE_H
 
-#include <nlohmann/json.hpp>
 #include <string>
+#include <json/json.h>
 
 namespace model_delight
 {
@@ -15,9 +15,9 @@ namespace model_delight
 
 		BaseResponse& set_message(const std::string& message);
 
-		BaseResponse& set_code(const int code);
+		BaseResponse& set_code(int code);
 
-		virtual nlohmann::json to_json();
+		virtual Json::Value to_json();
 
 	public:
 		std::string m_result{};

@@ -22,12 +22,12 @@ namespace model_delight{
 		return *this;
 	}
 
-	nlohmann::json BaseResponse::to_json()
+	Json::Value BaseResponse::to_json()
 	{
-		return nlohmann::json{
-			{"result", m_result},
-			{"message", m_message},
-			{"code", m_code}
-		};
+        Json::Value root;
+        root["result"] = m_result;
+        root["message"] = m_message;
+        root["code"] = m_code;
+        return root;
 	}
 }

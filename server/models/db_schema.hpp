@@ -10,14 +10,15 @@
 
 namespace schema {
     enum UserRole : int {
-        TypeAdmin= 0,
+        TypeNone = -1,
+        TypeAdmin = 0,
         TypeUser = 1,
     };
 
     struct BaseUser {
-        int role;
-        std::string user_name;
-        std::string password;
+        UserRole role = UserRole::TypeNone;
+        std::string user_name = "unknown";
+        std::string password = "unknown";
     };
 
     struct User {

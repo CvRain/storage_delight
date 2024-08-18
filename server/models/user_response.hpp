@@ -4,7 +4,6 @@
 #include "db_schema.hpp"
 
 #include <vector>
-#include <nlohmann/json.hpp>
 #include <json/json.h>
 
 namespace model_delight
@@ -16,7 +15,7 @@ namespace model_delight
 
 		UserResponse& add_user(const schema::User& user);
 
-		nlohmann::json to_json() override;
+		Json::Value to_json() override;
 
 	public:
 		std::vector<schema::User> users;

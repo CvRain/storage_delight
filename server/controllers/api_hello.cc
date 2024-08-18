@@ -22,7 +22,7 @@ void Hello::echo(const HttpRequestPtr &req, std::function<void(const HttpRespons
         .set_message(message)
         .set_result("Ok")
         .to_json();
-    callback(HttpResponse::newHttpJsonResponse(util_delight::Format::to_jsoncpp_json(json)));
+    callback(HttpResponse::newHttpJsonResponse(json));
 }
 
 void Hello::hello(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
@@ -41,5 +41,5 @@ void Hello::hello(const HttpRequestPtr &req, std::function<void(const HttpRespon
         .set_result("Ok")
         .to_json();
 
-    callback(HttpResponse::newHttpJsonResponse(util_delight::Format::to_jsoncpp_json(json)));
+    callback(HttpResponse::newHttpJsonResponse(json));
 }
