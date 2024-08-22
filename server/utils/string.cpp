@@ -1,60 +1,14 @@
 //
-// Created by cvrain on 24-8-13.
+// Created by cvrain on 24-8-19.
 //
 
-#ifndef STORAGE_DELIGHT_STRING_ENCRYPTION_H
-#define STORAGE_DELIGHT_STRING_ENCRYPTION_H
-
-#include <openssl/sha.h>
-#include <openssl/evp.h>
-#include <openssl/hmac.h>
-#include <openssl/bio.h>
-#include <openssl/buffer.h>
-#include <chrono>
-#include <ctime>
-#include <iomanip>
-#include <random>
-
-#include "date.h"
+#include "string.hpp"
+#include <vector>
+#include <sstream>
+#include <string>
 
 namespace util_delight {
-    template<typename Num>
-    concept is_integral = std::is_integral_v<Num>
-                          || std::is_same_v<Num, uint8_t>
-                          || std::is_same_v<Num, uint16_t>
-                          || std::is_same_v<Num, uint32_t>
-                          || std::is_same_v<Num, uint64_t>
-                          || std::is_same_v<Num, int8_t>
-                          || std::is_same_v<Num, int16_t>
-                          || std::is_same_v<Num, int32_t>;
-
-    class StringEncryption {
-    public:
-        template<is_integral T>
-        static T to_number(const std::string_view &str) {
-            std::istringstream iss(str.data());
-            T num;
-            iss >> num;
-            if (iss.fail()) {
-                throw std::invalid_argument("Invalid number format");
-            }
-            return num;
-        }
-
-        static std::string sha256(const std::string &str);
-
-        static std::string sha512(const std::string &str);
-
-        static std::string base64_encode(const std::string &in);
-
-        static std::string hmac_sha256(const std::string &data, const std::string &key) ;
-
-        static std::string generate_jwt(const std::string &header, const std::string &payload, const std::string &secret);
-
-        static std::string generate_random_string(size_t length);
-
-        static std::string generate_secret();
-    };
+    std::string StringEncryption::secret_string = "none-secret";
 
     /**
      * @brief 计算SHA-256哈希值
@@ -125,7 +79,8 @@ namespace util_delight {
      * @return : 返回Base64编码后的字符串
      */
     std::string StringEncryption::base64_encode(const std::string &in) {
-        // 定义用于内存操作和Base64编码的生物(BIO)对象
+        ensure_openssl_initialized();
+// 定义用于内存操作和Base64编码的生物(BIO)对象
         BIO *bmem, *b64;
         // 定义缓冲区指针，用于直接访问内存中的数据
         BUF_MEM *bptr;
@@ -212,7 +167,7 @@ namespace util_delight {
      * @param length 字符串长度
      * @return 生成的随机字符串
      */
-    std::string StringEncryption::generate_random_string(size_t length){
+    std::string StringEncryption::generate_random_string(size_t length) {
         // 可选的字符集
         const char charset[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         const size_t max_index = sizeof(charset) - 1;
@@ -235,11 +190,80 @@ namespace util_delight {
      * @brief 生成为jwt提供的密钥，使用6位随机字符加上当前启动的时间戳并转换为sha512
      * @return 生成完毕的密钥
      */
-    std::string StringEncryption::generate_secret(){
+    std::string StringEncryption::generate_secret() {
         const auto current_time = std::to_string(Date::get_current_timestamp_32());
         const auto random_string = generate_random_string(6);
         return StringEncryption::sha512(random_string + current_time);
     }
-}
 
-#endif //STORAGE_DELIGHT_STRING_ENCRYPTION_H
+    /**
+     * @brief Base64解码
+     * @param in 需要解码的Base64字符串
+     * @return 解码后的字符串
+     */
+    std::string StringEncryption::base64_decode(const std::string &in) {
+        ensure_openssl_initialized();
+
+        int len = in.size();
+        int outlen;
+        std::string out;
+
+        // Allocate space for the decoded data.
+        // The maximum length of the decoded data is 3/4 * len.
+        out.resize(len * 3 / 4);
+
+        BIO *bio, *b64;
+        bio = BIO_new_mem_buf(in.data(), -1); // Use -1 to indicate the entire buffer.
+        b64 = BIO_new(BIO_f_base64());
+        bio = BIO_push(b64, bio);
+
+        // Set flags to avoid line breaks.
+        BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
+
+        // Read the decoded data from the BIO.
+        outlen = BIO_read(bio, &out[0], out.size());
+
+        // Resize the output string to the actual size.
+        out.resize(outlen);
+
+        // Free the BIO resources.
+        BIO_free_all(bio);
+
+        return out;
+    }
+
+    schema::Jwt StringEncryption::parse_jwt(const std::string &jwt, const std::string &secret) {
+        //分割JWT字符串
+        std::vector<std::string> parts;
+        std::stringstream ss{jwt};
+        std::string item;
+
+        while (std::getline(ss, item, '.')) {
+            parts.push_back(item);
+        }
+
+        // 确保JWT包含三个部分
+        if (parts.size() != 3) {
+            throw std::invalid_argument("Invalid JWT format");
+        }
+
+        // 解码头部和有效载荷
+        std::string header_json = base64_decode(parts[0]);
+        std::string payload_json = base64_decode(parts[1]);
+
+        // 验证签名
+        std::string data = parts[0] + "." + parts[1];
+        std::string signature = hmac_sha256(data, secret);
+
+        // 检查签名是否匹配
+//        if (signature != parts[2]) {
+//            throw std::invalid_argument("Invalid JWT signature");
+//        }
+
+        return schema::Jwt{
+                .header = nlohmann::json::parse(header_json),
+                .payload = nlohmann::json::parse(payload_json),
+                .secret = secret
+        };
+    }
+}

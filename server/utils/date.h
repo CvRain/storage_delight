@@ -11,9 +11,9 @@
 namespace util_delight {
     class Date {
     public:
-        static int32_t get_current_timestamp_32();
+        static inline int32_t get_current_timestamp_32();
 
-        static int64_t get_current_timestamp_64();
+        static inline int64_t get_current_timestamp_64();
     };
 
     int32_t Date::get_current_timestamp_32() {

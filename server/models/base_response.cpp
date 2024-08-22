@@ -30,4 +30,26 @@ namespace model_delight{
         root["code"] = m_code;
         return root;
 	}
+
+    CommonResponse &CommonResponse::append(std::map<std::string, Json::Value> &&map) {
+        for(const auto& [key, value] : map){
+            json_root[key] = value;
+        };
+        return *this;
+    }
+
+    CommonResponse &CommonResponse::append(Json::Value &&value) {
+        json_root.append(std::move(value));
+        return *this;
+    }
+
+    CommonResponse &CommonResponse::append(std::string &&key, Json::Value &&value) {
+        json_root[key] = std::move(value);
+        return *this;
+    }
+
+    Json::Value CommonResponse::to_json() {
+
+        return json_root;
+    }
 }

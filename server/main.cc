@@ -2,15 +2,21 @@
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
 #include <fstream>
-#include <cstdlib>
 
 #include "service/sqlite_service.h"
+#include "utils/string.hpp"
 
 int main() {
     spdlog::info("Hello storage delight server!");
 //    auto provider = core::Client::make_provider("uiJ2kXR4V1ceWJPkHNfT", "7KBobqxCWyLQKhARhs6paIsmI4rwx1kx8Zpjghhd");
 //    minio::s3::BaseUrl url{"http://server.cloudvl.cn:10569", false}
+
+    //初始化配置文件
     const std::string setting_path = "config.json";
+
+    //初始化访问密钥
+    util_delight::StringEncryption::secret_string = util_delight::StringEncryption::generate_secret();
+    spdlog::info("secret_string: {}", util_delight::StringEncryption::secret_string);
 
     //初始化数据库
     spdlog::info("Initialize database");

@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <json/json.h>
+#include <drogon/HttpResponse.h>
 
 namespace model_delight
 {

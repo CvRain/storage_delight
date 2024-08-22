@@ -3,7 +3,7 @@
 //
 
 #include "sqlite_service.h"
-#include "utils/string.h"
+#include "utils/string.hpp"
 #include "utils/date.h"
 
 SqliteService::SqliteService(const std::string_view &db_path) {
@@ -12,22 +12,21 @@ SqliteService::SqliteService(const std::string_view &db_path) {
 }
 
 bool SqliteService::check_user_exist(const std::string_view &username) {
-    return !get_user_by_username(username).has_value();
+    const auto users = storage_instance->get_all<schema::User>(
+            sqlite_orm::where(sqlite_orm::c(&schema::User::user_name) == username.data())
+    );
+    spdlog::info("SqliteService::check_user_exist: {}-{}", username.data(), users.empty());
+    return !users.empty();
 }
 
 std::optional<schema::User> SqliteService::get_user_by_username(const std::string_view &user_name) {
-    spdlog::info("SqliteService::get_user_by_username: {}", user_name);
-    try {
-        if (const auto users = storage_instance->get_all<schema::User>(
-                    sqlite_orm::where(sqlite_orm::c(&schema::User::user_name) == user_name.data())); !users.empty()) {
-            return users.at(0);
-        }
-    }
-    catch (const std::exception &e) {
-        spdlog::error("SqliteService::get_user_by_username: {}", e.what());
-        return std::nullopt;
-    }
-    return std::nullopt;
+    spdlog::info("Entry SqliteService::get_user_by_username");
+    const auto users = storage_instance->get_all<schema::User>(
+            sqlite_orm::where(
+                    sqlite_orm::c(&schema::User::user_name) == user_name.data()
+            )
+    );
+    return users.empty() ? std::nullopt : std::optional<schema::User>(users.front());
 }
 
 std::optional<schema::User> SqliteService::add_user(const schema::BaseUser &user) {

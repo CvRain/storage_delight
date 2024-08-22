@@ -10,8 +10,6 @@ namespace drogon {
     schema::BaseUser fromRequest(const HttpRequest &request) {
         const auto &json = request.getJsonObject();
 
-        spdlog::warn("{}", schema::BaseUser{}.user_name);
-
         if (!json) {
             spdlog::warn("schema::CommonUser::fromRequest: request body is empty");
             return {};

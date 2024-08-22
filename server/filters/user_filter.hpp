@@ -8,11 +8,17 @@
 #include <drogon/HttpFilter.h>
 #include <drogon/HttpMiddleware.h>
 
-namespace drogon {
 
-    class UserFilter: public HttpMiddleware<UserFilter>{
+namespace drogon::middleware {
+
+    const std::string LoginMiddlewareName = "drogon::middleware::LoginMiddleware";
+    class LoginMiddleware: public HttpMiddleware<LoginMiddleware>{
     public:
-        UserFilter() = default;
+        LoginMiddleware() = default;
+
+        void invoke(const HttpRequestPtr &req,
+                    MiddlewareNextCallback &&nextCb,
+                    MiddlewareCallback &&mcb) override;
     };
 
 } // filter
