@@ -11,7 +11,6 @@ namespace schema{
     struct Jwt{
         nlohmann::json header;
         nlohmann::json payload;
-        const std::string &secret;
     };
 
     struct JwtHeader{

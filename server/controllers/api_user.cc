@@ -117,7 +117,11 @@ void User::login(const HttpRequestPtr& req,
 }
 
 void User::get_user_by_id(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
-
-    spdlog::info("User::get_user_by_id: {}", req->getParameter("user_id"));
-    util_delight::PrettyResponse::send_base_response("Not implemented", k501NotImplemented, callback);
+    spdlog::info("Enter User::get_user_by_id");
+    const auto response = model_delight::CommonResponse()
+            .append("code", k200OK)
+            .append("message", "Get user successfully")
+            .append("func", "get_user_by_id")
+            .to_json();
+    callback(HttpResponse::newHttpJsonResponse(response));
 }

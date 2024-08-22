@@ -232,17 +232,23 @@ namespace util_delight {
         return out;
     }
 
-    schema::Jwt StringEncryption::parse_jwt(const std::string &jwt, const std::string &secret) {
-        //分割JWT字符串
+    /**
+     * @brief 解析JWT令牌
+     * @param jwt 待解析的JWT令牌
+     * @param secret 用于验证签名的密钥
+     * @return 返回解析后的头部和有效载荷的JSON对象
+     * @throw std::invalid_argument 如果JWT格式不正确或签名验证失败
+     */
+    std::optional<schema::Jwt> StringEncryption::parse_jwt(const std::string &jwt, const std::string &secret) {
+        // 分割JWT字符串
         std::vector<std::string> parts;
-        std::stringstream ss{jwt};
+        std::stringstream ss(jwt);
         std::string item;
-
         while (std::getline(ss, item, '.')) {
             parts.push_back(item);
         }
 
-        // 确保JWT包含三个部分
+        // 检查JWT的部分数量
         if (parts.size() != 3) {
             throw std::invalid_argument("Invalid JWT format");
         }
@@ -250,20 +256,30 @@ namespace util_delight {
         // 解码头部和有效载荷
         std::string header_json = base64_decode(parts[0]);
         std::string payload_json = base64_decode(parts[1]);
+        std::string signature = parts[2];
 
         // 验证签名
-        std::string data = parts[0] + "." + parts[1];
-        std::string signature = hmac_sha256(data, secret);
+        std::string expected_signature = hmac_sha256(parts[0] + "." + parts[1], secret);
+        if (expected_signature != signature) {
+            throw std::invalid_argument("Signature verification failed");
+        }
 
-        // 检查签名是否匹配
-//        if (signature != parts[2]) {
-//            throw std::invalid_argument("Invalid JWT signature");
-//        }
+        // 解析JSON
+        nlohmann::json header;
+        nlohmann::json payload;
+
+        try {
+            // 解析头部
+            header = nlohmann::json::parse(header_json);
+            // 解析有效载荷
+            payload = nlohmann::json::parse(payload_json);
+        } catch (const nlohmann::json::parse_error& e) {
+            throw std::invalid_argument("JSON parsing error: " + std::string(e.what()));
+        }
 
         return schema::Jwt{
                 .header = nlohmann::json::parse(header_json),
                 .payload = nlohmann::json::parse(payload_json),
-                .secret = secret
         };
     }
 }

@@ -15,6 +15,7 @@ namespace drogon::middleware {
         auto token = req->getHeader("Authorization");
 
         if (token.empty()) {
+            spdlog::warn("Token is empty");
             const auto response_json = model_delight::BaseResponse{}
                     .set_code(k404NotFound)
                     .set_result("Error")
@@ -24,8 +25,30 @@ namespace drogon::middleware {
             return;
         }
 
-        const auto jwt_token
-                = util_delight::StringEncryption::parse_jwt(token, util_delight::StringEncryption::secret_string);
+        schema::Jwt jwt_token;
+        try {
+            jwt_token = util_delight::StringEncryption::parse_jwt(token,
+                                                                  util_delight::StringEncryption::secret_string).value();
+            spdlog::info("Parse jwt token completed");
+        } catch (const std::invalid_argument &e) {
+            spdlog::warn("JWT parsing failed: {}", e.what());
+            const auto response_json = model_delight::BaseResponse{}
+                    .set_code(k404NotFound)
+                    .set_result("Error")
+                    .set_message(e.what())
+                    .to_json();
+            mcb(HttpResponse::newHttpJsonResponse(response_json));
+            return;
+        } catch (const std::exception &e) {
+            spdlog::error("Unexpected error: {}", e.what());
+            const auto response_json = model_delight::BaseResponse{}
+                    .set_code(k404NotFound)
+                    .set_result("Error")
+                    .set_message("Token is invalid")
+                    .to_json();
+            mcb(HttpResponse::newHttpJsonResponse(response_json));
+            return;
+        }
 
         schema::JwtBody jwt_body;
         jwt_body.header.typ = jwt_token.header.at("typ").get<std::string>();
@@ -36,17 +59,6 @@ namespace drogon::middleware {
                     .set_code(k404NotFound)
                     .set_result("Error")
                     .set_message("Token is invalid")
-                    .to_json();
-            mcb(HttpResponse::newHttpJsonResponse(response_json));
-            return;
-        }
-
-        jwt_body.secret = jwt_token.secret;
-        if (jwt_body.secret != util_delight::StringEncryption::secret_string) {
-            const auto response_json = model_delight::BaseResponse{}
-                    .set_code(k404NotFound)
-                    .set_result("Error")
-                    .set_message("Invalid secret")
                     .to_json();
             mcb(HttpResponse::newHttpJsonResponse(response_json));
             return;
@@ -69,6 +81,7 @@ namespace drogon::middleware {
             mcb(HttpResponse::newHttpJsonResponse(response_json));
             return;
         }
+        spdlog::info("Completion time calibration");
 
         if (jwt_body.payload.iss != "storage_delight" || jwt_body.payload.sub != "login") {
             const auto response_json = model_delight::BaseResponse{}
@@ -94,32 +107,12 @@ namespace drogon::middleware {
             return;
         }
 
-//        mcb(HttpResponse::newHttpJsonResponse(
-//                model_delight::CommonResponse{}
-//                .append("user_id", jwt_body.payload.user_id)
-//                .append("username", sql_user.value().user_name)
-//                .append("iss", jwt_body.payload.iss)
-//                .append("sub", jwt_body.payload.sub)
-//                .append("aud", jwt_body.payload.aud)
-//                .append("iat", jwt_body.payload.iat)
-//                .append("exp", jwt_body.payload.exp)
-//                .to_json()
-//                ));
-
-        nextCb([&,mcb = std::move(mcb)](const HttpResponsePtr &resp) {
-            const auto response_json = model_delight::CommonResponse{}
-                .append("user_id", jwt_body.payload.user_id)
-                .append("username", sql_user.value().user_name)
-                .append("iss", jwt_body.payload.iss)
-                .append("sub", jwt_body.payload.sub)
-                .append("aud", jwt_body.payload.aud)
-                .append("iat", jwt_body.payload.iat)
-                .append("exp", jwt_body.payload.exp)
-                .to_json();
-            mcb(HttpResponse::newHttpJsonResponse(response_json));
-
-            spdlog::info("Exit HttpMiddleware<UserFilter>");
-            return ;
+        // 只在身份验证成功时调用 nextCb
+        nextCb([&, mcb = std::move(mcb)](const HttpResponsePtr &resp) {
+            mcb(resp);
+            spdlog::info("HttpMiddleware<UserFilter> MiddlewareNextCallback");
         });
+
+        spdlog::info("Exit HttpMiddleware<UserFilter>");
     }
 } // filter

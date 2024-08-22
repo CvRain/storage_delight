@@ -69,7 +69,7 @@ namespace util_delight {
 
         static std::string generate_secret();
 
-        static schema::Jwt parse_jwt(const std::string& jwt, const std::string &secret);
+        static std::optional<schema::Jwt> parse_jwt(const std::string& jwt, const std::string &secret);
 
         static std::string secret_string;
     };
