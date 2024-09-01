@@ -2,6 +2,7 @@
 #include "models/base_response.hpp"
 #include <spdlog/spdlog.h>
 #include "models/user_response.hpp"
+#include <nlohmann/json.hpp>
 
 using namespace api;
 
@@ -41,4 +42,9 @@ void Hello::hello(const HttpRequestPtr &req, std::function<void(const HttpRespon
             .to_json();
 
     callback(HttpResponse::newHttpJsonResponse(json));
+}
+
+void Hello::test_json_body(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback,
+                           const model_delight::NlohmannJsonRequestPtr& ptr) {
+    callback(HttpResponse::newHttpJsonResponse(*(req->getJsonObject())));
 }

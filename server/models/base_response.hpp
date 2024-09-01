@@ -3,6 +3,9 @@
 
 #include <string>
 #include <json/json.h>
+#include <nlohmann/json.hpp>
+
+#include <drogon/HttpRequest.h>
 
 namespace model_delight {
     class BaseResponse {

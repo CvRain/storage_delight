@@ -14,7 +14,7 @@ void User::add_user(const HttpRequestPtr &req,
                     std::function<void(const HttpResponsePtr &)> &&callback,
                     schema::BaseUser &&user_request) {
     spdlog::info("User::add_user");
-
+    
     if (user_request.role == schema::UserRole::TypeNone) {
         util_delight::PrettyResponse::send_base_response("response is formatted incorrectly", k400BadRequest, callback);
         return;
