@@ -18,11 +18,14 @@ namespace api {
         METHOD_LIST_END
 
         static void say(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
-        static void echo(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback, const std::string& message);
+
+        static void echo(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback,
+                         const std::string &message);
+
         static void hello(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
-        static void test_json_body(const HttpRequestPtr &req,
-                                   std::function<void(const HttpResponsePtr &)> &&callback,
-                                   const model_delight::NlohmannJsonRequestPtr& ptr);
+
+        static void test_json_body(model_delight::NlohmannJsonRequestPtr &&ptr,
+                                   std::function<void(const HttpResponsePtr &)> &&callback);
 
     };
 }

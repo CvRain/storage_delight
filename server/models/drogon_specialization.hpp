@@ -6,13 +6,8 @@
 
 namespace drogon{
     template<>
-    inline model_delight::NlohmannJsonRequest fromRequest(const HttpRequest& request){
-        return {};
-    }
-
-    template<>
     inline model_delight::NlohmannJsonRequestPtr fromRequest(const HttpRequest& request){
-        return std::make_shared<model_delight::NlohmannJsonRequest>();
+        return std::make_shared<model_delight::NlohmannJsonRequest>(request);
     }
 }
 

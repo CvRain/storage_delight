@@ -6,11 +6,11 @@
 
 using namespace api;
 
-auto Hello::say(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) -> void{
+auto Hello::say(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) -> void {
     const auto json = model_delight::CommonResponse()
-            .append("message","hello world!")
-            .append("result","ok")
-            .append("code",k200OK)
+            .append("message", "hello world!")
+            .append("result", "ok")
+            .append("code", k200OK)
             .to_json();
     callback(HttpResponse::newHttpJsonResponse(json));
 }
@@ -44,7 +44,18 @@ void Hello::hello(const HttpRequestPtr &req, std::function<void(const HttpRespon
     callback(HttpResponse::newHttpJsonResponse(json));
 }
 
-void Hello::test_json_body(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback,
-                           const model_delight::NlohmannJsonRequestPtr& ptr) {
-    callback(HttpResponse::newHttpJsonResponse(*(req->getJsonObject())));
+void Hello::test_json_body(model_delight::NlohmannJsonRequestPtr &&ptr,
+                           std::function<void(const HttpResponsePtr &)> &&callback) {
+    spdlog::info("Enter Hello::test_json_body");
+
+    const auto json_body = ptr->getNlohmannJsonBody();
+    callback(HttpResponse::newHttpJsonResponse(
+            model_delight::CommonResponse{}
+            .append("message", "Hello " + json_body["name"].get<std::string>())
+            .append("result", "ok")
+            .append("code", k200OK)
+            .to_json()
+            ));
+
+    spdlog::info("Exit Hello::test_json_body");
 }
