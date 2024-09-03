@@ -3,6 +3,7 @@
 #include <drogon/HttpController.h>
 
 #include "models/nlohmann_json_request.hpp"
+#include "models/nlohmann_json_response.hpp"
 #include "models/drogon_specialization.hpp"
 
 using namespace drogon;
