@@ -7,7 +7,7 @@ using namespace api;
 void Object::upload(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
     MultiPartParser file_upload;
     if (file_upload.parse(req) != 0 || file_upload.getFiles().size() != 1) {
-        callback(model_delight::HttpResponse::newHttpNlohmannJsonResponse(
+        callback(model_delight::newNlohmannJsonResponse(
                 nlohmann::json{
                         {"code",    400},
                         {"message", "Bad Request"},
@@ -20,11 +20,9 @@ void Object::upload(const HttpRequestPtr &req, std::function<void(const HttpResp
     const auto &file = file_upload.getFiles()[0];
     const auto md5 = file.getMd5();
 
-    callback(model_delight::HttpResponse::newHttpNlohmannJsonResponse(
-            nlohmann::json{
-                    {"code",    200},
-                    {"message", md5},
-                    {"result",  "Ok"}
-            }
-    ));
+    callback(HttpResponse::newCustomHttpResponse<nlohmann::json>(std::move(nlohmann::json{
+            {"code",    200},
+            {"message", "OK"},
+            {"result",  md5}
+    })));
 }

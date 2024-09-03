@@ -12,8 +12,28 @@ namespace drogon{
     }
 
     template<>
-    inline HttpResponsePtr toResponse(nlohmann::json &&value){
-        return model_delight::HttpResponse::newHttpNlohmannJsonResponse(std::move(value));
+    inline HttpResponsePtr toResponse<model_delight::TestResponse>(model_delight::TestResponse &&response){
+        Json::Value value;
+        value["code"] = response.code;
+        value["message"] = response.message;
+        return drogon::HttpResponse::newHttpJsonResponse(value);
+    }
+
+    template<>
+    inline HttpResponsePtr toResponse<nlohmann::json>(nlohmann::json &&value){
+        std::stringstream json_value_stream;
+        json_value_stream << value.dump();
+
+        Json::Value result;
+        Json::CharReaderBuilder builder;
+        std::string errors;
+
+        const auto parsing_success = Json::parseFromStream(builder, json_value_stream, &result, &errors);
+        if (!parsing_success) {
+            spdlog::error("Failed to parse json string {}", errors);
+            throw std::runtime_error("Failed to parse json string " + errors);
+        }
+        return drogon::HttpResponse::newHttpJsonResponse(result);
     }
 }
 

@@ -2,6 +2,9 @@
 #include "models/base_response.hpp"
 #include <spdlog/spdlog.h>
 #include "models/user_response.hpp"
+#include "models/nlohmann_json_request.hpp"
+#include "models/nlohmann_json_response.hpp"
+#include "models/drogon_specialization.hpp"
 
 using namespace api;
 
@@ -16,13 +19,13 @@ auto Hello::say(const HttpRequestPtr &req, std::function<void(const HttpResponse
 
 void Hello::echo(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback,
                  const std::string &message) {
-    callback(model_delight::HttpResponse::newHttpNlohmannJsonResponse(
+    callback(HttpResponse::newCustomHttpResponse(std::move(
             nlohmann::json{
                     {"message", message},
                     {"result",  "ok"},
                     {"code",    k200OK}
             }
-    ));
+    )));
 }
 
 void Hello::hello(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
@@ -35,13 +38,11 @@ void Hello::hello(const HttpRequestPtr &req, std::function<void(const HttpRespon
     const auto text = parser.getParameter<std::string>("text");
     spdlog::info("text: {}", text);
 
-    callback(model_delight::HttpResponse::newHttpNlohmannJsonResponse(
-            nlohmann::json{
-                    {"message", result.getFileName()},
-                    {"result",  "ok"},
-                    {"code",    k200OK}
-            }
-    ));
+    callback(model_delight::newNlohmannJsonResponse(nlohmann::json{
+            {"message", "hello world!"},
+            {"result",  "ok"},
+            {"code",    k200OK}
+    }));
 }
 
 void Hello::test_json_body(model_delight::NlohmannJsonRequestPtr &&ptr,
@@ -52,7 +53,7 @@ void Hello::test_json_body(model_delight::NlohmannJsonRequestPtr &&ptr,
         .code = HttpStatusCode::k200OK,
         .message = "Hello world!"
     };
-    callback(HttpResponse::newCustomHttpResponse(test_response));
+    callback(HttpResponse::newCustomHttpResponse<model_delight::TestResponse>(std::move(test_response)));
 
     spdlog::info("Exit Hello::test_json_body");
 }
