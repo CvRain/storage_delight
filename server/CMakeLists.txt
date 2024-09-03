@@ -49,6 +49,7 @@ set(MODEL_SRC models/base_response.hpp
         models/user_request.hpp
         models/user_response.cpp
         models/user_response.hpp
+        models/nlohmann_json_response.hpp
 )
 
 aux_source_directory(utils UTILS_SRC)

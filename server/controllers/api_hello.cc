@@ -2,7 +2,7 @@
 #include "models/base_response.hpp"
 #include <spdlog/spdlog.h>
 #include "models/user_response.hpp"
-#include <nlohmann/json.hpp>
+#include "models/nlohmann_json_response.hpp"
 
 using namespace api;
 
@@ -49,13 +49,17 @@ void Hello::test_json_body(model_delight::NlohmannJsonRequestPtr &&ptr,
     spdlog::info("Enter Hello::test_json_body");
 
     const auto json_body = ptr->getNlohmannJsonBody();
-    callback(HttpResponse::newHttpJsonResponse(
-            model_delight::CommonResponse{}
-            .append("message", "Hello " + json_body["name"].get<std::string>())
-            .append("result", "ok")
-            .append("code", k200OK)
-            .to_json()
-            ));
-
+//    callback(HttpResponse::newHttpJsonResponse(
+//            model_delight::CommonResponse{}
+//            .append("message", "Hello " + json_body["name"].get<std::string>())
+//            .append("result", "ok")
+//            .append("code", k200OK)
+//            .to_json()
+//            ));
+    callback(model_delight::newHttpNlohmannJsonResponse(nlohmann::json{
+            {"message", "Hello " + json_body["name"].get<std::string>()},
+            {"result", "ok"},
+            {"code", k200OK}
+    }));
     spdlog::info("Exit Hello::test_json_body");
 }
