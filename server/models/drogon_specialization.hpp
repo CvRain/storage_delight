@@ -2,6 +2,8 @@
 #define DROGON_SPECIALIZATION_HPP
 
 #include <drogon/HttpRequest.h>
+#include <spdlog/spdlog.h>
+
 #include "nlohmann_json_request.hpp"
 #include "nlohmann_json_response.hpp"
 
@@ -28,8 +30,7 @@ namespace drogon{
         Json::CharReaderBuilder builder;
         std::string errors;
 
-        const auto parsing_success = Json::parseFromStream(builder, json_value_stream, &result, &errors);
-        if (!parsing_success) {
+        if (Json::parseFromStream(builder, json_value_stream, &result, &errors)) {
             spdlog::error("Failed to parse json string {}", errors);
             throw std::runtime_error("Failed to parse json string " + errors);
         }

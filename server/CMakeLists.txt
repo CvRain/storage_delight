@@ -37,10 +37,8 @@ target_compile_features(storage_server PUBLIC cxx_std_20)
 aux_source_directory(controllers CTL_SRC)
 aux_source_directory(filters FILTER_SRC)
 aux_source_directory(plugins PLUGIN_SRC)
-#aux_source_directory(models MODEL_SRC)
 
-set(MODEL_SRC models/base_response.hpp
-        models/base_response.cpp
+set(MODEL_SRC
         models/db_schema.hpp
         models/drogon_specialization.hpp
         models/nlohmann_json_request.hpp
@@ -50,6 +48,8 @@ set(MODEL_SRC models/base_response.hpp
         models/user_response.cpp
         models/user_response.hpp
         models/nlohmann_json_response.hpp
+        models/http_response.cpp
+        models/http_response.hpp
 )
 
 aux_source_directory(utils UTILS_SRC)

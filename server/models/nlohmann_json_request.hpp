@@ -15,15 +15,15 @@ namespace model_delight {
                 : m_request(request) {
         }
 
-        const drogon::HttpRequest& operator-> (){
+        const drogon::HttpRequest& operator-> () const{
             return m_request;
         }
 
-        const drogon::HttpRequest& getRequest(){
+        [[nodiscard]] const drogon::HttpRequest& getRequest() const{
             return m_request;
         }
 
-        nlohmann::json  getNlohmannJsonBody(){
+        [[nodiscard]] nlohmann::json  getNlohmannJsonBody() const{
             return nlohmann::json::parse(m_request.getBody());
         }
 

@@ -7,19 +7,25 @@
 
 #include <drogon/HttpResponse.h>
 #include <nlohmann/json.hpp>
-#include <json/json.h>
-#include <spdlog/spdlog.h>
+
+#include "http_response.hpp"
 
 namespace model_delight {
-    struct TestResponse{
+    struct TestResponse {
         int code;
         std::string message;
     };
 
-    static drogon::HttpResponsePtr newNlohmannJsonResponse(nlohmann::json &&json)
-    {
-        return drogon::HttpResponse::newCustomHttpResponse<nlohmann::json>(std::move(json));
-    }
 
+    class NlohmannResponse {
+    public:
+        static drogon::HttpResponsePtr new_nlohmann_json_response(nlohmann::json&&json) {
+            return drogon::HttpResponse::newCustomHttpResponse<nlohmann::json>(std::move(json));
+        }
+
+        static drogon::HttpResponsePtr new_common_response(HttpResponse *response) {
+            return response->to_response();
+        }
+    };
 }
 #endif //STORAGE_DELIGHT_NLOHMANN_JSON_RESPONSE_HPP
