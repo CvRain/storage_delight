@@ -1,5 +1,4 @@
 #include "api_object.h"
-#include "models/base_response.hpp"
 #include "models/nlohmann_json_response.hpp"
 
 using namespace api;

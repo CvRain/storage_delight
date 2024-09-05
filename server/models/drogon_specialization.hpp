@@ -16,8 +16,14 @@ namespace drogon{
     template<>
     inline std::shared_ptr<model_delight::TestRequest>
             fromRequest<model_delight::TestRequestPtr>(const HttpRequest& request){
-        model_delight::TestRequestPtr request_ptr = request;
-        return request_ptr;
+        auto ptr = std::make_shared<model_delight::TestRequest>();
+
+        ptr->setMethod(request.method());
+        ptr->setPath(request.path());
+        ptr->setBody(request.body().data());
+        //todo
+
+        return ptr;
     }
 
     template<>

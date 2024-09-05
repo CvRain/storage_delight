@@ -4,7 +4,9 @@
 //
 
 #include "user_filter.hpp"
-#include "models/base_response.hpp"
+
+#include "http_response.hpp"
+#include "nlohmann_json_response.hpp"
 #include "utils/string.hpp"
 #include "models/type.hpp"
 #include "service/sqlite_service.h"
@@ -16,12 +18,11 @@ namespace drogon::middleware {
 
         if (token.empty()) {
             spdlog::warn("Token is empty");
-            const auto response_json = model_delight::BaseResponse{}
+            auto response_json = model_delight::HttpResponse{}
                     .set_code(k404NotFound)
                     .set_result("Error")
-                    .set_message("Token is empty")
-                    .to_json();
-            mcb(HttpResponse::newHttpJsonResponse(response_json));
+                    .set_message("Token is empty");
+            mcb(model_delight::NlohmannResponse::new_common_response(&response_json));
             return;
         }
 
@@ -32,21 +33,19 @@ namespace drogon::middleware {
             spdlog::info("Parse jwt token completed");
         } catch (const std::invalid_argument &e) {
             spdlog::warn("JWT parsing failed: {}", e.what());
-            const auto response_json = model_delight::BaseResponse{}
+            auto response_json = model_delight::HttpResponse{}
                     .set_code(k404NotFound)
                     .set_result("Error")
-                    .set_message(e.what())
-                    .to_json();
-            mcb(HttpResponse::newHttpJsonResponse(response_json));
+                    .set_message(e.what());
+            mcb(model_delight::NlohmannResponse::new_common_response(&response_json));
             return;
         } catch (const std::exception &e) {
             spdlog::error("Unexpected error: {}", e.what());
-            const auto response_json = model_delight::BaseResponse{}
+            auto response_json = model_delight::HttpResponse{}
                     .set_code(k404NotFound)
                     .set_result("Error")
-                    .set_message("Token is invalid")
-                    .to_json();
-            mcb(HttpResponse::newHttpJsonResponse(response_json));
+                    .set_message("Token is invalid");
+            mcb(model_delight::NlohmannResponse::new_common_response(&response_json));
             return;
         }
 
@@ -55,12 +54,11 @@ namespace drogon::middleware {
         jwt_body.header.alg = jwt_token.header.at("alg").get<std::string>();
 
         if (jwt_body.header.typ != "JWT" || jwt_body.header.alg != "HS256") {
-            const auto response_json = model_delight::BaseResponse{}
+            auto response_json = model_delight::HttpResponse{}
                     .set_code(k404NotFound)
                     .set_result("Error")
-                    .set_message("Token is invalid")
-                    .to_json();
-            mcb(HttpResponse::newHttpJsonResponse(response_json));
+                    .set_message("Token is invalid");
+            mcb(model_delight::NlohmannResponse::new_common_response(&response_json));
             return;
         }
 
@@ -73,23 +71,21 @@ namespace drogon::middleware {
 
         const auto current_time = util_delight::Date::get_current_timestamp_32();
         if (current_time - jwt_body.payload.iat > jwt_body.payload.exp) {
-            const auto response_json = model_delight::BaseResponse{}
+            auto response_json = model_delight::HttpResponse{}
                     .set_code(k404NotFound)
                     .set_result("Error")
-                    .set_message("Token is expired")
-                    .to_json();
-            mcb(HttpResponse::newHttpJsonResponse(response_json));
+                    .set_message("Token is expired");
+            mcb(model_delight::NlohmannResponse::new_common_response(&response_json));
             return;
         }
         spdlog::info("Completion time calibration");
 
         if (jwt_body.payload.iss != "storage_delight" || jwt_body.payload.sub != "login") {
-            const auto response_json = model_delight::BaseResponse{}
+            auto response_json = model_delight::HttpResponse{}
                     .set_code(k404NotFound)
                     .set_result("Error")
-                    .set_message("Token is invalid")
-                    .to_json();
-            mcb(HttpResponse::newHttpJsonResponse(response_json));
+                    .set_message("Token is invalid");
+            mcb(model_delight::NlohmannResponse::new_common_response(&response_json));
             return;
         }
 
@@ -98,12 +94,11 @@ namespace drogon::middleware {
                 .get_user_by_id(jwt_body.payload.user_id);
 
         if (!sql_user.has_value() || sql_user.value().id != jwt_body.payload.user_id) {
-            const auto response_json = model_delight::BaseResponse{}
+            auto response_json = model_delight::HttpResponse{}
                     .set_code(k404NotFound)
                     .set_result("Error")
-                    .set_message("User and token are not matched")
-                    .to_json();
-            mcb(HttpResponse::newHttpJsonResponse(response_json));
+                    .set_message("User and token are not matched");
+            mcb(model_delight::NlohmannResponse::new_common_response(&response_json));
             return;
         }
 

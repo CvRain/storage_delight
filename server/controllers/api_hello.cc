@@ -53,3 +53,15 @@ void Hello::test_json_body(model_delight::NlohmannJsonRequestPtr &&ptr,
 
     spdlog::info("Exit Hello::test_json_body");
 }
+
+void Hello::test_request(model_delight::TestRequestPtr &&ptr, std::function<void(const HttpResponsePtr &)> &&callback) {
+    spdlog::info("Enter Hello::test_request");
+
+    //callback(model_delight::NlohmannResponse::new_nlohmann_json_response(ptr->getNlohmannJsonBody()));
+    auto response = std::make_shared<model_delight::HttpResponse>();
+    response->set_result("K200OK")
+            .set_code(HttpStatusCode::k200OK)
+            .set_message("OK");
+    callback(model_delight::NlohmannResponse::new_common_response(response.get()));
+    spdlog::info("Exit Hello::test_request");
+}

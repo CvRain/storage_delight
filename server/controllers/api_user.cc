@@ -4,7 +4,6 @@
 #include "service/sqlite_service.h"
 #include "utils/string.hpp"
 #include "utils/format.h"
-#include "utils/response.h"
 #include "nlohmann_json_response.hpp"
 
 using namespace api;
@@ -69,7 +68,11 @@ void User::add_user(const HttpRequestPtr &req,
         user_response->message = "Add user successfully";
         callback(model_delight::NlohmannResponse::new_common_response(user_response.get()));
     } else {
-        util_delight::PrettyResponse::send_base_response("Failed to create user", k500InternalServerError, callback);
+        callback(model_delight::NlohmannResponse::new_common_response(
+            &model_delight::HttpResponse{}
+            .set_code(k500InternalServerError)
+            .set_message("Internal server error")
+            .set_result("Failed to add user")));
     }
 }
 
@@ -88,7 +91,12 @@ void User::login(const HttpRequestPtr &req,
     spdlog::info("{}", result);
 
     if (!result) {
-        util_delight::PrettyResponse::send_base_response("User does not exist", k400BadRequest, callback);
+        callback(model_delight::NlohmannResponse::new_common_response(
+            &model_delight::HttpResponse{}
+            .set_code(k400BadRequest)
+            .set_message("User does not exist")
+            .set_result("k400BadRequest")));
+
         spdlog::info("User::login failed: User does not exist", user_request.user_name);
         return;
     }
@@ -100,7 +108,11 @@ void User::login(const HttpRequestPtr &req,
 
     //检查密码是否正确
     if (util_delight::StringEncryption::sha256(user_request.password) != user.value().password) {
-        util_delight::PrettyResponse::send_base_response("Password is incorrect", k400BadRequest, callback);
+        callback(model_delight::NlohmannResponse::new_common_response(
+            &model_delight::HttpResponse{}
+            .set_code(k400BadRequest)
+            .set_message("Invalid password")
+            .set_result("k400BadRequest")));
         return;
     }
 
@@ -137,7 +149,11 @@ void User::get_user_by_id(const HttpRequestPtr &req, std::function<void(const Ht
     spdlog::info("Enter User::get_user_by_id");
     const auto required_id = req->getParameter("user_id");
     if (required_id.empty()) {
-        util_delight::PrettyResponse::send_base_response("user_id is required", k400BadRequest, callback);
+        callback(model_delight::NlohmannResponse::new_common_response(
+            &model_delight::HttpResponse{}
+            .set_code(k400BadRequest)
+            .set_message("Invalid user_id")
+            .set_result("k400BadRequest")));
         return;
     }
     const auto user = SqliteServiceProvider::get_instance()
