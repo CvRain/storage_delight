@@ -9,6 +9,16 @@
 #include <drogon/HttpRequest.h>
 
 namespace model_delight {
+    class TestRequest: public drogon::HttpRequest{
+    public:
+        virtual nlohmann::json getNlohmannJsonBody(){
+            const auto str_body = drogon::HttpRequest::getBody();
+            return nlohmann::json::parse(str_body);
+        }
+    };
+
+    using TestRequestPtr = std::shared_ptr<TestRequest>;
+
     class NlohmannJsonRequest{
     public:
         explicit NlohmannJsonRequest(const drogon::HttpRequest &request)

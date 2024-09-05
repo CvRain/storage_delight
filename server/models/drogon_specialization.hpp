@@ -14,6 +14,13 @@ namespace drogon{
     }
 
     template<>
+    inline std::shared_ptr<model_delight::TestRequest>
+            fromRequest<model_delight::TestRequestPtr>(const HttpRequest& request){
+        model_delight::TestRequestPtr request_ptr = request;
+        return request_ptr;
+    }
+
+    template<>
     inline HttpResponsePtr toResponse<model_delight::TestResponse>(model_delight::TestResponse &&response){
         Json::Value value;
         value["code"] = response.code;
