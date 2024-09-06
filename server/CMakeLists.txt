@@ -34,7 +34,21 @@ target_compile_features(storage_server PUBLIC cxx_std_20)
 # ##############################################################################
 
 
-aux_source_directory(controllers CTL_SRC)
+#aux_source_directory(controllers CTL_SRC)
+
+set(CTL_SRC
+        controllers/api_bucket.cc
+        controllers/api_bucket.h
+        controllers/api_hello.cc
+        controllers/api_hello.h
+        controllers/api_object.cc
+        controllers/api_object.h
+        controllers/api_user.cc
+        controllers/api_user.h
+        controllers/api_storage_source.cc
+        controllers/api_storage_source.h)
+
+
 aux_source_directory(filters FILTER_SRC)
 aux_source_directory(plugins PLUGIN_SRC)
 

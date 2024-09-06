@@ -58,3 +58,8 @@ int SqliteService::get_admin_count() {
     );
     return admin_count;
 }
+
+void SqliteService::remove_user(int id) {
+    spdlog::info("SqliteService::remove_user: {}", id);
+    storage_instance->remove<schema::User>(id);
+}

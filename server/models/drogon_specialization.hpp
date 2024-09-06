@@ -7,27 +7,14 @@
 #include "nlohmann_json_request.hpp"
 #include "nlohmann_json_response.hpp"
 
-namespace drogon{
+namespace drogon {
     template<>
-    inline model_delight::NlohmannJsonRequestPtr fromRequest(const HttpRequest& request){
+    inline model_delight::NlohmannJsonRequestPtr fromRequest(const HttpRequest &request) {
         return std::make_shared<model_delight::NlohmannJsonRequest>(request);
     }
 
     template<>
-    inline std::shared_ptr<model_delight::TestRequest>
-            fromRequest<model_delight::TestRequestPtr>(const HttpRequest& request){
-        auto ptr = std::make_shared<model_delight::TestRequest>();
-
-        ptr->setMethod(request.method());
-        ptr->setPath(request.path());
-        ptr->setBody(request.body().data());
-        //todo
-
-        return ptr;
-    }
-
-    template<>
-    inline HttpResponsePtr toResponse<model_delight::TestResponse>(model_delight::TestResponse &&response){
+    inline HttpResponsePtr toResponse<model_delight::TestResponse>(model_delight::TestResponse &&response) {
         Json::Value value;
         value["code"] = response.code;
         value["message"] = response.message;
@@ -35,19 +22,18 @@ namespace drogon{
     }
 
     template<>
-    inline HttpResponsePtr toResponse<nlohmann::json>(nlohmann::json &&value){
-        std::stringstream json_value_stream;
-        json_value_stream << value.dump();
-
-        Json::Value result;
-        Json::CharReaderBuilder builder;
-        std::string errors;
-
-        if (Json::parseFromStream(builder, json_value_stream, &result, &errors)) {
-            spdlog::error("Failed to parse json string {}", errors);
-            throw std::runtime_error("Failed to parse json string " + errors);
+    inline HttpResponsePtr toResponse<nlohmann::json>(nlohmann::json &&value) {
+        Json::Value json_value;
+        if(Json::Reader json_reader; !json_reader.parse(value.dump(), json_value)){
+            spdlog::error("Failed to parse json");
+            return drogon::HttpResponse::newHttpJsonResponse(Json::Value::null);
         }
-        return drogon::HttpResponse::newHttpJsonResponse(result);
+        if(!json_value.isObject()){
+            spdlog::error("Invalid json");
+            return drogon::HttpResponse::newHttpJsonResponse(Json::Value::null);
+        }
+
+        return drogon::HttpResponse::newHttpJsonResponse(json_value);
     }
 }
 

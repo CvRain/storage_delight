@@ -43,6 +43,23 @@ public:
 
 	int get_admin_count();
 
+    void remove_user(int id);
+
+    //todo
+    void add_storage_source(const schema::MinioClient& source);
+
+    //todo
+    void update_storage_source(const schema::MinioClient& source);
+
+    //todo
+    std::optional<schema::MinioClient> get_storage_source_by_id(int id);
+
+    //todo
+    std::vector<schema::MinioClient> get_storage_source_list();
+
+    //todo
+    void remove_storage_source(int id);
+
 private:
 	storage_ptr storage_instance;
 };

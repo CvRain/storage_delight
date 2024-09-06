@@ -48,13 +48,13 @@ void Hello::hello(const HttpRequestPtr &req, std::function<void(const HttpRespon
 void Hello::test_json_body(model_delight::NlohmannJsonRequestPtr &&ptr,
                            std::function<void(const HttpResponsePtr &)> &&callback) {
     spdlog::info("Enter Hello::test_json_body");
-
+    spdlog::info("{}", ptr->getNlohmannJsonBody().dump());
     callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(ptr->getNlohmannJsonBody())));
 
     spdlog::info("Exit Hello::test_json_body");
 }
 
-void Hello::test_request(model_delight::TestRequestPtr &&ptr, std::function<void(const HttpResponsePtr &)> &&callback) {
+void Hello::test_request(model_delight::NlohmannJsonRequestPtr &&ptr, std::function<void(const HttpResponsePtr &)> &&callback) {
     spdlog::info("Enter Hello::test_request");
 
     //callback(model_delight::NlohmannResponse::new_nlohmann_json_response(ptr->getNlohmannJsonBody()));
