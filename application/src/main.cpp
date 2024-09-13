@@ -1,5 +1,6 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QUrl>
 
 int main(int argc, char *argv[])
 {
@@ -12,7 +13,9 @@ int main(int argc, char *argv[])
         &app,
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
-    engine.loadFromModule("storage_delight_compass", "Main");
+
+    const QUrl app_entry_path{QString{"qrc:/ui/Main.qml"}};
+    engine.load(app_entry_path);
 
     return app.exec();
 }
