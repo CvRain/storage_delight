@@ -23,7 +23,8 @@ set(SRC_UI ui/Main.qml
     ui/Theme/CatppuccinFrappe.qml
     ui/Theme/CatppuccinLatte.qml
     ui/Theme/CatppuccinMacchiato.qml
-    ui/Theme/CatppuccinMocha.qml)
+    ui/Theme/CatppuccinMocha.qml
+    ui/Theme/ThemeProvider.qml)
 
 qt_add_executable(appstorage_delight_compass
         ${SRC_CPP}
@@ -35,6 +36,7 @@ qt_add_qml_module(appstorage_delight_compass
         QML_FILES ${SRC_UI}
         VERSION 1.0
         RESOURCES ${RES_QML}
+        RESOURCES qmldir
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

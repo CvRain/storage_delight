@@ -6,5 +6,6 @@
         <file>Theme/CatppuccinLatte.qml</file>
         <file>Theme/CatppuccinMacchiato.qml</file>
         <file>Theme/CatppuccinMocha.qml</file>
+        <file>Theme/ThemeProvider.qml</file>
     </qresource>
 </RCC>
