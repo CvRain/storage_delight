@@ -10,7 +10,7 @@
         "CMAKE_CXX_COMPILER": "/usr/bin/g++",
         "CMAKE_C_COMPILER": "/usr/bin/gcc",
         "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake",
-        "CMAKE_PREFIX_PATH:/usr/bin"
+        "CMAKE_PREFIX_PATH":"/usr"
       }
     },
     {

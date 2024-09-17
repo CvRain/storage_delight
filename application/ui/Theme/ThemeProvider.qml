@@ -1,6 +1,6 @@
 pragma Singleton
-import QtQuick
+ import QtQuick
 
 QtObject{
-
+    property string selectedTheme: "CatppuccinLatte"
 }

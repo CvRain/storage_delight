@@ -14,7 +14,12 @@ find_package(cpprestsdk CONFIG REQUIRED)
 
 qt_standard_project_setup(REQUIRES 6.5)
 
-set(SRC_CPP src/main.cpp)
+include_directories(src)
+
+set(SRC_CPP src/main.cpp
+        src/schema/theme.hpp
+        src/theme_provider.cpp
+        src/theme_provider.hpp)
 
 set(RES_QML ui/src_ui.qrc)
 
@@ -24,20 +29,23 @@ set(SRC_UI ui/Main.qml
     ui/Theme/CatppuccinLatte.qml
     ui/Theme/CatppuccinMacchiato.qml
     ui/Theme/CatppuccinMocha.qml
-    ui/Theme/ThemeProvider.qml)
+)
+
+set(SRC_SINGLETON_QML ui/Theme/ThemeProvider.qml)
 
 qt_add_executable(appstorage_delight_compass
         ${SRC_CPP}
         ${RES_QML}
 )
 
+set_source_files_properties(${SRC_SINGLETON_QML} PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
+
 qt_add_qml_module(appstorage_delight_compass
         URI storage_delight_compass
-        QML_FILES ${SRC_UI}
+        QML_FILES ${SRC_UI} ${SRC_SINGLETON_QML}
         VERSION 1.0
-        RESOURCES ${RES_QML}
-        RESOURCES qmldir
-)
+        RESOURCES ${RES_QML} res/resource.qrc
+    )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
