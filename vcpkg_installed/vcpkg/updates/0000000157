@@ -1,0 +1,6 @@
+Package: drogon
+Feature: ctl
+Architecture: x64-linux
+Multi-Arch: same
+Description: Build drogon_ctl tool.
+Status: install ok half-installed

@@ -1,0 +1,7 @@
+Package: cpprestsdk
+Feature: compression
+Depends: zlib
+Architecture: x64-linux
+Multi-Arch: same
+Description: HTTP Compression support
+Status: install ok installed

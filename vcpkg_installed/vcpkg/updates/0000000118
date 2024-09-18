@@ -1,0 +1,9 @@
+Package: boost-scope
+Version: 1.85.0
+Port-Version: 1
+Depends: boost-assert, boost-cmake, boost-config, boost-core, boost-headers, boost-type-traits
+Architecture: x64-linux
+Multi-Arch: same
+Abi: 521ecea7a1e306df02039368f5bd310dbd675c20c2362622156aeed561002636
+Description: Boost scope module
+Status: install ok half-installed

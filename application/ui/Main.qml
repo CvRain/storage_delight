@@ -9,9 +9,5 @@ Window {
     height: 480
     visible: true
     title: qsTr("Hello World")
-    color: "#eff1f5"
-
-    Component.onCompleted: {
-        mainWindow.color = ThemeProvider.color_peach()
-    }
+    color: ThemeProvider.color_base()
 }

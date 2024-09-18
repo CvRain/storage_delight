@@ -1,0 +1,11 @@
+Package: cpprestsdk
+Version: 2.10.19
+Port-Version: 1
+Depends: boost-asio, boost-chrono, boost-date-time, boost-filesystem, boost-random, boost-regex, boost-system, boost-thread, openssl, vcpkg-cmake, vcpkg-cmake-config
+Architecture: x64-linux
+Multi-Arch: same
+Abi: 8b3abcf68d4336418442daf116c36063f2ba2458b67a9629d3861d62d867f75d
+Description: C++11 JSON, REST, and OAuth library
+    The C++ REST SDK is a Microsoft project for cloud-based client-server communication in native code using a modern asynchronous C++ API design. This project aims to help C++ developers connect to and interact with services.
+Default-Features: compression
+Status: install ok installed

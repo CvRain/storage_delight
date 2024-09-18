@@ -1,0 +1,9 @@
+Package: boost-filesystem
+Version: 1.85.0
+Port-Version: 2
+Depends: boost-assert, boost-atomic, boost-cmake, boost-config, boost-container-hash, boost-core, boost-detail, boost-headers, boost-io, boost-iterator, boost-predef, boost-scope, boost-smart-ptr, boost-system, boost-type-traits, boost-winapi
+Architecture: x64-linux
+Multi-Arch: same
+Abi: ca41bf6ba620ed81025e8d2dbdb075127a5f538e3582b5a6e684973b66fcbe61
+Description: Boost filesystem module
+Status: install ok installed

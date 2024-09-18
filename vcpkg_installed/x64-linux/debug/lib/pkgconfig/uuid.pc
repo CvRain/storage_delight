@@ -1,0 +1,12 @@
+prefix=${pcfiledir}/../..
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/../include
+
+Name: uuid
+Description: Universally unique id library
+Version: 1.0.3
+
+Libs: "-L${libdir}" -luuid
+Requires: 
+Cflags: "-I${includedir}/uuid"

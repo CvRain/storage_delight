@@ -1,0 +1,13 @@
+x64-linux/
+x64-linux/include/
+x64-linux/include/sqlite_orm/
+x64-linux/include/sqlite_orm/sqlite_orm.h
+x64-linux/share/
+x64-linux/share/SqliteOrm/
+x64-linux/share/SqliteOrm/SqliteOrmConfig.cmake
+x64-linux/share/SqliteOrm/SqliteOrmConfigVersion.cmake
+x64-linux/share/SqliteOrm/SqliteOrmTargets.cmake
+x64-linux/share/sqlite-orm/
+x64-linux/share/sqlite-orm/copyright
+x64-linux/share/sqlite-orm/vcpkg.spdx.json
+x64-linux/share/sqlite-orm/vcpkg_abi_info.txt

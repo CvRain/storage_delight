@@ -12,6 +12,10 @@ find_package(Qt6 6.5 REQUIRED COMPONENTS Quick)
 find_package(spdlog CONFIG REQUIRED)
 find_package(cpprestsdk CONFIG REQUIRED)
 
+if(Win32)
+    find_package(fmt CONFIG REQUIRED)
+endif ()
+
 qt_standard_project_setup(REQUIRES 6.5)
 
 include_directories(src)
@@ -21,21 +25,15 @@ set(SRC_CPP src/main.cpp
         src/theme_provider.cpp
         src/theme_provider.hpp)
 
-set(RES_QML ui/src_ui.qrc)
-
 set(SRC_UI ui/Main.qml
     ui/Layout/Login.qml
-    ui/Theme/CatppuccinFrappe.qml
-    ui/Theme/CatppuccinLatte.qml
-    ui/Theme/CatppuccinMacchiato.qml
-    ui/Theme/CatppuccinMocha.qml
 )
 
 set(SRC_SINGLETON_QML ui/Theme/ThemeProvider.qml)
 
 qt_add_executable(appstorage_delight_compass
         ${SRC_CPP}
-        ${RES_QML}
+        res/resource.qrc
 )
 
 set_source_files_properties(${SRC_SINGLETON_QML} PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
@@ -44,7 +42,7 @@ qt_add_qml_module(appstorage_delight_compass
         URI storage_delight_compass
         QML_FILES ${SRC_UI} ${SRC_SINGLETON_QML}
         VERSION 1.0
-        RESOURCES ${RES_QML} res/resource.qrc
+        RESOURCES res/resource.qrc
     )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -60,9 +58,24 @@ set_target_properties(appstorage_delight_compass PROPERTIES
 
 target_link_libraries(appstorage_delight_compass
         PUBLIC Qt6::Quick
-        cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_openssl_internal
         spdlog::spdlog
 )
+
+if(UNIX)
+    target_link_libraries(appstorage_delight_compass PUBLIC
+            cpprestsdk::cpprest
+            cpprestsdk::cpprestsdk_zlib_internal
+            cpprestsdk::cpprestsdk_boost_internal
+            cpprestsdk::cpprestsdk_openssl_internal
+    )
+elseif (Win32)
+    target_link_libraries(appstorage_delight_compass PUBLIC
+            fmt::fmt
+            cpprestsdk::cpprest
+            cpprestsdk::cpprestsdk_zlib_internal
+            cpprestsdk::cpprestsdk_brotli_internal
+    )
+endif ()
 
 target_compile_features(appstorage_delight_compass PUBLIC cxx_std_20)
 

@@ -1,0 +1,9 @@
+Package: boost-variant2
+Version: 1.85.0
+Port-Version: 2
+Depends: boost-assert, boost-cmake, boost-config, boost-headers, boost-mp11
+Architecture: x64-linux
+Multi-Arch: same
+Abi: 203b13824ba44d0dc44629b43bb2fee17e94ab4c3fc27f1503aa42efb4fd39f1
+Description: Boost variant2 module
+Status: install ok installed
