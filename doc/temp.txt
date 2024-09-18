@@ -1,8 +1,0 @@
-用户请求登录 --> 服务器验证凭证 --> 生成Token --> 返回Token给用户
-       |
-       v
-用户请求其他API --> 中间件检查Token --> Token有效 --> 继续处理请求
-       |
-       v
-Token无效 --> 返回401 Unauthorized
-

@@ -1,8 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>theme/CatppuccinFrappe.json</file>
-        <file>theme/CatppuccinLatte.json</file>
-        <file>theme/CatppuccinMacchiato.json</file>
-        <file>theme/CatppuccinMocha.json</file>
-    </qresource>
-</RCC>

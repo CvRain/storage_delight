@@ -1,24 +1,24 @@
-CMakeLists.txt.user
-CMakeLists.txt.user.*
-CMakeCache.txt
-CMakeFiles
-CMakeScripts
-Testing
-Makefile
-cmake_install.cmake
-install_manifest.txt
-compile_commands.json
-CTestTestfile.cmake
-_deps
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-build
-cmake-build-*
+node_modules
+dist
+dist-ssr
+*.local
 
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
 .idea
-.vscode
-.vs
-.cmake
-
-vcpkg_installed
-
-Folder.DotSettings.user
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
