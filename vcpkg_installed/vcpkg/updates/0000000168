@@ -1,9 +1,0 @@
-Package: inih
-Version: 58
-Depends: vcpkg-tool-meson
-Architecture: x64-linux
-Multi-Arch: same
-Abi: f9cb6e38f637957a18a223601c330004c7bbc6e96b3060487aed5b39df98a56c
-Description: Simple .INI file parser
-Default-Features: cpp
-Status: install ok half-installed

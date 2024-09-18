@@ -9,5 +9,5 @@ Window {
     height: 480
     visible: true
     title: qsTr("Hello World")
-    color: ThemeProvider.color_base()
+    color: ThemeProvider.get_current_theme().base
 }

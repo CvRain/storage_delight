@@ -1,9 +1,0 @@
-Package: boost-describe
-Version: 1.85.0
-Port-Version: 2
-Depends: boost-cmake, boost-config, boost-headers, boost-mp11
-Architecture: x64-linux
-Multi-Arch: same
-Abi: 27c88ee116032cf26738fa36028e42f616e39cf4b90e53219227c29dd82909c8
-Description: Boost describe module
-Status: install ok half-installed

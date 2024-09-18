@@ -1,9 +1,0 @@
-Package: boost-exception
-Version: 1.85.0
-Port-Version: 1
-Depends: boost-assert, boost-cmake, boost-config, boost-core, boost-headers, boost-smart-ptr, boost-throw-exception, boost-tuple, boost-type-traits
-Architecture: x64-linux
-Multi-Arch: same
-Abi: 8db2806ab6649489af4aedbf67617b329013f16a72fee685aea5018a0c68a78e
-Description: Boost exception module
-Status: install ok half-installed

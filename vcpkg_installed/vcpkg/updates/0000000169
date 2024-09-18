@@ -1,6 +1,0 @@
-Package: inih
-Feature: cpp
-Architecture: x64-linux
-Multi-Arch: same
-Description: Build the C++ library
-Status: install ok half-installed

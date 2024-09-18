@@ -1,6 +1,0 @@
-Package: sqlite3
-Feature: json1
-Architecture: x64-linux
-Multi-Arch: same
-Description: Enable JSON functionality for sqlite3
-Status: install ok half-installed

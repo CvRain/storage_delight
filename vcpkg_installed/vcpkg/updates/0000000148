@@ -1,8 +1,0 @@
-Package: trantor
-Version: 1.5.20
-Depends: c-ares, openssl, vcpkg-cmake, vcpkg-cmake-config
-Architecture: x64-linux
-Multi-Arch: same
-Abi: ba002dd7e71bb78bc55cd171ebf843616d16a7e0728dd40947b54d59c2f07fb7
-Description: A non-blocking I/O cross-platform TCP network library, using C++14
-Status: install ok half-installed

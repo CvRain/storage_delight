@@ -29,8 +29,6 @@ set(SRC_UI ui/Main.qml
     ui/Layout/Login.qml
 )
 
-set(SRC_SINGLETON_QML ui/Theme/ThemeProvider.qml)
-
 qt_add_executable(appstorage_delight_compass
         ${SRC_CPP}
         res/resource.qrc

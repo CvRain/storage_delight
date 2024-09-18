@@ -18,3 +18,7 @@ cmake-build-*
 .vscode
 .vs
 .cmake
+
+vcpkg_installed
+
+Folder.DotSettings.user

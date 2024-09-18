@@ -16,7 +16,7 @@ ThemeProvider* ThemeProvider::create(QQmlEngine *engine, QJSEngine *scriptEngine
 
 void ThemeProvider::load_theme(const QString &theme_path) {
     const auto load_result = Theme::load_theme_from_json(theme_path);
-    if (load_result.base == QString{} || load_result.base.isEmpty()) {
+    if (load_result.base == QString{}) {
         qDebug() << "load_theme_from_json failed";
         return;
     }
@@ -26,12 +26,4 @@ void ThemeProvider::load_theme(const QString &theme_path) {
 
 Theme::CatppuccinThemes ThemeProvider::get_current_theme() {
     return current_theme;
-}
-
-QString ThemeProvider::color_base() const {
-    return current_theme.base;
-}
-
-QString ThemeProvider::color_peach() const {
-    return current_theme.peach;
 }

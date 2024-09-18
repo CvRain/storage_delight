@@ -1,9 +1,0 @@
-Package: sqlite3
-Version: 3.46.1
-Depends: vcpkg-cmake, vcpkg-cmake-config
-Architecture: x64-linux
-Multi-Arch: same
-Abi: 1fcab3adc0c5b17ce1955ed368bd37e8ebd6211b4a37165de0a6877a0d598883
-Description: SQLite is a software library that implements a self-contained, serverless, zero-configuration, transactional SQL database engine.
-Default-Features: json1
-Status: install ok installed

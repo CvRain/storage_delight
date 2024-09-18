@@ -1,9 +1,0 @@
-Package: boost-chrono
-Version: 1.85.0
-Port-Version: 1
-Depends: boost-assert, boost-cmake, boost-config, boost-core, boost-headers, boost-integer, boost-move, boost-mpl, boost-predef, boost-ratio, boost-static-assert, boost-system, boost-throw-exception, boost-type-traits, boost-typeof, boost-utility, boost-winapi
-Architecture: x64-linux
-Multi-Arch: same
-Abi: 8c01ffbe6b5fa7ec171c08185d1d2c2c3a90275994db0e79eae4544815778617
-Description: Boost chrono module
-Status: install ok installed

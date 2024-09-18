@@ -17,6 +17,7 @@ class ThemeProvider : public QObject {
     QML_ELEMENT
 
 public:
+    Q_PROPERTY(Theme::CatppuccinThemes current_theme READ get_current_theme NOTIFY theme_selected);
 
     explicit ThemeProvider(QObject *parent = nullptr);
 
@@ -25,13 +26,9 @@ public:
     Q_INVOKABLE void load_theme(const QString &theme_path);
 
     Q_INVOKABLE Theme::CatppuccinThemes get_current_theme();
-
-    Q_INVOKABLE [[nodiscard]] QString color_base() const;
-
-    Q_INVOKABLE [[nodiscard]] QString color_peach() const;
-
 signals:
     void theme_changed();
+    void theme_selected();
 
 private:
     Theme::CatppuccinThemes current_theme;

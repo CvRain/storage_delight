@@ -82,32 +82,32 @@ namespace Theme {
             return *this;
         }
 
-        QString rosewater{};
-        QString flagingo{};
-        QString pink{};
-        QString mauve{};
-        QString red{};
-        QString maroon{};
-        QString peach{};
-        QString yellow{};
-        QString green{};
-        QString teal{};
-        QString sky{};
-        QString sapphire{};
-        QString blue{};
-        QString lavender{};
-        QString text{};
-        QString subtext1{};
-        QString subtext0{};
-        QString overlay2{};
-        QString overlay1{};
-        QString overlay0{};
-        QString surface2{};
-        QString surface1{};
-        QString surface0{};
-        QString base{};
-        QString mantle{};
-        QString crust{};
+        QColor rosewater{};
+        QColor flagingo{};
+        QColor pink{};
+        QColor mauve{};
+        QColor red{};
+        QColor maroon{};
+        QColor peach{};
+        QColor yellow{};
+        QColor green{};
+        QColor teal{};
+        QColor sky{};
+        QColor sapphire{};
+        QColor blue{};
+        QColor lavender{};
+        QColor text{};
+        QColor subtext1{};
+        QColor subtext0{};
+        QColor overlay2{};
+        QColor overlay1{};
+        QColor overlay0{};
+        QColor surface2{};
+        QColor surface1{};
+        QColor surface0{};
+        QColor base{};
+        QColor mantle{};
+        QColor crust{};
     };
 
     inline QString read_file(const QString &url) {
