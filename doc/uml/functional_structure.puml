@@ -1,0 +1,78 @@
+@startuml 功能结构图
+
+left to right direction
+
+[对象存储服务] as server
+[存储源管理员] as sourceManager
+[桶管理员] as bucketManager
+[用户组管理员] as groupManager
+[普通用户] as user
+
+server --> sourceManager
+server --> bucketManager
+server --> groupManager
+server --> user
+
+Rectangle 数据源添加 as addSource
+Rectangle 数据源删除 as deleteSource
+Rectangle 数据源修改 as modifySource
+Rectangle 数据源查询 as querySource
+Rectangle 数据源状态修改 as modifySourceStatus
+Rectangle 数据源状态查询 as querySourceStatus
+
+sourceManager ---> addSource
+sourceManager ---> deleteSource
+sourceManager ---> modifySource
+sourceManager ---> querySource
+sourceManager ---> modifySourceStatus
+sourceManager ---> querySourceStatus
+
+Rectangle 桶添加 as addBucket
+Rectangle 桶删除 as deleteBucket
+Rectangle 桶修改 as modifyBucket
+Rectangle 桶查询 as queryBucket
+Rectangle 桶权限配置 as configBucketPermission
+
+bucketManager ---> addBucket
+bucketManager ---> deleteBucket
+bucketManager ---> modifyBucket
+bucketManager ---> queryBucket
+bucketManager ---> configBucketPermission
+
+Rectangle 用户组添加 as addGroup
+Rectangle 用户组删除 as deleteGroup
+Rectangle 用户组修改 as modifyGroup
+Rectangle 用户组查询 as queryGroup
+Rectangle 用户组权限配置 as configGroupPermission
+Rectangle 用户组用户添加 as addGroupUser
+Rectangle 用户组用户删除 as deleteGroupUser
+Rectangle 用户组用户查询 as queryGroupUser
+
+groupManager ---> addGroup
+groupManager ---> deleteGroup
+groupManager ---> modifyGroup
+groupManager ---> queryGroup
+groupManager ---> configGroupPermission
+groupManager ---> addGroupUser
+groupManager ---> deleteGroupUser
+groupManager ---> queryGroupUser
+
+Rectangle 访问数据源 as accessSource
+Rectangle 访问桶 as accessBucket
+Rectangle 访问文件 as accessFile
+Rectangle 文件上传 as uploadFile
+Rectangle 文件下载 as downloadFile
+Rectangle 文件删除 as deleteFile
+Rectangle 生成直链 as generateLink
+Rectangle 撤销直连 as revokeLink
+
+user ---> accessSource
+user ---> accessBucket
+user ---> accessFile
+user ---> uploadFile
+user ---> downloadFile
+user ---> deleteFile
+user ---> generateLink
+user ---> revokeLink
+
+@enduml
