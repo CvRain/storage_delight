@@ -26,8 +26,10 @@ public:
     Q_INVOKABLE void load_theme(const QString &theme_path);
 
     Q_INVOKABLE Theme::CatppuccinThemes get_current_theme();
+
 signals:
     void theme_changed();
+
     void theme_selected();
 
 private:

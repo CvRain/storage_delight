@@ -1,6 +1,7 @@
 #include "api_hello.h"
 
 #include <spdlog/spdlog.h>
+#include "utils/date.h"
 #include "models/user_response.hpp"
 #include "models/drogon_specialization.hpp"
 
@@ -10,7 +11,7 @@ auto Hello::say(const HttpRequestPtr &req, std::function<void(const HttpResponse
     callback(model_delight::NlohmannResponse::new_common_response(
         &model_delight::HttpResponse{}
         .set_code(k200OK)
-        .set_message("Hello world!")
+        .set_message(std::to_string(util_delight::Date::get_current_timestamp_32()))
         .set_result("ok")
     ));
 }

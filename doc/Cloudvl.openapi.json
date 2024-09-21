@@ -1,0 +1,554 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Cloudvl",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "tags": [],
+  "paths": {
+    "/api/hello/say": {
+      "get": {
+        "summary": "hello::say",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "result": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "result"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "成功示例",
+                    "value": {
+                      "code": 200,
+                      "message": "1726932354",
+                      "result": "ok"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/hello/echo": {
+      "get": {
+        "summary": "hello::echo",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "message",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "{% mock 'name' %}",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "result": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "result"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "成功示例",
+                    "value": {
+                      "code": 200,
+                      "message": "Jeffrey Hall",
+                      "result": "ok"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/hello/hello": {
+      "post": {
+        "summary": "hello::hello",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "example": "123",
+                    "type": "string"
+                  },
+                  "file": {
+                    "example": "file:///home/cvrain/图片/209_1710921879_hd.jpeg",
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "text",
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/hello/test_json_body": {
+      "post": {
+        "summary": "hello::test_json_body",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "id",
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "result": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "result"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/hello/test_request": {
+      "post": {
+        "summary": "hello::test_requets",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/user/add": {
+      "post": {
+        "summary": "user::add",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "user_name": {
+                    "type": "string"
+                  },
+                  "user_password": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "user_name",
+                  "user_password",
+                  "role"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "result": {
+                      "type": "string"
+                    },
+                    "users": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "create_time": {
+                            "type": "string"
+                          },
+                          "id": {
+                            "type": "integer"
+                          },
+                          "password": {
+                            "type": "string"
+                          },
+                          "role": {
+                            "type": "integer"
+                          },
+                          "user_name": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "result",
+                    "users"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/user/id/": {
+      "get": {
+        "summary": "user::find_by_id",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/user/login": {
+      "post": {
+        "summary": "user::login",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "token": {
+                      "type": "string"
+                    },
+                    "user_id": {
+                      "type": "integer"
+                    },
+                    "user_name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "token",
+                    "user_id",
+                    "user_name"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "成功示例",
+                    "value": {
+                      "code": 200,
+                      "message": "Login successfully",
+                      "token": "ewoJImFsZyIgOiAiSFMyNTYiLAoJInR5cCIgOiAiSldUIgp9Cg==.ewoJImF1ZCIgOiAwLAoJImV4cCIgOiAxNzI0MzM2Mjc0LAoJImlhdCIgOiAxNzI0MzMyNjc0LAoJImlzcyIgOiAic3RvcmFnZV9kZWxpZ2h0IiwKCSJzdWIiIDogImxvZ2luIiwKCSJ1c2VyX2lkIiA6IDIKfQo=.ZDJiYzkxMzZmZWRmYTdiZWZjNTg5MjNlNjA5OWVmOGYyODdjZjk4NzIzYmQzYzJkMWI4ZWFhYzI3Njk3OTYyOA==",
+                      "user_id": 2,
+                      "user_name": "cvrain"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Pet": {
+        "required": [
+          "name",
+          "photoUrls",
+          "id",
+          "category",
+          "tags",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 5000,
+            "description": "宠物ID编号"
+          },
+          "category": {
+            "$ref": "#/components/schemas/Category",
+            "description": "分组"
+          },
+          "name": {
+            "type": "string",
+            "description": "名称",
+            "examples": [
+              "doggie"
+            ]
+          },
+          "photoUrls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "照片URL"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            },
+            "description": "标签"
+          },
+          "status": {
+            "type": "string",
+            "description": "宠物销售状态",
+            "enum": [
+              "available",
+              "pending",
+              "sold"
+            ]
+          }
+        }
+      },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "description": "分组ID编号"
+          },
+          "name": {
+            "type": "string",
+            "description": "分组名称"
+          }
+        },
+        "xml": {
+          "name": "Category"
+        }
+      },
+      "Tag": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "description": "标签ID编号"
+          },
+          "name": {
+            "type": "string",
+            "description": "标签名称"
+          }
+        },
+        "xml": {
+          "name": "Tag"
+        }
+      }
+    },
+    "securitySchemes": {}
+  },
+  "servers": []
+}
