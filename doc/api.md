@@ -43,12 +43,12 @@ POST /api/user/add
 
 ### 请求参数
 
-|名称|位置|类型|必选|说明|
-|---|---|---|---|---|
-|body|body|object| 否 |none|
-|» user_name|body|string| 是 |none|
-|» user_password|body|string| 是 |none|
-|» role|body|integer| 是 |none|
+| 名称              | 位置   | 类型      | 必选 | 说明   |
+|-----------------|------|---------|----|------|
+| body            | body | object  | 否  | none |
+| » user_name     | body | string  | 是  | none |
+| » user_password | body | string  | 是  | none |
+| » role          | body | integer | 是  | none |
 
 > 返回示例
 
@@ -73,25 +73,25 @@ POST /api/user/add
 
 ### 返回结果
 
-|状态码|状态码含义|说明|数据模型|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|none|Inline|
+| 状态码 | 状态码含义                                                   | 说明   | 数据模型   |
+|-----|---------------------------------------------------------|------|--------|
+| 200 | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1) | none | Inline |
 
 ### 返回数据结构
 
 状态码 **200**
 
-|名称|类型|必选|约束|中文名|说明|
-|---|---|---|---|---|---|
-|» code|integer|true|none||none|
-|» message|string|true|none||none|
-|» result|string|true|none||none|
-|» users|[object]|true|none||none|
-|»» create_time|string|false|none||none|
-|»» id|integer|false|none||none|
-|»» password|string|false|none||none|
-|»» role|integer|false|none||none|
-|»» user_name|string|false|none||none|
+| 名称             | 类型       | 必选    | 约束   | 中文名 | 说明   |
+|----------------|----------|-------|------|-----|------|
+| » code         | integer  | true  | none |     | none |
+| » message      | string   | true  | none |     | none |
+| » result       | string   | true  | none |     | none |
+| » users        | [object] | true  | none |     | none |
+| »» create_time | string   | false | none |     | none |
+| »» id          | integer  | false | none |     | none |
+| »» password    | string   | false | none |     | none |
+| »» role        | integer  | false | none |     | none |
+| »» user_name   | string   | false | none |     | none |
 
 ## GET user::find_by_id
 
@@ -99,10 +99,10 @@ GET /api/user/id/
 
 ### 请求参数
 
-|名称|位置|类型|必选|说明|
-|---|---|---|---|---|
-|user_id|query|string| 是 |none|
-|Authorization|header|string| 否 |none|
+| 名称            | 位置     | 类型     | 必选 | 说明   |
+|---------------|--------|--------|----|------|
+| user_id       | query  | string | 是  | none |
+| Authorization | header | string | 否  | none |
 
 > 返回示例
 
@@ -114,9 +114,9 @@ GET /api/user/id/
 
 ### 返回结果
 
-|状态码|状态码含义|说明|数据模型|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|none|Inline|
+| 状态码 | 状态码含义                                                   | 说明   | 数据模型   |
+|-----|---------------------------------------------------------|------|--------|
+| 200 | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1) | none | Inline |
 
 ### 返回数据结构
 
@@ -132,9 +132,9 @@ POST /api/user/login
 
 ### 请求参数
 
-|名称|位置|类型|必选|说明|
-|---|---|---|---|---|
-|body|body|object| 否 |none|
+| 名称   | 位置   | 类型     | 必选 | 说明   |
+|------|------|--------|----|------|
+| body | body | object | 否  | none |
 
 > 返回示例
 
@@ -150,21 +150,21 @@ POST /api/user/login
 
 ### 返回结果
 
-|状态码|状态码含义|说明|数据模型|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|none|Inline|
+| 状态码 | 状态码含义                                                   | 说明   | 数据模型   |
+|-----|---------------------------------------------------------|------|--------|
+| 200 | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1) | none | Inline |
 
 ### 返回数据结构
 
 状态码 **200**
 
-|名称|类型|必选|约束|中文名|说明|
-|---|---|---|---|---|---|
-|» code|integer|true|none||none|
-|» message|string|true|none||none|
-|» token|string|true|none||none|
-|» user_id|integer|true|none||none|
-|» user_name|string|true|none||none|
+| 名称          | 类型      | 必选   | 约束   | 中文名 | 说明   |
+|-------------|---------|------|------|-----|------|
+| » code      | integer | true | none |     | none |
+| » message   | string  | true | none |     | none |
+| » token     | string  | true | none |     | none |
+| » user_id   | integer | true | none |     | none |
+| » user_name | string  | true | none |     | none |
 
 # storage_delight/test
 
@@ -184,19 +184,19 @@ GET /api/hello/say
 
 ### 返回结果
 
-|状态码|状态码含义|说明|数据模型|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|none|Inline|
+| 状态码 | 状态码含义                                                   | 说明   | 数据模型   |
+|-----|---------------------------------------------------------|------|--------|
+| 200 | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1) | none | Inline |
 
 ### 返回数据结构
 
 状态码 **200**
 
-|名称|类型|必选|约束|中文名|说明|
-|---|---|---|---|---|---|
-|» code|integer|true|none||none|
-|» message|string|true|none||none|
-|» result|string|true|none||none|
+| 名称        | 类型      | 必选   | 约束   | 中文名 | 说明   |
+|-----------|---------|------|------|-----|------|
+| » code    | integer | true | none |     | none |
+| » message | string  | true | none |     | none |
+| » result  | string  | true | none |     | none |
 
 ## GET hello::echo
 
@@ -204,9 +204,9 @@ GET /api/hello/echo
 
 ### 请求参数
 
-|名称|位置|类型|必选|说明|
-|---|---|---|---|---|
-|message|query|string| 否 |none|
+| 名称      | 位置    | 类型     | 必选 | 说明   |
+|---------|-------|--------|----|------|
+| message | query | string | 否  | none |
 
 > 返回示例
 
@@ -220,19 +220,19 @@ GET /api/hello/echo
 
 ### 返回结果
 
-|状态码|状态码含义|说明|数据模型|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|none|Inline|
+| 状态码 | 状态码含义                                                   | 说明   | 数据模型   |
+|-----|---------------------------------------------------------|------|--------|
+| 200 | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1) | none | Inline |
 
 ### 返回数据结构
 
 状态码 **200**
 
-|名称|类型|必选|约束|中文名|说明|
-|---|---|---|---|---|---|
-|» code|integer|true|none||none|
-|» message|string|true|none||none|
-|» result|string|true|none||none|
+| 名称        | 类型      | 必选   | 约束   | 中文名 | 说明   |
+|-----------|---------|------|------|-----|------|
+| » code    | integer | true | none |     | none |
+| » message | string  | true | none |     | none |
+| » result  | string  | true | none |     | none |
 
 ## POST hello::hello
 
@@ -248,11 +248,11 @@ file: file:///home/cvrain/图片/209_1710921879_hd.jpeg
 
 ### 请求参数
 
-|名称|位置|类型|必选|说明|
-|---|---|---|---|---|
-|body|body|object| 否 |none|
-|» text|body|string| 是 |none|
-|» file|body|string(binary)| 是 |none|
+| 名称     | 位置   | 类型             | 必选 | 说明   |
+|--------|------|----------------|----|------|
+| body   | body | object         | 否  | none |
+| » text | body | string         | 是  | none |
+| » file | body | string(binary) | 是  | none |
 
 > 返回示例
 
@@ -264,9 +264,9 @@ file: file:///home/cvrain/图片/209_1710921879_hd.jpeg
 
 ### 返回结果
 
-|状态码|状态码含义|说明|数据模型|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|none|Inline|
+| 状态码 | 状态码含义                                                   | 说明   | 数据模型   |
+|-----|---------------------------------------------------------|------|--------|
+| 200 | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1) | none | Inline |
 
 ### 返回数据结构
 
@@ -286,12 +286,12 @@ POST /api/hello/test_json_body
 
 ### 请求参数
 
-|名称|位置|类型|必选|说明|
-|---|---|---|---|---|
-|body|body|object| 否 |none|
-|» name|body|string| 是 |none|
-|» id|body|string| 是 |none|
-|» email|body|string| 是 |none|
+| 名称      | 位置   | 类型     | 必选 | 说明   |
+|---------|------|--------|----|------|
+| body    | body | object | 否  | none |
+| » name  | body | string | 是  | none |
+| » id    | body | string | 是  | none |
+| » email | body | string | 是  | none |
 
 > 返回示例
 
@@ -307,19 +307,19 @@ POST /api/hello/test_json_body
 
 ### 返回结果
 
-|状态码|状态码含义|说明|数据模型|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|none|Inline|
+| 状态码 | 状态码含义                                                   | 说明   | 数据模型   |
+|-----|---------------------------------------------------------|------|--------|
+| 200 | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1) | none | Inline |
 
 ### 返回数据结构
 
 状态码 **200**
 
-|名称|类型|必选|约束|中文名|说明|
-|---|---|---|---|---|---|
-|» code|integer|true|none||none|
-|» message|string|true|none||none|
-|» result|string|true|none||none|
+| 名称        | 类型      | 必选   | 约束   | 中文名 | 说明   |
+|-----------|---------|------|------|-----|------|
+| » code    | integer | true | none |     | none |
+| » message | string  | true | none |     | none |
+| » result  | string  | true | none |     | none |
 
 ## POST hello::test_requets
 
@@ -335,9 +335,9 @@ POST /api/hello/test_request
 
 ### 返回结果
 
-|状态码|状态码含义|说明|数据模型|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|none|Inline|
+| 状态码 | 状态码含义                                                   | 说明   | 数据模型   |
+|-----|---------------------------------------------------------|------|--------|
+| 200 | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1) | none | Inline |
 
 ### 返回数据结构
 
