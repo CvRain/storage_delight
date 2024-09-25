@@ -32,7 +32,7 @@ namespace schema{
         int aud;
         int exp;
         int iat;
-        int user_id;
+        std::string user_id;
     };
 
     // 定义JwtBody结构体，用于表示构成Jwt的完整信息

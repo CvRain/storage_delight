@@ -131,20 +131,22 @@ Storage Delight适用于个人用户、中小型企业以及开发团队。
 ## 参考文献
 1. **Byna S, Breitenfeld MS, Dong B et al.** ExaHDF5: Delivering efficient parallel I/O on exascale computing sy stems. *JOUR-NAL OF COMPUTER SCIENCE AND TECHNOLOGY* 35(1): 145–160 Jan. 2020. DOI 10.1007/s11390-020-9822-9s
 
-2. **Ji Wang, Xiao-Dong Ma, Wei Dong, Hou-Feng Xu, Wan-Wei Liu.** Demand-Driven Memory Leak Detection Based on Flow- and Context-Sensitive Pointer Analysis[J].*Journal of Computer Science and Technology*, 2009, 24(2): 347-356.
+2. **Mohan R K, Kanmani R R S, Ganesan K A, et al. Evaluating NoSQL Databases for OLAP Workloads**: A Benchmarking Study of MongoDB, Redis, Kudu and ArangoDB[J]. arXiv preprint arXiv:2405.17731, 2024.
 
 3. **Ji Wang, Xiao-Dong Ma, Wei Dong, Hou-Feng Xu, Wan-Wei Liu.** Demand-Driven Memory Leak Detection Based on Flow- and Context-Sensitive Pointer Analysis[J].* Journal of Computer Science and Technology, 2009*, 24(2): 347-356.
 
-4. **Tian WH, Xu MX, Zhou GY et al**. Prepartition: Load balancing approach for virtual machine reservations in a cloud data center.*JOURNAL OF COMPUTER SCIENCE AND TECHNOLOGY 38(4)*: 773−792 July 2023. DOI:  10.1007/s11390-022-1214-x.
+4. **Hassan M.** Choosing the Right Communication Protocol for your Web Application[J]. arXiv preprint arXiv:2409.07360, 2024.
 
-5. 于斌, 陆旭, 田聪, 段振华, 张南. 面向SQLite3数据库API调用序列的并行运行时验证方法. 软件学报, 2022, 33(8): 2755-2768. http://www.jos.org.cn/1000-9825/6596.htm
+5. **Tian WH, Xu MX, Zhou GY et al**. Prepartition: Load balancing approach for virtual machine reservations in a cloud data center.*JOURNAL OF COMPUTER SCIENCE AND TECHNOLOGY 38(4)*: 773−792 July 2023. DOI:  10.1007/s11390-022-1214-x.
 
-6. 马郓, 刘譞哲, 梅宏. 面向移动Web应用的浏览器缓存性能度量与优化. 软件学报, 2020, 31(7): 1980-1996. http://www.jos.org.cn/1000-9825/5971.htm
+6. 于斌, 陆旭, 田聪, 段振华, 张南. 面向SQLite3数据库API调用序列的并行运行时验证方法. 软件学报, 2022, 33(8): 2755-2768. http://www.jos.org.cn/1000-9825/6596.htm
+
+7. 马郓, 刘譞哲, 梅宏. 面向移动Web应用的浏览器缓存性能度量与优化. 软件学报, 2020, 31(7): 1980-1996. http://www.jos.org.cn/1000-9825/5971.htm
    
-7. 赵樱, 谭锦豪, 李国强. 基于基本并行进程的异步通信程序的验证方法. 软件学报, 2022, 33(8): 2782-2796. http://www.jos.org.cn/1000-9825/6598.htm
+8. 赵樱, 谭锦豪, 李国强. 基于基本并行进程的异步通信程序的验证方法. 软件学报, 2022, 33(8): 2782-2796. http://www.jos.org.cn/1000-9825/6598.htm
 
-8. 赵泓尧, 赵展浩, 杨皖晴, 卢卫, 李海翔, 杜小勇. 内存数据库并发控制算法的实验研究. 软件学报, 2022, 33(3): 867-890. http://www.jos.org.cn/1000-9825/6454.htm
+9. 赵泓尧, 赵展浩, 杨皖晴, 卢卫, 李海翔, 杜小勇. 内存数据库并发控制算法的实验研究. 软件学报, 2022, 33(3): 867-890. http://www.jos.org.cn/1000-9825/6454.htm
 
-9. 危剑豪, 夏烨峰, 宫学庆. 多查询共享技术研究综述. 软件学报, 2021, 32(10): 3176-3202. http://www.jos.org.cn/1000-9825/6203.htm
+10. 危剑豪, 夏烨峰, 宫学庆. 多查询共享技术研究综述. 软件学报, 2021, 32(10): 3176-3202. http://www.jos.org.cn/1000-9825/6203.htm
     
-10. 陈翔, 杨光, 崔展齐, 孟国柱, 王赞. 代码注释自动生成方法综述. 软件学报, 2021, 32(7): 2118-2141. http://www.jos.org.cn/1000-9825/6258.htm
+11. 陈翔, 杨光, 崔展齐, 孟国柱, 王赞. 代码注释自动生成方法综述. 软件学报, 2021, 32(7): 2118-2141. http://www.jos.org.cn/1000-9825/6258.htm

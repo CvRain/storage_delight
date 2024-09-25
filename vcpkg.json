@@ -17,6 +17,8 @@
     },
     "curlpp",
     "openssl",
-    "fmt"
+    "fmt",
+    "mongo-c-driver",
+    "mongo-cxx-driver"
   ]
 }

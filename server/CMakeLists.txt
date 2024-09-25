@@ -6,35 +6,7 @@ include(CheckIncludeFileCXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(storage_server main.cc)
-
 # ##############################################################################
-# If you include the drogon source code locally in your project, use this method
-# to add drogon 
-# add_subdirectory(drogon) 
-# target_link_libraries(storage_server PRIVATE drogon)
-#
-# and comment out the following lines
-find_package(fmt CONFIG REQUIRED)
-find_package(Drogon CONFIG REQUIRED)
-find_package(nlohmann_json CONFIG REQUIRED)
-find_package(unofficial-sqlite3 CONFIG REQUIRED)
-find_package(SqliteOrm CONFIG REQUIRED)
-
-target_link_libraries(storage_server PRIVATE Drogon::Drogon)
-target_link_libraries(storage_server PRIVATE storage_delight_core)
-target_link_libraries(storage_server PUBLIC nlohmann_json::nlohmann_json
-        unofficial::sqlite3::sqlite3
-        sqlite_orm::sqlite_orm
-        fmt::fmt
-)
-
-target_compile_features(storage_server PUBLIC cxx_std_20)
-
-# ##############################################################################
-
-
-#aux_source_directory(controllers CTL_SRC)
 
 set(CTL_SRC
         controllers/api_bucket.cc
@@ -49,7 +21,10 @@ set(CTL_SRC
         controllers/api_storage_source.h)
 
 
-aux_source_directory(filters FILTER_SRC)
+set(FILTER_SRC
+        filters/user_filter.hpp
+        filters/user_filter.cpp
+)
 aux_source_directory(plugins PLUGIN_SRC)
 
 set(MODEL_SRC
@@ -64,20 +39,71 @@ set(MODEL_SRC
         models/nlohmann_json_response.hpp
         models/http_response.cpp
         models/http_response.hpp
+        models/schema_format.cpp
+        models/schema_format.hpp
+        models/schema_key.hpp
+        models/basic_value.hpp
 )
 
-aux_source_directory(utils UTILS_SRC)
-aux_source_directory(service SERVICE_SRC)
+set(UTILS_SRC
+        utils/date.h
+        utils/format.h
+        utils/string.hpp
+        utils/string.cpp
+        utils/singleton_prototype.hpp
+)
+
+set(SERVICE_SRC
+        service/mongo_service.cpp
+        service/mongo_service.hpp
+        service/logger.cpp
+        service/logger.hpp
+        service/user_service.cpp
+        service/user_service.hpp
+)
+
+add_executable(storage_server
+        main.cc
+        ${CTL_SRC}
+        ${FILTER_SRC}
+        ${PLUGIN_SRC}
+        ${MODEL_SRC}
+        ${UTILS_SRC}
+        ${SERVICE_SRC}
+)
+
+# ##############################################################################
+# If you include the drogon source code locally in your project, use this method
+# to add drogon 
+# add_subdirectory(drogon) 
+# target_link_libraries(storage_server PRIVATE drogon)
+#
+# and comment out the following lines
+find_package(fmt CONFIG REQUIRED)
+find_package(Drogon CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
+find_package(unofficial-sqlite3 CONFIG REQUIRED)
+find_package(SqliteOrm CONFIG REQUIRED)
+find_package(mongoc-1.0 CONFIG REQUIRED)
+find_package(bsoncxx CONFIG REQUIRED)
+find_package(mongocxx CONFIG REQUIRED)
+
+target_link_libraries(storage_server PRIVATE Drogon::Drogon)
+target_link_libraries(storage_server PRIVATE storage_delight_core)
+target_link_libraries(storage_server PUBLIC nlohmann_json::nlohmann_json
+        unofficial::sqlite3::sqlite3
+        sqlite_orm::sqlite_orm
+        fmt::fmt
+        $<IF:$<TARGET_EXISTS:mongo::mongoc_shared>,mongo::mongoc_shared,mongo::mongoc_static>
+        $<IF:$<TARGET_EXISTS:mongo::bsoncxx_static>,mongo::bsoncxx_static,mongo::bsoncxx_shared>
+        $<IF:$<TARGET_EXISTS:mongo::mongocxx_static>,mongo::mongocxx_static,mongo::mongocxx_shared>
+)
+
+target_compile_features(storage_server PUBLIC cxx_std_20)
+
 
 drogon_create_views(storage_server ${CMAKE_CURRENT_SOURCE_DIR}/views
         ${CMAKE_CURRENT_BINARY_DIR})
-# use the following line to create views with namespaces.
-# drogon_create_views(storage_server ${CMAKE_CURRENT_SOURCE_DIR}/views
-#                     ${CMAKE_CURRENT_BINARY_DIR} TRUE)
-# use the following line to create views with namespace CHANGE_ME prefixed
-# and path namespaces.
-# drogon_create_views(storage_server ${CMAKE_CURRENT_SOURCE_DIR}/views
-#                     ${CMAKE_CURRENT_BINARY_DIR} TRUE CHANGE_ME)
 
 target_include_directories(storage_server
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
