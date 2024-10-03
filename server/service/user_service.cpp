@@ -15,28 +15,11 @@ namespace service_delight {
         user_collection = MongoService::get_instance().get_collection("user");
     }
 
-    schema::User UserService::add_user(const schema::BaseUser &user) {
+    schema::DbUser UserService::add_user(const schema::DbUser &user) {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::add_user");
 
         auto create_time = std::to_string(util_delight::Date::get_current_timestamp_32());
-        const auto doc_value = make_document(kvp("user_name", user.user_name),
-                                             kvp("password", util_delight::StringEncryption::sha256(user.password)),
-                                             kvp("role", user.role), kvp("create_time", create_time));
 
-        const auto result = user_collection.insert_one(doc_value.view());
-
-        if (!result) {
-            Logger::get_instance().log(ConsoleLogger, "UserService::add_user failed");
-            return schema::User{};
-        }
-        const auto object_id = result->inserted_id().get_oid().value;
-        Logger::get_instance().log(ConsoleLogger | BasicLogger, "UserService::add_user {}", object_id.to_string());
-
-        return schema::User{.id = object_id.to_string(),
-                            .role = user.role,
-                            .user_name = user.user_name,
-                            .password = user.password,
-                            .create_time = std::move(create_time)};
     }
 
     bool UserService::user_is_exist(const std::string &user_name) {

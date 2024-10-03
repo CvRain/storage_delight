@@ -29,6 +29,7 @@ int main() {
 
     // 初始化配置文件
     const std::string setting_path = "config.json";
+    std::cout << &setting_path << std::endl;
     if (!std::filesystem::exists(setting_path)) {
         service_delight::Logger::get_instance().log(service_delight::ConsoleLogger, spdlog::level::err,
                                                     "Config file not found: {}", setting_path);

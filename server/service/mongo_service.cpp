@@ -22,12 +22,20 @@ namespace service_delight {
 
         const auto db_name = json_root.at("db_name").get<std::string>();
         client = mongocxx::client{url};
-        database = client[db_name];
+        database = client.database(db_name);
 
-        const auto collection_name = database.list_collection_names();
-        for (const auto& name : collection_name) {
-            Logger::get_instance().log(BasicLogger | ConsoleLogger | DailyLogger,
-                                       "Load MongoDB collection: {}", name);
+        try {
+            const auto collection_name = database.list_collection_names();
+            if(collection_name.empty()) {
+                return;
+            }
+            for (const auto& name : collection_name) {
+                Logger::get_instance().log(BasicLogger | ConsoleLogger | DailyLogger,
+                                           "Load MongoDB collection: {}", name);
+            }
+        }catch(const std::exception& e) {
+            Logger::get_instance().log(BasicLogger | DailyLogger,spdlog::level::err,
+                "Failed to load MongoDB collection: {}", e.what());
         }
     }
 

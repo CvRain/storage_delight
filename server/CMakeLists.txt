@@ -43,6 +43,7 @@ set(MODEL_SRC
         models/schema_format.hpp
         models/schema_key.hpp
         models/basic_value.hpp
+        models/db_schema.cpp
 )
 
 set(UTILS_SRC
@@ -88,9 +89,16 @@ find_package(mongoc-1.0 CONFIG REQUIRED)
 find_package(bsoncxx CONFIG REQUIRED)
 find_package(mongocxx CONFIG REQUIRED)
 
+if(Win32)
+    #include_directories(${LIBMONGOCXX_INCLUDE_DIR})
+    #include_directories(${LIBBSONCXX_INCLUDE_DIR})
+    #set(nlohmann-json_IMPLICIT_CONVERSIONS OFF)
+endif ()
+
 target_link_libraries(storage_server PRIVATE Drogon::Drogon)
 target_link_libraries(storage_server PRIVATE storage_delight_core)
-target_link_libraries(storage_server PUBLIC nlohmann_json::nlohmann_json
+target_link_libraries(storage_server PUBLIC 
+        nlohmann_json::nlohmann_json
         unofficial::sqlite3::sqlite3
         sqlite_orm::sqlite_orm
         fmt::fmt

@@ -6,19 +6,18 @@
 #define STORAGE_DELIGHT_DB_SCHEMA_HPP
 
 #include <string>
-#include <utility>
 #include <map>
-#include "schema_key.hpp"
+#include <vector>
+#include <bsoncxx/builder/basic/document.hpp>
+
+#include "utils/date.h"
+#include "utils/format.h"
 
 namespace schema {
     enum UserRole : int {
         TypeNone = -1,
         TypeAdmin = 0,
         TypeUser = 1,
-        TypeSourceAdmin,
-        TypeBucketAdmin,
-        TypeGroupAdmin,
-        TypeRoleMax
     };
 
     struct BaseUser {
@@ -35,7 +34,6 @@ namespace schema {
         std::string create_time;
     };
 
-
     struct MinioClient {
         int id;
         bool is_http;
@@ -46,27 +44,48 @@ namespace schema {
         std::string create_time;
     };
 
-    struct DbUser {
-        std::string id;
+    class MongoDocument {
+    public:
+        MongoDocument() {
+            id = bsoncxx::oid{}.to_string();
+            create_time = util_delight::Date::get_current_timestamp_32();
+        };
+        virtual ~MongoDocument() = default;
+
+        std::string id{};
+        int32_t create_time{};
+
+        virtual bsoncxx::document::view get_document() = 0;
+    };
+
+    class DbUser final : public MongoDocument {
+    public:
+        bsoncxx::document::view get_document() override;
+
         std::string name;
         std::string password;
         std::string group_id;
-        uint32_t create_time;
-        uint32_t update_time;
+        int32_t role = UserRole::TypeUser;
+        int32_t update_time;
     };
 
-    struct DbBucket {
-        std::string id;
+    class DbBucket final : public MongoDocument {
+    public:
+        bsoncxx::document::view get_document() override;
+
         std::string data_source;
         std::string bucket_name;
         std::string group_id;
-        std::string permission;
+        std::string permission_id;
         std::vector<std::string> tags;
-        uint32_t create_time;
-        uint32_t update_time;
+        int32_t update_time;
+
     };
 
-    struct DbDataSource {
+    class DbDataSource final : public MongoDocument {
+    public:
+        bsoncxx::document::view get_document() override;
+
         std::string id;
         std::string name;
         std::string url;
@@ -75,21 +94,28 @@ namespace schema {
         std::string create_time;
     };
 
-    struct  DbGroup {
+    class DbGroup final : public MongoDocument {
+    public:
+        bsoncxx::document::view get_document() override;
+
         std::string id;
         std::string name;
         std::string owner_id;
         std::vector<std::string> members_id;
         std::vector<std::string> bucket_group_id;
-        uint32_t create_time;
-        uint32_t update_time;
+        int32_t create_time;
+        int32_t update_time;
     };
 
     /**
      * @param allow_actions: key: action name, value: user id
-     * e.g. "read":["0001","0002","0003"]
+     * e.g. "allow_read":["0001","0002","0003"]
      */
-    struct DbPermission {
+    class DbPermission final : public MongoDocument {
+    public:
+        bsoncxx::document::view get_document() override;
+
+
         std::string id;
         std::string bucket_id;
         std::string name;
@@ -99,13 +125,16 @@ namespace schema {
         std::string update_time;
     };
 
-    struct DbOperationLog {
+    class DbOperationLog final : public MongoDocument {
+    public:
+        bsoncxx::document::view get_document() override;
+
         std::string id;
         std::string user_id;
         std::string action;
         std::string bucket_name;
         std::string object_name;
-        uint32_t timestamp;
+        int32_t timestamp;
         std::string previous_state;
         std::string current_state;
         std::string description;

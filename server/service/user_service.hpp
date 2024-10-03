@@ -15,7 +15,7 @@ namespace service_delight {
     class UserService : public util_delight::Singleton<UserService> {
     public:
         void init();
-        schema::User add_user(const schema::BaseUser &user);
+        schema::DbUser add_user(const schema::DbUser &user);
         bool user_is_exist(const std::string &user_name);
         bool admin_is_exist();
         std::optional<schema::User> get_user_by_name(const std::string &user_name);

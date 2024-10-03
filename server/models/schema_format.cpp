@@ -5,6 +5,7 @@
 #include "schema_format.hpp"
 
 #include "service/logger.hpp"
+#include "models/schema_key.hpp"
 
 namespace util_delight {
     std::optional<schema::User> SchemaFormat::try_to_user(const nlohmann::json &user_json) {
