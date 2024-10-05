@@ -6,6 +6,7 @@
 #include <spdlog/spdlog.h>
 
 #include "models/db_schema.hpp"
+#include "service/group_service.hpp"
 #include "service/logger.hpp"
 #include "service/mongo_service.hpp"
 #include "service/user_service.hpp"
@@ -76,4 +77,5 @@ int main() {
 void service_init(const nlohmann::json &setting) {
     service_delight::MongoService::get_instance().init(setting);
     service_delight::UserService::get_instance().init();
+    service_delight::GroupService::get_instance().init();
 }

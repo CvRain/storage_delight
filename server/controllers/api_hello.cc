@@ -2,7 +2,6 @@
 
 #include <spdlog/spdlog.h>
 #include "utils/date.h"
-#include "models/user_response.hpp"
 #include "models/drogon_specialization.hpp"
 
 using namespace api;

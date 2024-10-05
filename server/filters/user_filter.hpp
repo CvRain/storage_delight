@@ -12,12 +12,12 @@
 
 
 namespace drogon::middleware {
-    class LoginMiddleware : public HttpMiddleware<LoginMiddleware> {
-    public:
-        LoginMiddleware() = default;
-
-        static void invoke(model_delight::NlohmannJsonRequestPtr &&request, MiddlewareNextCallback &&nextCb, MiddlewareCallback &&mcb);
-    };
+    // class LoginMiddleware : public HttpMiddleware<LoginMiddleware> {
+    // public:
+    //     LoginMiddleware() = default;
+    //
+    //     static void invoke(model_delight::NlohmannJsonRequestPtr &&request, MiddlewareNextCallback &&nextCb, MiddlewareCallback &&mcb);
+    // };
 
 } // namespace drogon::middleware
 

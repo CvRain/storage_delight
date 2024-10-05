@@ -42,6 +42,9 @@ namespace schema{
         JwtPayload payload;
         std::string secret;
     };
+
+    template<typename T, typename R>
+    using result = std::pair<std::optional<T>, R>;
 }
 
 #endif //STORAGE_DELIGHT_TYPE_HPP

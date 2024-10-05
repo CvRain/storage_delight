@@ -6,15 +6,9 @@
 #include "service/logger.hpp"
 
 namespace service_delight {
-    /*
-     * "mongodb": {
-     *  "url": "mongodb://localhost:27017",
-     *  "db_name": "storage_delight"
-     * }
-     */
     void MongoService::init(const nlohmann::json &config) {
         mongocxx::instance instance{};
-        const auto& json_root = config.at("mongodb");
+        const auto &json_root = config.at("mongodb");
         const mongocxx::uri url{json_root.at("url").get<std::string>()};
 
         Logger::get_instance().log(BasicLogger | ConsoleLogger | DailyLogger,
@@ -26,16 +20,17 @@ namespace service_delight {
 
         try {
             const auto collection_name = database.list_collection_names();
-            if(collection_name.empty()) {
+            if (collection_name.empty()) {
                 return;
             }
-            for (const auto& name : collection_name) {
+            for (const auto &name: collection_name) {
                 Logger::get_instance().log(BasicLogger | ConsoleLogger | DailyLogger,
                                            "Load MongoDB collection: {}", name);
             }
-        }catch(const std::exception& e) {
-            Logger::get_instance().log(BasicLogger | DailyLogger,spdlog::level::err,
-                "Failed to load MongoDB collection: {}", e.what());
+        }
+        catch (const std::exception &e) {
+            Logger::get_instance().log(BasicLogger | DailyLogger, spdlog::level::err,
+                                       "Failed to load MongoDB collection: {}", e.what());
         }
     }
 

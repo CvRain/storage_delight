@@ -32,15 +32,9 @@ set(MODEL_SRC
         models/drogon_specialization.hpp
         models/nlohmann_json_request.hpp
         models/type.hpp
-        models/user_request.cpp
-        models/user_request.hpp
-        models/user_response.cpp
-        models/user_response.hpp
         models/nlohmann_json_response.hpp
         models/http_response.cpp
         models/http_response.hpp
-        models/schema_format.cpp
-        models/schema_format.hpp
         models/schema_key.hpp
         models/basic_value.hpp
         models/db_schema.cpp
@@ -61,6 +55,8 @@ set(SERVICE_SRC
         service/logger.hpp
         service/user_service.cpp
         service/user_service.hpp
+        service/group_service.cpp
+        service/group_service.hpp
 )
 
 add_executable(storage_server

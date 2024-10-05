@@ -45,6 +45,11 @@ namespace schema::key {
         const std::string allow_delete_bucket = "allow_delete_bucket";
         const std::string allow_update_bucket = "allow_update_bucket";
     }
+
+    namespace collection {
+        const std::string user = "user";
+        const std::string group = "group";
+    }
 }
 
 #endif //SCHEMA_KEY_HPP

@@ -18,30 +18,7 @@ namespace schema {
         TypeNone = -1,
         TypeAdmin = 0,
         TypeUser = 1,
-    };
-
-    struct BaseUser {
-        UserRole role = UserRole::TypeNone;
-        std::string user_name = "unknown";
-        std::string password = "unknown";
-    };
-
-    struct User {
-        std::string id{};
-        int role = UserRole::TypeUser;
-        std::string user_name;
-        std::string password;
-        std::string create_time;
-    };
-
-    struct MinioClient {
-        int id;
-        bool is_http;
-        std::string name;
-        std::string access_key;
-        std::string secret_key;
-        std::string link_url;
-        std::string create_time;
+        TypeRoleMax
     };
 
     class MongoDocument {
@@ -55,12 +32,12 @@ namespace schema {
         std::string id{};
         int32_t create_time{};
 
-        virtual bsoncxx::document::view get_document() = 0;
+        virtual bsoncxx::document::value get_document() = 0;
     };
 
     class DbUser final : public MongoDocument {
     public:
-        bsoncxx::document::view get_document() override;
+        bsoncxx::document::value get_document() override;
 
         std::string name;
         std::string password;
@@ -71,7 +48,7 @@ namespace schema {
 
     class DbBucket final : public MongoDocument {
     public:
-        bsoncxx::document::view get_document() override;
+        bsoncxx::document::value get_document() override;
 
         std::string data_source;
         std::string bucket_name;
@@ -84,7 +61,7 @@ namespace schema {
 
     class DbDataSource final : public MongoDocument {
     public:
-        bsoncxx::document::view get_document() override;
+        bsoncxx::document::value get_document() override;
 
         std::string id;
         std::string name;
@@ -96,7 +73,8 @@ namespace schema {
 
     class DbGroup final : public MongoDocument {
     public:
-        bsoncxx::document::view get_document() override;
+        bsoncxx::document::value get_document() override;
+        static DbGroup from_bson(const bsoncxx::document::value& value);
 
         std::string id;
         std::string name;
@@ -113,7 +91,7 @@ namespace schema {
      */
     class DbPermission final : public MongoDocument {
     public:
-        bsoncxx::document::view get_document() override;
+        bsoncxx::document::value get_document() override;
 
 
         std::string id;
@@ -127,7 +105,7 @@ namespace schema {
 
     class DbOperationLog final : public MongoDocument {
     public:
-        bsoncxx::document::view get_document() override;
+        bsoncxx::document::value get_document() override;
 
         std::string id;
         std::string user_id;
