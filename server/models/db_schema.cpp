@@ -54,7 +54,7 @@ bsoncxx::document::value DbDataSource::get_document() {
 
 bsoncxx::document::value DbGroup::get_document() {
     auto document = make_document(
-            kvp(key::bson_id, bsoncxx::oid{id}),
+            kvp(key::bson_id, id),
             kvp(key::name, name),
             kvp(key::owner_id, owner_id),
             kvp(key::members_id, util_delight::make_bson_array(members_id)),
@@ -67,11 +67,11 @@ bsoncxx::document::value DbGroup::get_document() {
 
 DbGroup DbGroup::from_bson(const bsoncxx::document::value &value) {
     DbGroup group;
-    group.id = value.view()[key::bson_id].get_oid().value.to_string();
+    group.id = value.view()[key::bson_id].get_oid().value;
     group.name = value.view()[key::name].get_string();
-    group.owner_id = value.view()[key::owner_id].get_string();
-    group.members_id = util_delight::get_bson_array_to_vector<std::string>(value.view()[key::members_id].get_array());
-    group.bucket_group_id = util_delight::get_bson_array_to_vector<std::string>(value.view()[key::bucket_group_id].get_array());
+    group.owner_id = value.view()[key::owner_id].get_oid().value;
+    group.members_id = util_delight::get_bson_array_to_vector<bsoncxx::oid>(value.view()[key::members_id].get_array());
+    group.bucket_group_id = util_delight::get_bson_array_to_vector<bsoncxx::oid>(value.view()[key::bucket_group_id].get_array());
     group.create_time = value.view()[key::create_time].get_int32();
     group.update_time = value.view()[key::update_time].get_int32();
     return group;

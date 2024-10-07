@@ -76,11 +76,11 @@ namespace schema {
         bsoncxx::document::value get_document() override;
         static DbGroup from_bson(const bsoncxx::document::value& value);
 
-        std::string id;
+        bsoncxx::oid id;
         std::string name;
-        std::string owner_id;
-        std::vector<std::string> members_id;
-        std::vector<std::string> bucket_group_id;
+        bsoncxx::oid owner_id;
+        std::vector<bsoncxx::oid> members_id;
+        std::vector<bsoncxx::oid> bucket_group_id;
         int32_t create_time;
         int32_t update_time;
     };

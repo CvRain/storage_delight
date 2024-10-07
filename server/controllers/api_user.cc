@@ -6,6 +6,7 @@
 
 #include "service/logger.hpp"
 #include "service/user_service.hpp"
+#include "service/group_service.hpp"
 
 using namespace api;
 
@@ -43,7 +44,7 @@ void User::add_user(model_delight::NlohmannJsonRequestPtr &&req, std::function<v
         return;
     }
 
-    auto user = new schema::DbUser();
+    const auto user = new schema::DbUser();
     user->name = json_body.at(schema::key::name).get<std::string>();
     user->password = util_delight::StringEncryption::sha256(json_body.at(schema::key::password).get<std::string>());
     user->role = json_body.at(schema::key::user_role).get<int>();
@@ -59,16 +60,24 @@ void User::add_user(model_delight::NlohmannJsonRequestPtr &&req, std::function<v
         json_response[schema::key::user_role] = result_user.role;
         json_response[schema::key::create_time] = result_user.create_time;
         json_response[schema::key::update_time] = result_user.update_time;
-        model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(json_response));
     }
     else {
         callback(model_delight::NlohmannResponse::new_common_response(&model_delight::HttpResponse{}
                                                                                .set_code(k500InternalServerError)
                                                                                .set_message("Internal server error")
                                                                                .set_result("Failed to add user")));
+        return;
     }
+    schema::DbGroup group;
+    group.owner_id = bsoncxx::oid{user->id};
+    group.create_time = user->create_time;
+    group.update_time = user->update_time;
+    group.name = std::string{"group for "} + user->name;
+    service_delight::GroupService::get_instance().add_group(&group);
+
+    callback(drogon::HttpResponse::newHttpJsonResponse(json_response.dump()));
+
     delete user;
-    user = nullptr;
 }
 //
 //
