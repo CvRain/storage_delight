@@ -5,26 +5,23 @@
 #include "logger.hpp"
 
 #include <filesystem>
+
+#include "db_schema.hpp"
+#include "mongo_service.hpp"
 #include "utils/date.h"
 
 namespace service_delight {
-    std::shared_ptr<spdlog::logger> Logger::get_basic_logger() const {
-        return basic_logger;
-    }
+    std::shared_ptr<spdlog::logger> Logger::get_basic_logger() const { return basic_logger; }
 
-    std::shared_ptr<spdlog::logger> Logger::get_daily_logger() const {
-        return daily_logger;
-    }
+    std::shared_ptr<spdlog::logger> Logger::get_daily_logger() const { return daily_logger; }
 
-    std::shared_ptr<spdlog::logger> Logger::get_console_logger() const {
-        return console_logger;
-    }
+    std::shared_ptr<spdlog::logger> Logger::get_console_logger() const { return console_logger; }
 
     void Logger::init() {
         spdlog::set_level(spdlog::level::debug);
         spdlog::set_pattern("[%H:%M:%S %z] [%^--%l--%$] [%n] [thread %t] %v");
 
-        //检查logs目录是否存在，没有则创建
+        // 检查logs目录是否存在，没有则创建
         if (!std::filesystem::exists("logs")) {
             std::filesystem::create_directory("logs");
         }

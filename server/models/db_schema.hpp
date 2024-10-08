@@ -24,15 +24,16 @@ namespace schema {
     class MongoDocument {
     public:
         MongoDocument() {
-            id = bsoncxx::oid{}.to_string();
+            id = bsoncxx::oid{};
             create_time = util_delight::Date::get_current_timestamp_32();
         };
         virtual ~MongoDocument() = default;
-
-        std::string id{};
-        int32_t create_time{};
-
         virtual bsoncxx::document::value get_document() = 0;
+        //virtual nlohmann::json to_json() = 0;
+
+    public:
+        bsoncxx::oid id{};
+        int32_t create_time{};
     };
 
     class DbUser final : public MongoDocument {
@@ -41,7 +42,7 @@ namespace schema {
 
         std::string name;
         std::string password;
-        std::string group_id;
+        bsoncxx::oid group_id;
         int32_t role = UserRole::TypeUser;
         int32_t update_time;
     };
@@ -52,8 +53,8 @@ namespace schema {
 
         std::string data_source;
         std::string bucket_name;
-        std::string group_id;
-        std::string permission_id;
+        bsoncxx::oid group_id;
+        bsoncxx::oid permission_id;
         std::vector<std::string> tags;
         int32_t update_time;
 
@@ -93,9 +94,7 @@ namespace schema {
     public:
         bsoncxx::document::value get_document() override;
 
-
-        std::string id;
-        std::string bucket_id;
+        bsoncxx::oid bucket_id;
         std::string name;
         std::map<std::string, std::vector<std::string>> allow_actions;
         std::string description;
@@ -107,8 +106,7 @@ namespace schema {
     public:
         bsoncxx::document::value get_document() override;
 
-        std::string id;
-        std::string user_id;
+        bsoncxx::oid user_id;
         std::string action;
         std::string bucket_name;
         std::string object_name;

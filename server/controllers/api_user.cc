@@ -4,9 +4,10 @@
 #include "schema_key.hpp"
 #include "utils/string.hpp"
 
+#include "service/group_service.hpp"
+#include "service/log_service.hpp"
 #include "service/logger.hpp"
 #include "service/user_service.hpp"
-#include "service/group_service.hpp"
 
 using namespace api;
 
@@ -32,7 +33,7 @@ void User::add_user(model_delight::NlohmannJsonRequestPtr &&req, std::function<v
                                                                                .set_message("Invalid role")
                                                                                .set_result("k400BadRequest")));
         return;
-    }
+        }
 
     // 当role为0时，检查数据库中是否已经存在管理员
     if (const auto user_role = json_body.at(schema::key::user_role).get<int>();
@@ -42,25 +43,27 @@ void User::add_user(model_delight::NlohmannJsonRequestPtr &&req, std::function<v
                                                                                .set_message("There is already an admin")
                                                                                .set_result("k400BadRequest")));
         return;
-    }
+        }
 
-    const auto user = new schema::DbUser();
-    user->name = json_body.at(schema::key::name).get<std::string>();
-    user->password = util_delight::StringEncryption::sha256(json_body.at(schema::key::password).get<std::string>());
-    user->role = json_body.at(schema::key::user_role).get<int>();
-    user->create_time = util_delight::Date::get_current_timestamp_32();
-    user->update_time = user->create_time;
+    schema::DbUser user;
+    user.name = json_body.at(schema::key::name).get<std::string>();
+    user.password = util_delight::StringEncryption::sha256(json_body.at(schema::key::password).get<std::string>());
+    user.role = json_body.at(schema::key::user_role).get<int>();
+    user.create_time = util_delight::Date::get_current_timestamp_32();
+    user.update_time = user.create_time;
+    user.group_id = bsoncxx::oid{};
 
     nlohmann::json json_response;
-    if (const auto [fst, snd] = service_delight::UserService::get_instance().add_user(user);
+    if (const auto [fst, snd] = service_delight::UserService::get_instance().add_user(&user);
         fst.has_value()) {
         const auto& result_user = fst.value();
-        json_response[schema::key::user_id] = result_user.id;
+        json_response[schema::key::user_id] = result_user.id.to_string();
         json_response[schema::key::name] = result_user.name;
         json_response[schema::key::user_role] = result_user.role;
         json_response[schema::key::create_time] = result_user.create_time;
         json_response[schema::key::update_time] = result_user.update_time;
-    }
+        json_response[schema::key::group_id] = result_user.group_id.to_string();
+        }
     else {
         callback(model_delight::NlohmannResponse::new_common_response(&model_delight::HttpResponse{}
                                                                                .set_code(k500InternalServerError)
@@ -69,15 +72,24 @@ void User::add_user(model_delight::NlohmannJsonRequestPtr &&req, std::function<v
         return;
     }
     schema::DbGroup group;
-    group.owner_id = bsoncxx::oid{user->id};
-    group.create_time = user->create_time;
-    group.update_time = user->update_time;
-    group.name = std::string{"group for "} + user->name;
+    group.id = user.group_id;
+    group.owner_id = bsoncxx::oid{user.id};
+    group.create_time = user.create_time;
+    group.update_time = user.update_time;
+    group.name = std::string{"group for "} + user.name;
     service_delight::GroupService::get_instance().add_group(&group);
 
-    callback(drogon::HttpResponse::newHttpJsonResponse(json_response.dump()));
+    schema::DbOperationLog operation_log;
+    operation_log.action = "add_user";
+    operation_log.bucket_name = "";
+    operation_log.object_name = "";
+    operation_log.current_state = "";
+    operation_log.description = "add user " + user.name;
+    operation_log.previous_state = "";
+    operation_log.user_id = user.id;
+    service_delight::LogService::get_instance().record_operation(&operation_log);
 
-    delete user;
+    callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(json_response)));
 }
 //
 //

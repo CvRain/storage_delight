@@ -19,6 +19,7 @@
     "openssl",
     "fmt",
     "mongo-c-driver",
-    "mongo-cxx-driver"
+    "mongo-cxx-driver",
+    "zpp-bits"
   ]
 }

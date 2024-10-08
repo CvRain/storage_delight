@@ -6,21 +6,20 @@
 #ifndef LOGGER_HPP
 #define LOGGER_HPP
 
-#include <spdlog/spdlog.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/daily_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
 
 #include "utils/singleton_prototype.hpp"
 
 #include <fmt/format.h>
 
+#include "db_schema.hpp"
+#include "type.hpp"
+
 namespace service_delight {
-    enum LogOutput: int {
-        ConsoleLogger = 1,
-        BasicLogger,
-        DailyLogger
-    };
+    enum LogOutput : int { ConsoleLogger = 1, BasicLogger, DailyLogger };
 
     class Logger final : public util_delight::Singleton<Logger> {
     public:
@@ -35,10 +34,10 @@ namespace service_delight {
         [[nodiscard]] std::shared_ptr<spdlog::logger> get_console_logger() const;
 
         template<typename... Args>
-        void log(int log_output, fmt::format_string<Args...> fmt, Args &&... args);
+        void log(int log_output, fmt::format_string<Args...> fmt, Args &&...args);
 
         template<typename... Args>
-        void log(int log_output, spdlog::level::level_enum level, fmt::format_string<Args...> fmt, Args &&... args);
+        void log(int log_output, spdlog::level::level_enum level, fmt::format_string<Args...> fmt, Args &&...args);
 
     private:
         std::shared_ptr<spdlog::logger> basic_logger;
@@ -47,7 +46,7 @@ namespace service_delight {
     };
 
     template<typename... Args>
-    void Logger::log(const int log_output, fmt::format_string<Args...> fmt, Args &&... args) {
+    void Logger::log(const int log_output, fmt::format_string<Args...> fmt, Args &&...args) {
         // log_output can be: ConsoleLogger, BasicLogger, DailyLogger
         // or ConsoleLogger | BasicLogger | DailyLogger etc..
         // 判断是否需要输出到控制台
@@ -71,7 +70,7 @@ namespace service_delight {
 
     template<typename... Args>
     void Logger::log(const int log_output, spdlog::level::level_enum level, fmt::format_string<Args...> fmt,
-                     Args &&... args) {
+                     Args &&...args) {
         if (log_output & ConsoleLogger) {
             console_logger->log(level, fmt, std::forward<Args>(args)...);
             console_logger->flush();

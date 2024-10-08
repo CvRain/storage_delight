@@ -46,8 +46,7 @@ namespace service_delight {
                 Logger::get_instance().log(ConsoleLogger | BasicLogger, "UserService::add_user failed");
                 return std::make_pair(std::nullopt, "UserService::add_user failed");
             }
-            const auto oid = result.value().inserted_id().get_oid().value;
-            user->id = bsoncxx::oid{oid}.to_string();
+            user->id = result.value().inserted_id().get_oid().value;
         }
         catch (const std::exception &e) {
             Logger::get_instance().log(ConsoleLogger | BasicLogger, "UserService::add_user failed: {}", e.what());

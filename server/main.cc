@@ -3,10 +3,9 @@
 #include <nlohmann/json.hpp>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/daily_file_sink.h>
-#include <spdlog/spdlog.h>
 
-#include "models/db_schema.hpp"
 #include "service/group_service.hpp"
+#include "service/log_service.hpp"
 #include "service/logger.hpp"
 #include "service/mongo_service.hpp"
 #include "service/user_service.hpp"
@@ -78,4 +77,5 @@ void service_init(const nlohmann::json &setting) {
     service_delight::MongoService::get_instance().init(setting);
     service_delight::UserService::get_instance().init();
     service_delight::GroupService::get_instance().init();
+    service_delight::LogService::get_instance().init();
 }

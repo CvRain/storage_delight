@@ -5,6 +5,7 @@ include(CheckIncludeFileCXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+message(STATUS "VCPKG Installed Directory: ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}")
 
 # ##############################################################################
 
@@ -57,7 +58,11 @@ set(SERVICE_SRC
         service/user_service.hpp
         service/group_service.cpp
         service/group_service.hpp
+        service/log_service.cpp
+        service/log_service.hpp
 )
+
+include_directories(${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include)
 
 add_executable(storage_server
         main.cc
@@ -67,6 +72,7 @@ add_executable(storage_server
         ${MODEL_SRC}
         ${UTILS_SRC}
         ${SERVICE_SRC}
+        ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include/zpp_bits.h
 )
 
 # ##############################################################################
@@ -84,12 +90,7 @@ find_package(SqliteOrm CONFIG REQUIRED)
 find_package(mongoc-1.0 CONFIG REQUIRED)
 find_package(bsoncxx CONFIG REQUIRED)
 find_package(mongocxx CONFIG REQUIRED)
-
-if(Win32)
-    #include_directories(${LIBMONGOCXX_INCLUDE_DIR})
-    #include_directories(${LIBBSONCXX_INCLUDE_DIR})
-    #set(nlohmann-json_IMPLICIT_CONVERSIONS OFF)
-endif ()
+find_path(ZPP_BITS_INCLUDE_DIRS "zpp_bits.h")
 
 target_link_libraries(storage_server PRIVATE Drogon::Drogon)
 target_link_libraries(storage_server PRIVATE storage_delight_core)
@@ -111,7 +112,11 @@ drogon_create_views(storage_server ${CMAKE_CURRENT_SOURCE_DIR}/views
 
 target_include_directories(storage_server
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}/models)
+        ${CMAKE_CURRENT_SOURCE_DIR}/models
+        ${ZPP_BITS_INCLUDE_DIRS}
+)
+
+
 target_sources(storage_server
         PRIVATE
         ${SRC_DIR}

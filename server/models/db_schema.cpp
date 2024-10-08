@@ -14,15 +14,9 @@ using namespace schema;
 using namespace bsoncxx::builder::basic;
 
 bsoncxx::document::value DbUser::get_document() {
-    auto document = make_document(
-            kvp(key::bson_id, bsoncxx::oid{id}),
-            kvp(key::name, name),
-            kvp(key::password, password),
-            kvp(key::group_id, group_id),
-            kvp(key::user_role, role),
-            kvp(key::create_time, create_time),
-            kvp(key::update_time, update_time)
-            );
+    auto document = make_document(kvp(key::bson_id, bsoncxx::oid{id}), kvp(key::name, name),
+                                  kvp(key::password, password), kvp(key::group_id, group_id), kvp(key::user_role, role),
+                                  kvp(key::create_time, create_time), kvp(key::update_time, update_time));
     return std::move(document);
 }
 
