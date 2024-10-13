@@ -51,6 +51,34 @@ namespace schema::key {
         const std::string group = "group";
         const std::string operation_logs = "operation_logs";
     }
+
+    namespace request{
+        const std::string status = "status";
+        const std::string message = "message";
+        const std::string data = "data";
+        const std::string code = "code";
+        const std::string error = "error";
+        const std::string success = "success";
+        const std::string result = "result";
+        const std::string total = "total";
+        const std::string page = "page";
+        const std::string page_size = "page_size";
+    }
+
+    namespace header{
+        const std::string authorization = "Authorization";
+        const std::string content_type = "Content-Type";
+        const std::string content_length = "Content-Length";
+        const std::string content_disposition = "Content-Disposition";
+        const std::string content_encoding = "Content-Encoding";
+        const std::string content_range = "Content-Range";
+        const std::string content_md5 = "Content-MD5";
+        const std::string content_type_json = "application/json";
+        const std::string content_type_form_data = "multipart/form-data";
+        const std::string content_type_text_plain = "text/plain";
+        const std::string content_type_text_html = "text/html";
+        const std::string x_forwarded_for = "X-Forwarded-For";
+    }
 }
 
 #endif //SCHEMA_KEY_HPP

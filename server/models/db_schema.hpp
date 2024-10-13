@@ -5,21 +5,16 @@
 #ifndef STORAGE_DELIGHT_DB_SCHEMA_HPP
 #define STORAGE_DELIGHT_DB_SCHEMA_HPP
 
-#include <string>
-#include <map>
-#include <vector>
 #include <bsoncxx/builder/basic/document.hpp>
+#include <map>
+#include <string>
+#include <vector>
 
 #include "utils/date.h"
 #include "utils/format.h"
 
 namespace schema {
-    enum UserRole : int {
-        TypeNone = -1,
-        TypeAdmin = 0,
-        TypeUser = 1,
-        TypeRoleMax
-    };
+    enum UserRole : int { TypeNone = -1, TypeAdmin = 0, TypeUser = 1, TypeRoleMax };
 
     class MongoDocument {
     public:
@@ -29,7 +24,7 @@ namespace schema {
         };
         virtual ~MongoDocument() = default;
         virtual bsoncxx::document::value get_document() = 0;
-        //virtual nlohmann::json to_json() = 0;
+        // virtual nlohmann::json to_json() = 0;
 
     public:
         bsoncxx::oid id{};
@@ -57,7 +52,6 @@ namespace schema {
         bsoncxx::oid permission_id;
         std::vector<std::string> tags;
         int32_t update_time;
-
     };
 
     class DbDataSource final : public MongoDocument {
@@ -75,7 +69,7 @@ namespace schema {
     class DbGroup final : public MongoDocument {
     public:
         bsoncxx::document::value get_document() override;
-        static DbGroup from_bson(const bsoncxx::document::value& value);
+        static DbGroup from_bson(const bsoncxx::document::value &value);
 
         bsoncxx::oid id;
         std::string name;
@@ -106,14 +100,14 @@ namespace schema {
     public:
         bsoncxx::document::value get_document() override;
 
-        bsoncxx::oid user_id;
-        std::string action;
-        std::string bucket_name;
-        std::string object_name;
-        int32_t timestamp;
-        std::string previous_state;
-        std::string current_state;
-        std::string description;
+        bsoncxx::oid user_id{};
+        std::string action{};
+        std::string bucket_name{};
+        std::string object_name{};
+        int32_t timestamp = util_delight::Date::get_current_timestamp_32();
+        std::string previous_state{};
+        std::string current_state{};
+        std::string description{};
     };
 } // namespace schema
 

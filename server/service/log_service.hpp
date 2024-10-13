@@ -6,6 +6,7 @@
 #define LOG_SERVICE_HPP
 
 #include <mongocxx/collection.hpp>
+#include <nlohmann/json.hpp>
 
 #include "utils/singleton_prototype.hpp"
 #include "models/schema_key.hpp"
@@ -18,6 +19,7 @@ namespace service_delight {
     public:
         void init();
         void record_operation(schema::DbOperationLog*  operation_log);
+        void record_operation(const nlohmann::json& operation_log);
         schema::result<nlohmann::json, std::string> get_operation_by_id(const bsoncxx::oid& record_id);
         schema::result<nlohmann::json, std::string>  get_operation_by_user_id(const bsoncxx::oid& user_id);
 

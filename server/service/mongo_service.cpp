@@ -29,7 +29,7 @@ namespace service_delight {
             }
         }
         catch (const std::exception &e) {
-            Logger::get_instance().log(BasicLogger | DailyLogger, spdlog::level::err,
+            Logger::get_instance().log(BasicLogger | DailyLogger, spdlog::level::trace,
                                        "Failed to load MongoDB collection: {}", e.what());
             exit(1);
         }

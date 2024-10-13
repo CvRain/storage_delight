@@ -8,7 +8,6 @@
     "spdlog",
     "sqlite3",
     "sqlite-orm",
-    "zlib",
     {
       "name": "drogon",
       "features": [

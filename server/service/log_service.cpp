@@ -12,7 +12,15 @@ namespace service_delight {
     }
     void LogService::record_operation(schema::DbOperationLog *operation_log) {
         if (const auto result = log_collection.insert_one(operation_log->get_document().view()); !result.has_value()) {
-            Logger::get_instance().log(ConsoleLogger, spdlog::level::err, "record operation log failed");
+            const auto json_result = bsoncxx::to_json(operation_log->get_document().view());
+            Logger::get_instance().log(ConsoleLogger, spdlog::level::err, "record operation log failed: {}", json_result.data());
+        }
+    }
+
+    void LogService::record_operation(const nlohmann::json &operation_log){
+        auto document = bsoncxx::from_json(operation_log.dump());
+        if(const auto result = log_collection.insert_one(document.view()); !result.has_value()){
+            Logger::get_instance().log(ConsoleLogger, spdlog::level::err, "record operation log failed: {}", operation_log.dump());
         }
     }
 
