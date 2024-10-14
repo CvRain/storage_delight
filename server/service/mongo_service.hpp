@@ -9,6 +9,7 @@
 #include <bsoncxx/json.hpp>
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
+#include <mongocxx/pool.hpp>
 #include <mongocxx/stdx.hpp>
 #include <mongocxx/uri.hpp>
 
@@ -21,17 +22,23 @@ using bsoncxx::builder::basic::make_array;
 using bsoncxx::builder::basic::make_document;
 
 namespace service_delight {
-    class MongoService final: public util_delight::Singleton<MongoService> {
+    class MongoService final {
     public:
-        ~MongoService() = default;
+        explicit MongoService(const nlohmann::json &config);
+        [[nodiscard]] mongocxx::collection get_collection(const std::string &collection_name);
 
-        void init(const nlohmann::json &config);
-
-        [[nodiscard]] mongocxx::collection get_collection(const std::string &collection_name) const;
     private:
-        mongocxx::client client;
-        mongocxx::database database;
+        mongocxx::pool pool;
     };
-} // service_delight
+
+    class MongoProvider final : public util_delight::Singleton<MongoProvider> {
+    public:
+        void init(const nlohmann::json &json);
+        [[nodiscard]] mongocxx::collection get_collection(const std::string &collection_name)const;
+
+    private:
+        std::unique_ptr<MongoService> mongo_service;
+    };
+} // namespace service_delight
 
 #endif //MONGO_SERVICE_HPP

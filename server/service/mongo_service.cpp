@@ -6,36 +6,38 @@
 #include "service/logger.hpp"
 
 namespace service_delight {
-    void MongoService::init(const nlohmann::json &config) {
-        mongocxx::instance instance{};
-        const auto &json_root = config.at("mongodb");
-        const mongocxx::uri url{json_root.at("url").get<std::string>()};
+    MongoService::MongoService(const nlohmann::json &config) :
+        pool(mongocxx::uri{config.at("mongodb").at("url").get<std::string>()}) {
 
-        Logger::get_instance().log(BasicLogger | ConsoleLogger | DailyLogger,
-                                   "MongoDB client connected to {}", url.to_string());
+        Logger::get_instance().log(ConsoleLogger | BasicLogger, "MongoService::MongoService");
 
-        const auto db_name = json_root.at("db_name").get<std::string>();
-        client = mongocxx::client{url};
-        database = client.database(db_name);
-
+        // list of collections
         try {
-            const auto collection_name = database.list_collection_names();
-            if (collection_name.empty()) {
-                return;
-            }
-            for (const auto &name: collection_name) {
-                Logger::get_instance().log(BasicLogger | ConsoleLogger | DailyLogger,
-                                           "Load MongoDB collection: {}", name);
+            const auto client = pool.acquire();
+            for (auto db = client.operator*()[schema::key::database::db_name];
+                 const auto& collection: db.list_collection_names()) {
+                Logger::get_instance().log(ConsoleLogger | BasicLogger, "Find collection: {}", collection);
             }
         }
         catch (const std::exception &e) {
-            Logger::get_instance().log(BasicLogger | DailyLogger, spdlog::level::trace,
-                                       "Failed to load MongoDB collection: {}", e.what());
-            exit(1);
+            Logger::get_instance().log(ConsoleLogger | BasicLogger, spdlog::level::trace, "Error listing collections: {}", e.what());
         }
     }
 
-    mongocxx::collection MongoService::get_collection(const std::string &collection_name) const {
-        return database[collection_name];
+
+    mongocxx::collection MongoService::get_collection(const std::string &collection_name) {
+        const auto client = pool.acquire();
+        return client.operator*()[schema::key::database::db_name][collection_name];
     }
-} // service_delight
+
+    void MongoProvider::init(const nlohmann::json &json) {
+        Logger::get_instance().log(ConsoleLogger | BasicLogger, "MongoProvider::init");
+        mongo_service = std::make_unique<MongoService>(json);
+    }
+
+    mongocxx::collection MongoProvider::get_collection(const std::string &collection_name) const {
+        return mongo_service->get_collection(collection_name);
+    }
+
+
+} // namespace service_delight

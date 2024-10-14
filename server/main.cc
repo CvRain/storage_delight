@@ -74,7 +74,7 @@ int main() {
 }
 
 void service_init(const nlohmann::json &setting) {
-    service_delight::MongoService::get_instance().init(setting);
+    service_delight::MongoProvider::get_instance().init(setting);
     service_delight::UserService::get_instance().init();
     service_delight::GroupService::get_instance().init();
     service_delight::LogService::get_instance().init();

@@ -46,6 +46,10 @@ namespace schema::key {
         const std::string allow_update_bucket = "allow_update_bucket";
     }
 
+    namespace database{
+        const std::string db_name = "storage_delight";
+    }
+
     namespace collection {
         const std::string user = "user";
         const std::string group = "group";

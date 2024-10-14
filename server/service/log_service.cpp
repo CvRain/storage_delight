@@ -8,7 +8,7 @@
 
 namespace service_delight {
     void LogService::init() {
-        log_collection = MongoService::get_instance().get_collection(schema::key::collection::operation_logs);
+        log_collection = MongoProvider::get_instance().get_collection(schema::key::collection::operation_logs);
     }
     void LogService::record_operation(schema::DbOperationLog *operation_log) {
         if (const auto result = log_collection.insert_one(operation_log->get_document().view()); !result.has_value()) {
