@@ -5,11 +5,7 @@
 #ifndef STORAGE_DELIGHT_USER_FILTER_HPP
 #define STORAGE_DELIGHT_USER_FILTER_HPP
 
-#include <drogon/HttpFilter.h>
 #include <drogon/HttpMiddleware.h>
-
-#include "nlohmann_json_request.hpp"
-
 
 namespace drogon::middleware {
     class LoginMiddleware : public HttpMiddleware<LoginMiddleware> {

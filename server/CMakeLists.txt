@@ -19,7 +19,9 @@ set(CTL_SRC
         controllers/api_user.cc
         controllers/api_user.h
         controllers/api_storage_source.cc
-        controllers/api_storage_source.h)
+        controllers/api_storage_source.h
+        controllers/api_group.h
+        controllers/api_group.cc)
 
 
 set(FILTER_SRC

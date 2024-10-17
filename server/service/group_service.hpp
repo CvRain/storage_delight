@@ -2,8 +2,7 @@
 // Created by cvrain on 24-10-5.
 //
 
-#ifndef GROUP_SERVICE_HPP
-#define GROUP_SERVICE_HPP
+#pragma once
 
 #include "models/db_schema.hpp"
 #include "mongo_service.hpp"
@@ -15,13 +14,37 @@ namespace service_delight {
     class GroupService : public util_delight::Singleton<GroupService> {
     public:
         void init();
-        schema::result<std::string, std::string> add_group(schema::DbGroup *group);
-        schema::result<schema::DbGroup, std::string> get_group(const bsoncxx::oid &group_id);
-        schema::result<bool, std::string> group_exist(const bsoncxx::oid &group_id);
+
+        auto add_group(schema::DbGroup *group) -> schema::result<std::string, std::string>;
+
+        auto get_group(const bsoncxx::oid &group_id) -> schema::result<schema::DbGroup, std::string>;
+
+        auto group_exist(const bsoncxx::oid &group_id) -> schema::result<bool, std::string>;
+
+        auto add_member(const bsoncxx::oid &group_id, const bsoncxx::oid &member_id) -> schema::result<bool, std::string>;
+
+        auto remove_member(const bsoncxx::oid &group_id, const bsoncxx::oid &member_id) -> schema::result<bool, std::string>;
+
+        auto get_members(const bsoncxx::oid &group_id) -> schema::result<std::vector<bsoncxx::oid>, std::string>; // todo
+
+        auto rename(const bsoncxx::oid &group_id, const std::string &new_name) -> schema::result<bool, std::string>; // todo
+
+        auto is_member(const bsoncxx::oid &group_id, const bsoncxx::oid &member_id) -> schema::result<bool, std::string>; // todo
+
+        auto get_all_groups() -> schema::result<std::vector<schema::DbGroup>, std::string>; // todo
+
+        auto delete_group(const bsoncxx::oid &group_id) -> schema::result<bool, std::string>; // todo
+
+        auto add_bucket(const bsoncxx::oid &group_id, const bsoncxx::oid &bucket_id) -> schema::result<bool, std::string>; // todo
+
+        auto remove_bucket(const bsoncxx::oid &group_id, const bsoncxx::oid &bucket_id) -> schema::result<bool, std::string>; // todo
+
+        auto get_bucket_ids(const bsoncxx::oid &group_id) -> schema::result<std::vector<bsoncxx::oid>, std::string>; // todo
+
+        auto is_bucket_exist(const bsoncxx::oid &group_id, const bsoncxx::oid &bucket_id) -> schema::result<bool, std::string>; // todo
+
     private:
         mongocxx::collection group_collection;
     };
 
-} // service_delight
-
-#endif //GROUP_SERVICE_HPP
+} // namespace service_delight
