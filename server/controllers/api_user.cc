@@ -9,6 +9,8 @@
 #include "service/logger.hpp"
 #include "service/user_service.hpp"
 
+#include <iostream>
+
 using namespace api;
 
 void User::add_user(model_delight::NlohmannJsonRequestPtr &&req,
@@ -202,92 +204,127 @@ void User::login(model_delight::NlohmannJsonRequestPtr &&req, std::function<void
     service_delight::Logger::get_instance().log(service_delight::BasicLogger | service_delight::ConsoleLogger,
                                                 "Login request from {}", client_ip);
 
-    if(!req->getNlohmannJsonBody().contains(schema::key::name) || !req->getNlohmannJsonBody().contains(schema::key::password)){
+    if (!req->getNlohmannJsonBody().contains(schema::key::name) ||
+        !req->getNlohmannJsonBody().contains(schema::key::password)) {
         nlohmann::json response{{schema::key::request::code, k400BadRequest},
                                 {schema::key::request::message, "Invalid request body"},
                                 {schema::key::request::result, "k400BadRequest"}};
-        
+
         service_delight::Logger::get_instance().log(service_delight::BasicLogger | service_delight::ConsoleLogger,
                                                     "Client {} failed to login: Invalid request body", client_ip);
         callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
         return;
-    };                                         
+    };
 
     const auto user_name = req->getNlohmannJsonBody().at(schema::key::name).get<std::string>();
     const auto password = req->getNlohmannJsonBody().at(schema::key::password).get<std::string>();
     // 检查用户是否存在
-    const auto result = service_delight::UserService::get_instance().get_user_by_name(user_name);
-    if(!result.first.has_value()){
+    const auto [user_bson, result_string] = service_delight::UserService::get_instance().get_user_by_name(user_name);
+
+    if (!user_bson.has_value()) {
         nlohmann::json response;
         response[schema::key::request::code] = k400BadRequest;
         response[schema::key::request::message] = "Failed to login";
-        response[schema::key::request::result] = result.second;
+        response[schema::key::request::result] = result_string;
+
         callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
+        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
+                                                    "Login failed {} : user {} not exist", client_ip, user_name);
+
         return;
     }
 
     // 检查密码是否正确
-    if(util_delight::StringEncryption::sha256(password) != result.first.value().at(schema::key::password).get<std::string>()){
+    if (const auto user_password = user_bson.value().view()[schema::key::password].get_string().value;
+        util_delight::StringEncryption::sha256(password) != user_password) {
         nlohmann::json response;
         response[schema::key::request::code] = k400BadRequest;
         response[schema::key::request::message] = "Password is incorrect";
         callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
+        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
+                                                    "Login failed {} : password is incorrect", client_ip);
+        return;
     }
-    
 
-    const auto user_id = result.first.value().at(schema::key::bson_id).get<std::string>();
-    const auto user_role = result.first.value().at(schema::key::user_role).get<int>();
+
+    const auto user_id = user_bson.value().view()[schema::key::bson_id].get_oid().value.to_string();
+    service_delight::Logger::get_instance().log(service_delight::ConsoleLogger, spdlog::level::debug, "Find user {}",
+                                                user_id);
+
+    const auto user_role = user_bson.value().view()[schema::key::user_role].get_int32().value;
+    service_delight::Logger::get_instance().log(service_delight::ConsoleLogger, spdlog::level::debug, "Find role {}",
+                                                user_role);
+
     // 返回jwt token
-    Json::Value header;
-    header["alg"] = "HS256";
-    header["typ"] = "JWT";
+    // Json::Value header;
+    // header["alg"] = "HS256";
+    // header["typ"] = "JWT";
+    //
+    // const auto current_time = util_delight::Date::get_current_timestamp_32();
+    // Json::Value payload;
+    // payload["iss"] = "storage_delight";
+    // payload["exp"] = current_time + 7200;
+    // payload["sub"] = "login";
+    // payload["iat"] = current_time;
+    // payload["aud"] = user_role;
+    // payload["user_id"] = user_id;
+    //
+    // const auto jwt = util_delight::StringEncryption::generate_jwt(header.toStyledString(), payload.toStyledString(),
+    //                                                               util_delight::StringEncryption::secret_string);
+    //
+    // //record operation log
+    // schema::DbOperationLog operation_log{};
+    // operation_log.action = "login";
+    // operation_log.current_state = "success";
+    // operation_log.description = fmt::to_string(fmt::format("user {} login success in ip: {}", user_name, client_ip));
+    // operation_log.id = bsoncxx::oid{user_id};
+    // service_delight::LogService::get_instance().record_operation(&operation_log);
+    //
+    // Json::Value json_response{};
+    // json_response["code"] = k200OK;
+    // json_response["message"] = "Login successfully";
+    // json_response["user_id"] = user_id;
+    // json_response["user_name"] = user_name;
+    // json_response["token"] = jwt;
+    // callback(HttpResponse::newHttpJsonResponse(json_response));
+
+    // 使用nlohmann::json进行重构
+    nlohmann::json header{{schema::key::jwt::alg, "HS256"}, {schema::key::jwt::typ, "JWT"}};
+
+    service_delight::Logger::get_instance().log(service_delight::ConsoleLogger, spdlog::level::debug,
+                                                "User::login header: {}", header.dump());
 
     const auto current_time = util_delight::Date::get_current_timestamp_32();
-    Json::Value payload;
-    payload["iss"] = "storage_delight";
-    payload["exp"] = current_time + 7200;
-    payload["sub"] = "login";
-    payload["iat"] = current_time;
-    payload["aud"] = user_role;
-    payload["user_id"] = user_id;
 
-    const auto jwt = util_delight::StringEncryption::generate_jwt(header.toStyledString(), payload.toStyledString(),
+    nlohmann::json payload{{schema::key::jwt::iss, "storage_delight"}, {schema::key::jwt::exp, current_time + 7200},
+                           {schema::key::jwt::sub, "login"},           {schema::key::jwt::iat, current_time},
+                           {schema::key::jwt::aud, user_role},         {schema::key::user_id, user_id}};
+
+    service_delight::Logger::get_instance().log(service_delight::ConsoleLogger, spdlog::level::debug,
+                                                "User::login payload: {}", payload.dump());
+
+    const auto jwt = util_delight::StringEncryption::generate_jwt(header.dump(), payload.dump(),
                                                                   util_delight::StringEncryption::secret_string);
 
-    //record operation log
+    service_delight::Logger::get_instance().log(service_delight::ConsoleLogger, spdlog::level::debug,
+                                                "User::login jwt: {}", jwt);
+
+    // record operation log
     schema::DbOperationLog operation_log{};
+    operation_log.id = bsoncxx::oid{};
     operation_log.action = "login";
     operation_log.current_state = "success";
     operation_log.description = fmt::to_string(fmt::format("user {} login success in ip: {}", user_name, client_ip));
-    operation_log.id = bsoncxx::oid{user_id};
+    operation_log.user_id = user_bson.value().view()[schema::key::bson_id].get_oid().value;
     service_delight::LogService::get_instance().record_operation(&operation_log);
 
-    Json::Value json_response{};
-    json_response["code"] = k200OK;
-    json_response["message"] = "Login successfully";
-    json_response["user_id"] = user_id;
-    json_response["user_name"] = user_name;
-    json_response["token"] = jwt;
-    callback(HttpResponse::newHttpJsonResponse(json_response));
+    nlohmann::json response_part_data{
+            {schema::key::user_id, user_id}, {schema::key::name, user_name}, {schema::key::token, jwt}};
+
+    nlohmann::json response{{schema::key::request::code, k200OK},
+                            {schema::key::request::message, "Login successfully"},
+                            {schema::key::request::result, "ok"},
+                            {schema::key::request::data, response_part_data}};
+
+    callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
 }
-//
-// void User::get_user_by_id(model_delight::NlohmannJsonRequestPtr &&req, std::function<void(const HttpResponsePtr &)>
-// &&callback) {
-//     spdlog::info("Enter User::get_user_by_id");
-//     const auto required_id = req->getRequest().getParameter("user_id");
-//     if (required_id.empty()) {
-//         callback(model_delight::NlohmannResponse::new_common_response(&model_delight::HttpResponse{}
-//                                                                                .set_code(k400BadRequest)
-//                                                                                .set_message("Invalid user_id")
-//                                                                                .set_result("k400BadRequest")));
-//         return;
-//     }
-//     const auto user = service_delight::UserService::get_instance().get_user_by_id(required_id);
-//
-//     const auto json_response = std::make_unique<model_delight::UserResponse>();
-//     json_response->add_user(user.value())
-//             .set_code(user.has_value() ? k200OK : k404NotFound)
-//             .set_message(user.has_value() ? "Get user successfully" : "User does not exist")
-//             .set_result(user.has_value() ? "k200OK" : "k404NotFound");
-//     callback(model_delight::NlohmannResponse::new_common_response(json_response.get()));
-// }

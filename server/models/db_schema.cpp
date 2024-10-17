@@ -106,7 +106,7 @@ bsoncxx::document::value DbPermission::get_document() {
 
 bsoncxx::document::value DbOperationLog::get_document() {
     auto document = make_document(
-            kvp(key::bson_id, bsoncxx::oid{id}),
+            kvp(key::bson_id, id),
             kvp(key::user_id, user_id),
             kvp(key::bucket_name, bucket_name),
             kvp(key::object_name, object_name),

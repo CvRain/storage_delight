@@ -93,7 +93,7 @@ namespace service_delight {
         }
     }
 
-    schema::result<nlohmann::json, std::string> UserService::get_user_by_name(const std::string &user_name) {
+    schema::result<bsoncxx::document::value, std::string> UserService::get_user_by_name(const std::string &user_name) {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::get_user_by_name");
         try {
             const auto user_document = user_collection.find_one(make_document(kvp(schema::key::name, user_name)));
@@ -102,7 +102,7 @@ namespace service_delight {
                                            user_name);
                 return std::make_pair(std::nullopt, "User not found");
             }
-            return std::make_pair(bsoncxx::to_json(user_document.value().view()), "");
+            return std::make_pair(user_document, "");
         }
         catch (const std::exception &e) {
             Logger::get_instance().log(ConsoleLogger | BasicLogger, "UserService::get_user_by_name failed: {}",

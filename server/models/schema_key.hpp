@@ -8,6 +8,7 @@
 namespace schema::key {
     const std::string common_id = "id";
     const std::string bson_id = "_id";
+    const std::string oid = "$oid";
     const std::string name = "name";
     const std::string user_id = "user_id";
     const std::string password = "password";
@@ -33,6 +34,7 @@ namespace schema::key {
     const std::string current_state = "current_state";
     const std::string url = "url";
     const std::string bucket_id = "bucket_id";
+    const std::string token = "token";
 
     namespace permission {
         const std::string allow_read = "allow_read";
@@ -82,6 +84,19 @@ namespace schema::key {
         const std::string content_type_text_plain = "text/plain";
         const std::string content_type_text_html = "text/html";
         const std::string x_forwarded_for = "X-Forwarded-For";
+    }
+
+    namespace jwt {
+        constexpr std::string_view alg = "alg";
+        constexpr std::string_view typ = "typ";
+        constexpr std::string_view kid = "kid";
+        constexpr std::string_view iss = "iss";
+        constexpr std::string_view sub = "sub";
+        constexpr std::string_view aud = "aud";
+        constexpr std::string_view exp = "exp";
+        constexpr std::string_view nbf = "nbf";
+        constexpr std::string_view iat = "iat";
+        constexpr std::string_view jti = "jti";
     }
 }
 

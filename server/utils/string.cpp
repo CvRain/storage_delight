@@ -3,9 +3,9 @@
 //
 
 #include "string.hpp"
-#include <vector>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace util_delight {
     std::string StringEncryption::secret_string = "none-secret";
@@ -80,7 +80,7 @@ namespace util_delight {
      */
     std::string StringEncryption::base64_encode(const std::string &in) {
         ensure_openssl_initialized();
-// 定义用于内存操作和Base64编码的生物(BIO)对象
+        // 定义用于内存操作和Base64编码的生物(BIO)对象
         BIO *bmem, *b64;
         // 定义缓冲区指针，用于直接访问内存中的数据
         BUF_MEM *bptr;
@@ -123,13 +123,13 @@ namespace util_delight {
         unsigned char hash[EVP_MAX_MD_SIZE];
 
         // 执行HMAC-SHA256散列计算，并将结果存储在hash数组中，同时通过len返回计算出的散列长度。
-        HMAC(EVP_sha256(), key.c_str(), key.length(), (unsigned char *) data.c_str(), data.length(), hash, &len);
+        HMAC(EVP_sha256(), key.c_str(), key.length(), (unsigned char *)data.c_str(), data.length(), hash, &len);
 
         // 创建一个字符串流对象ss，用于构建最终散列值字符串。
         std::stringstream ss;
         // 遍历散列数据，并将其以16进制格式添加到字符串流中。
         for (unsigned int i = 0; i < len; i++) {
-            ss << std::hex << std::setw(2) << std::setfill('0') << (int) hash[i];
+            ss << std::hex << std::setw(2) << std::setfill('0') << (int)hash[i];
         }
 
         // 将字符串流中的内容转换为Base64编码形式，并作为函数的返回值。
@@ -149,13 +149,13 @@ namespace util_delight {
      * 然后使用HMAC SHA-256算法和密钥对连接后的字符串进行签名，最后将签名结果与前两部分通过点号连接，
      * 形成最终的JWT令牌字符串。
      */
-    std::string
-    StringEncryption::generate_jwt(const std::string &header, const std::string &payload, const std::string &secret) {
+    std::string StringEncryption::generate_jwt(const std::string &header, const std::string &payload,
+                                               const std::string &secret) {
         // 将头部和有效载荷分别进行Base64编码，并通过点号连接
-        std::string data = base64_encode(header) + "." + base64_encode(payload);
+        const std::string data = base64_encode(header) + "." + base64_encode(payload);
 
         // 使用HMAC SHA-256 算法和密钥对连接后的字符串进行签名
-        std::string signature = hmac_sha256(data, secret);
+        const std::string signature = hmac_sha256(data, secret);
 
         // 返回最终的JWT令牌字符串
         return data + "." + signature;
@@ -169,8 +169,8 @@ namespace util_delight {
      */
     std::string StringEncryption::generate_random_string(size_t length) {
         // 可选的字符集
-        const char charset[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-        const size_t max_index = sizeof(charset) - 1;
+        constexpr char charset[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        constexpr size_t max_index = sizeof(charset) - 1;
 
         // 使用随机设备初始化Mersenne Twister引擎
         std::random_device rd;
