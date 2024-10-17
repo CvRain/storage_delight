@@ -14,7 +14,7 @@ namespace api {
     class StorageSource : public drogon::HttpController<StorageSource> {
     public:
         METHOD_LIST_BEGIN
-        METHOD_ADD(StorageSource::add_source, "/add", HttpMethod::Put, model_delight::middleware::LoginAuth);
+        METHOD_ADD(StorageSource::add_source, "/add", HttpMethod::Put, model_delight::basic_value::middleware::LoginAuth);
 
         METHOD_LIST_END
         void add_source(model_delight::NlohmannJsonRequestPtr &&request,

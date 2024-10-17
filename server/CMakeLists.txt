@@ -72,7 +72,6 @@ add_executable(storage_server
         ${MODEL_SRC}
         ${UTILS_SRC}
         ${SERVICE_SRC}
-        ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include/zpp_bits.h
 )
 
 # ##############################################################################

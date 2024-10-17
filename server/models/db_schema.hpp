@@ -34,6 +34,7 @@ namespace schema {
     class DbUser final : public MongoDocument {
     public:
         bsoncxx::document::value get_document() override;
+        static nlohmann::json to_json(const bsoncxx::document::value& document);
 
         std::string name;
         std::string password;

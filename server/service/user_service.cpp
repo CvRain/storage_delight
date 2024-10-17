@@ -50,7 +50,7 @@ namespace service_delight {
         return std::make_pair(*user, "");
     }
 
-    schema::result<nlohmann::json, std::string> UserService::add_user_v2(const bsoncxx::document::value &value) {
+    schema::result<bsoncxx::document::value, std::string> UserService::add_user_v2(const bsoncxx::document::value &value) {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::add_user_v2");
 
         try {
@@ -76,7 +76,7 @@ namespace service_delight {
         }
     }
 
-    schema::result<nlohmann::json, std::string> UserService::get_user_by_id(const bsoncxx::oid &id) {
+    schema::result<bsoncxx::document::value, std::string> UserService::get_user_by_id(const bsoncxx::oid &id) {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::get_user_by_id");
         try {
             const auto user_document = user_collection.find_one(make_document(kvp(schema::key::bson_id, id)));
@@ -85,7 +85,7 @@ namespace service_delight {
                                            id.to_string());
                 return std::make_pair(std::nullopt, "User not found");
             }
-            return std::make_pair(bsoncxx::to_json(user_document.value().view()), "");
+            return std::make_pair(user_document, "");
         }
         catch (const std::exception &e) {
             Logger::get_instance().log(ConsoleLogger | BasicLogger, "UserService::get_user_by_id failed: {}", e.what());

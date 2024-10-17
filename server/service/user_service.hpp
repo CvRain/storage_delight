@@ -18,8 +18,8 @@ namespace service_delight {
     public:
         void init();
         schema::result<schema::DbUser, std::string> add_user(schema::DbUser *user);
-        schema::result<nlohmann::json, std::string> add_user_v2(const bsoncxx::document::value &user_document);
-        schema::result<nlohmann::json, std::string> get_user_by_id(const bsoncxx::oid &id);
+        schema::result<bsoncxx::document::value, std::string> add_user_v2(const bsoncxx::document::value &user_document);
+        schema::result<bsoncxx::document::value, std::string> get_user_by_id(const bsoncxx::oid &id);
         schema::result<bsoncxx::document::value, std::string> get_user_by_name(const std::string &user_name);
         bool user_is_exist(const std::string &user_name);
         bool user_is_exist(const bsoncxx::oid &id);
