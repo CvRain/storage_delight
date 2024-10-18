@@ -4,8 +4,11 @@
 
 #include "group_service.hpp"
 
+#include "basic_value.hpp"
 #include "logger.hpp"
 #include "schema_key.hpp"
+
+using namespace model_delight::bson_operator;
 
 namespace service_delight {
     void GroupService::init() {
@@ -83,7 +86,8 @@ namespace service_delight {
         Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::add_member");
         try {
             const auto filter = make_document(kvp(schema::key::bson_id, group_id));
-            const auto update = make_document("$addToSet", make_document(kvp(schema::key::members_id, member_id)));
+            const auto update =
+                    make_document(update::array::add_to_set, make_document(kvp(schema::key::members_id, member_id)));
 
             if (const auto result = group_collection.update_one(filter.view(), update.view()); !result.has_value()) {
                 Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
@@ -104,7 +108,8 @@ namespace service_delight {
         Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::remove_member");
         try {
             const auto filter = make_document(kvp(schema::key::bson_id, group_id));
-            const auto update = make_document("$pull", make_document(kvp(schema::key::members_id, member_id)));
+            const auto update =
+                    make_document(update::array::pull, make_document(kvp(schema::key::members_id, member_id)));
 
             if (const auto result = group_collection.update_one(filter.view(), update.view()); !result.has_value()) {
                 Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
@@ -121,27 +126,186 @@ namespace service_delight {
     }
 
     auto GroupService::get_members(const bsoncxx::oid &group_id)
-            -> schema::result<std::vector<bsoncxx::oid>, std::string> {}
+            -> schema::result<std::vector<bsoncxx::oid>, std::string> {
+        Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::get_members");
+        try {
+            const auto filter = make_document(kvp(schema::key::bson_id, group_id));
+            if (const auto doc = group_collection.find_one(filter.view()); doc.has_value()) {
+                const auto [value] = doc.value().find(schema::key::members_id)->get_array();
+                std::vector<bsoncxx::oid> member_ids;
+                for (const auto &member: value) {
+                    member_ids.emplace_back(member.get_oid().value);
+                }
+                return std::make_pair(member_ids, "");
+            }
+            return std::make_pair(std::nullopt, "Group not found");
+        }
+        catch (const std::exception &e) {
+            Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
+                                       "Exception in GroupService::get_members: {}", e.what());
+            return std::make_pair(std::nullopt, e.what());
+        }
+    }
 
     auto GroupService::rename(const bsoncxx::oid &group_id, const std::string &new_name)
-            -> schema::result<bool, std::string> {}
+            -> schema::result<bool, std::string> {
+        Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::rename");
+        const auto filter = make_document(kvp(schema::key::bson_id, group_id));
+        try {
+            const auto update = make_document(kvp(update::field::set, make_document(kvp(schema::key::name, new_name))));
+            if (const auto result = group_collection.update_one(filter.view(), update.view()); !result.has_value()) {
+                Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
+                                           "GroupService::rename failed");
+                return std::make_pair(false, "GroupService::rename failed");
+            }
+            return std::make_pair(true, "");
+        }
+        catch (const std::exception &e) {
+            Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
+                                       "Exception in GroupService::rename: {}", e.what());
+            return std::make_pair(false, e.what());
+        }
+    }
 
     auto GroupService::is_member(const bsoncxx::oid &group_id, const bsoncxx::oid &member_id)
-            -> schema::result<bool, std::string> {}
+            -> schema::result<bool, std::string> {
+        Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::is_member");
+        try {
+            const auto filter = make_document(kvp(schema::key::bson_id, group_id));
+            if (const auto doc = group_collection.find_one(filter.view()); doc.has_value()) {
+                for (const auto value = doc.value().find(schema::key::members_id)->get_array().value;
+                     const auto &member: value) {
+                    if (member.get_oid().value == member_id) {
+                        return std::make_pair(true, "");
+                    }
+                }
+            }
+            return std::make_pair(false, "");
+        }
+        catch (const std::exception &e) {
+            Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
+                                       "Exception in GroupService::is_member: {}", e.what());
+            return std::make_pair(false, e.what());
+        }
+    }
 
-    auto GroupService::get_all_groups() -> schema::result<std::vector<schema::DbGroup>, std::string> {}
+    auto GroupService::get_all_groups() -> schema::result<std::vector<bsoncxx::document::value>, std::string> {
+        Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::get_all_groups");
+        try {
+            std::vector<bsoncxx::document::value> groups;
+            auto cursor = group_collection.find({});
+            for (auto doc: cursor) {
+                groups.emplace_back(doc);
+            }
+            return std::make_pair(groups, "");
+        }
+        catch (const std::exception &e) {
+            Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
+                                       "Exception in GroupService::get_all_groups: {}", e.what());
+            return std::make_pair(std::nullopt, e.what());
+        }
+    }
 
-    auto GroupService::delete_group(const bsoncxx::oid &group_id) -> schema::result<bool, std::string> {}
+    auto GroupService::delete_group(const bsoncxx::oid &group_id) -> schema::result<bool, std::string> {
+        Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::delete_group");
+        try {
+            const auto filter = make_document(kvp(schema::key::bson_id, group_id));
+            if (const auto result = group_collection.delete_one(filter.view()); result && result->deleted_count() > 0) {
+                return std::make_pair(true, "");
+            }
+            Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
+                                       "GroupService::delete_group failed");
+            return std::make_pair(false, "GroupService::delete_group failed");
+        }
+        catch (const std::exception &e) {
+            Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
+                                       "Exception in GroupService::delete_group: {}", e.what());
+            return std::make_pair(false, e.what());
+        }
+    }
 
     auto GroupService::add_bucket(const bsoncxx::oid &group_id, const bsoncxx::oid &bucket_id)
-            -> schema::result<bool, std::string> {}
+            -> schema::result<bool, std::string> {
+        Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::add_bucket");
+        try {
+            const auto filter = make_document(kvp(schema::key::bson_id, group_id));
+            const auto update =
+                    make_document(kvp(update::array::push, make_document(kvp(schema::key::bucket_id, bucket_id))));
+            if (const auto result = group_collection.update_one(filter.view(), update.view()); !result.has_value()) {
+                Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
+                                           "GroupService::add_bucket failed");
+            }
+            return std::make_pair(true, "");
+        }
+        catch (const std::exception &e) {
+            Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
+                                       "Exception in GroupService::add_bucket: {}", e.what());
+            return std::make_pair(false, e.what());
+        }
+    }
 
     auto GroupService::remove_bucket(const bsoncxx::oid &group_id, const bsoncxx::oid &bucket_id)
-            -> schema::result<bool, std::string> {}
+            -> schema::result<bool, std::string> {
+        Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::remove_bucket");
+        try {
+            const auto filter = make_document(kvp(schema::key::bson_id, group_id));
+            const auto update =
+                    make_document(kvp(update::array::pull, make_document(kvp(schema::key::bucket_id, bucket_id))));
+            if (const auto result = group_collection.update_one(filter.view(), update.view()); !result.has_value()) {
+                Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
+                                           "GroupService::remove_bucket failed");
+                return std::make_pair(false, "GroupService::remove_bucket failed");
+            }
+            return std::make_pair(true, "");
+        }
+        catch (const std::exception &e) {
+            Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
+                                       "Exception in GroupService::remove_bucket: {}", e.what());
+            return std::make_pair(false, e.what());
+        }
+    }
 
     auto GroupService::get_bucket_ids(const bsoncxx::oid &group_id)
-            -> schema::result<std::vector<bsoncxx::oid>, std::string> {}
+            -> schema::result<std::vector<bsoncxx::oid>, std::string> {
+        Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::get_bucket_ids");
+        try {
+            const auto filter = make_document(kvp(schema::key::bson_id, group_id));
+            if (const auto doc = group_collection.find_one(filter.view()); doc.has_value()) {
+                std::vector<bsoncxx::oid> bucket_ids;
+                for (const auto value = doc.value().find(schema::key::bucket_id)->get_array().value;
+                     const auto &bucket: value) {
+                    bucket_ids.emplace_back(bucket.get_oid().value);
+                }
+                return std::make_pair(bucket_ids, "");
+            }
+            return std::make_pair(std::nullopt, "GroupService::get_bucket_ids failed");
+        }
+        catch (const std::exception &e) {
+            Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
+                                       "Exception in GroupService::get_bucket_ids: {}", e.what());
+            return std::make_pair(std::nullopt, e.what());
+        }
+    }
 
     auto GroupService::is_bucket_exist(const bsoncxx::oid &group_id, const bsoncxx::oid &bucket_id)
-            -> schema::result<bool, std::string> {}
+            -> schema::result<bool, std::string> {
+        Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::is_bucket_exist");
+        try {
+            const auto filter = make_document(kvp(schema::key::bson_id, group_id));
+            if (const auto doc = group_collection.find_one(filter.view()); doc.has_value()) {
+                for (const auto value = doc.value().find(schema::key::bucket_id)->get_array().value;
+                     const auto &bucket: value) {
+                    if (bucket.get_oid().value == bucket_id) {
+                        return std::make_pair(true, "");
+                    }
+                }
+            }
+            return std::make_pair(false, "GroupService::is_bucket_exist failed");
+        }
+        catch (const std::exception &e) {
+            Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
+                                       "Exception in GroupService::is_bucket_exist: {}", e.what());
+            return std::make_pair(false, e.what());
+        }
+    }
 } // namespace service_delight

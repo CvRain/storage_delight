@@ -31,7 +31,7 @@ namespace service_delight {
 
         auto is_member(const bsoncxx::oid &group_id, const bsoncxx::oid &member_id) -> schema::result<bool, std::string>; // todo
 
-        auto get_all_groups() -> schema::result<std::vector<schema::DbGroup>, std::string>; // todo
+        auto get_all_groups() -> schema::result<std::vector<bsoncxx::document::value>, std::string>; // todo
 
         auto delete_group(const bsoncxx::oid &group_id) -> schema::result<bool, std::string>; // todo
 
