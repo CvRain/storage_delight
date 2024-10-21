@@ -5,18 +5,13 @@
 #ifndef STORAGE_DELIGHT_STRING_ENCRYPTION_H
 #define STORAGE_DELIGHT_STRING_ENCRYPTION_H
 
-#include <openssl/sha.h>
 #include <openssl/evp.h>
-#include <openssl/hmac.h>
-#include <openssl/bio.h>
 #include <openssl/buffer.h>
 #include <chrono>
-#include <ctime>
-#include <iomanip>
 #include <random>
 #include <nlohmann/json.hpp>
 
-#include "date.h"
+#include "drogon_specialization.hpp"
 #include "models/type.hpp"
 
 namespace util_delight {

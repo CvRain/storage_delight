@@ -3,9 +3,13 @@
 //
 
 #include "string.hpp"
+#include <openssl/sha.h>
+#include <openssl/hmac.h>
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include "utils/date.h"
 
 namespace util_delight {
     std::string StringEncryption::secret_string = "none-secret";
@@ -92,7 +96,7 @@ namespace util_delight {
         // 将Base64 BIO对象推入到内存BIO对象之上，形成一个管道
         b64 = BIO_push(b64, bmem);
         // 向Base64 BIO对象写入待编码的数据
-        BIO_write(b64, in.c_str(), in.size());
+        BIO_write(b64, in.c_str(), static_cast<int>(in.size()));
         // 刷新BIO对象，确保所有数据都被正确处理
         BIO_flush(b64);
         // 获取编码后的数据内存指针
@@ -123,13 +127,14 @@ namespace util_delight {
         unsigned char hash[EVP_MAX_MD_SIZE];
 
         // 执行HMAC-SHA256散列计算，并将结果存储在hash数组中，同时通过len返回计算出的散列长度。
-        HMAC(EVP_sha256(), key.c_str(), key.length(), (unsigned char *)data.c_str(), data.length(), hash, &len);
+        HMAC(EVP_sha256(), key.c_str(), static_cast<int>(key.length()),
+             reinterpret_cast<const unsigned char *>(data.data()), data.length(), hash, &len);
 
         // 创建一个字符串流对象ss，用于构建最终散列值字符串。
         std::stringstream ss;
         // 遍历散列数据，并将其以16进制格式添加到字符串流中。
         for (unsigned int i = 0; i < len; i++) {
-            ss << std::hex << std::setw(2) << std::setfill('0') << (int)hash[i];
+            ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(hash[i]);
         }
 
         // 将字符串流中的内容转换为Base64编码形式，并作为函数的返回值。
@@ -204,27 +209,25 @@ namespace util_delight {
     std::string StringEncryption::base64_decode(const std::string &in) {
         ensure_openssl_initialized();
 
-        int len = in.size();
-        int outlen;
+        const auto len = in.size();
         std::string out;
 
         // Allocate space for the decoded data.
         // The maximum length of the decoded data is 3/4 * len.
         out.resize(len * 3 / 4);
 
-        BIO *bio, *b64;
-        bio = BIO_new_mem_buf(in.data(), -1); // Use -1 to indicate the entire buffer.
-        b64 = BIO_new(BIO_f_base64());
+        BIO *bio = BIO_new_mem_buf(in.data(), -1); // Use -1 to indicate the entire buffer.
+        BIO *b64 = BIO_new(BIO_f_base64());
         bio = BIO_push(b64, bio);
 
         // Set flags to avoid line breaks.
         BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
 
         // Read the decoded data from the BIO.
-        outlen = BIO_read(bio, &out[0], out.size());
+        const int out_len = BIO_read(bio, &out[0], static_cast<int>(out.size()));
 
         // Resize the output string to the actual size.
-        out.resize(outlen);
+        out.resize(out_len);
 
         // Free the BIO resources.
         BIO_free_all(bio);
@@ -259,20 +262,16 @@ namespace util_delight {
         std::string signature = parts[2];
 
         // 验证签名
-        std::string expected_signature = hmac_sha256(parts[0] + "." + parts[1], secret);
+        const std::string expected_signature = hmac_sha256(parts[0] + "." + parts[1], secret);
         if (expected_signature != signature) {
             throw std::invalid_argument("Signature verification failed");
         }
 
-        // 解析JSON
-        nlohmann::json header;
-        nlohmann::json payload;
-
         try {
-            // 解析头部
-            header = nlohmann::json::parse(header_json);
-            // 解析有效载荷
-            payload = nlohmann::json::parse(payload_json);
+            // 解析JSON
+            nlohmann::json header = nlohmann::json::parse(header_json);
+            nlohmann::json payload = nlohmann::json::parse(payload_json);
+
         } catch (const nlohmann::json::parse_error& e) {
             throw std::invalid_argument("JSON parsing error: " + std::string(e.what()));
         }

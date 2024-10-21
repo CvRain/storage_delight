@@ -23,6 +23,14 @@ namespace service_delight {
 
         auto add_member(const bsoncxx::oid &group_id, const bsoncxx::oid &member_id) -> schema::result<bool, std::string>;
 
+        /**
+         * 批量插入成员至用户组
+         * @param group_id 需要插入的用户工作组oid
+         * @param member_ids  需要插入的用户id
+         * @return 返回插入信息，以及错误原因
+         */
+        auto add_members(const bsoncxx::oid &group_id, const std::vector<bsoncxx::oid> &member_ids) -> schema::result<bool, std::string>;
+
         auto remove_member(const bsoncxx::oid &group_id, const bsoncxx::oid &member_id) -> schema::result<bool, std::string>;
 
         auto get_members(const bsoncxx::oid &group_id) -> schema::result<std::vector<bsoncxx::oid>, std::string>; // todo

@@ -7,6 +7,7 @@
 
 #include <bsoncxx/builder/basic/document.hpp>
 #include <bsoncxx/json.hpp>
+#include <drogon/HttpRequest.h>
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
 #include <mongocxx/pool.hpp>
@@ -39,6 +40,8 @@ namespace service_delight {
     private:
         std::unique_ptr<MongoService> mongo_service;
     };
+
+    static std::string get_request_ip(const drogon::HttpRequestPtr& request);
 } // namespace service_delight
 
 #endif //MONGO_SERVICE_HPP

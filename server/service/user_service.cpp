@@ -50,7 +50,8 @@ namespace service_delight {
         return std::make_pair(*user, "");
     }
 
-    schema::result<bsoncxx::document::value, std::string> UserService::add_user_v2(const bsoncxx::document::value &value) {
+    schema::result<bsoncxx::document::value, std::string>
+    UserService::add_user_v2(const bsoncxx::document::value &value) {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::add_user_v2");
 
         try {
@@ -119,29 +120,75 @@ namespace service_delight {
 
     bool UserService::user_is_exist(const bsoncxx::oid &id) {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::user_is_exist");
-        try
-        {
+        try {
             const auto result = user_collection.find_one(make_document(kvp(schema::key::bson_id, id)));
             return result.has_value();
         }
-        catch(const std::exception& e)
-        {
+        catch (const std::exception &e) {
             Logger::get_instance().log(ConsoleLogger | BasicLogger, spdlog::level::err,
-             "UserService::user_is_exist failed: {}", e.what());
+                                       "UserService::user_is_exist failed: {}", e.what());
             return false;
         }
-        
     }
 
     bool UserService::admin_is_exist() {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::admin_is_exist");
-        try{
+        try {
             const auto result = user_collection.find_one(make_document(kvp(schema::key::user_role, schema::TypeAdmin)));
             return result.has_value();
-        }catch(const std::exception &e){
+        }
+        catch (const std::exception &e) {
             Logger::get_instance().log(ConsoleLogger | BasicLogger, spdlog::level::err,
-             "UserService::admin_is_exist failed: {}", e.what());
+                                       "UserService::admin_is_exist failed: {}", e.what());
             return false;
+        }
+    }
+    auto UserService::list_user_ids() -> schema::result<std::vector<bsoncxx::oid>, std::string> {
+        Logger::get_instance().log(ConsoleLogger, "Enter UserService::list_user_ids");
+        try {
+            auto cursor = user_collection.find(make_document());
+            std::vector<bsoncxx::oid> ids;
+            for (auto doc: cursor) {
+                ids.emplace_back(doc[schema::key::bson_id].get_oid().value);
+            }
+            return std::make_pair(ids, "");
+        }
+        catch (const std::exception &e) {
+            Logger::get_instance().log(ConsoleLogger | BasicLogger, spdlog::level::err,
+                                       "UserService::list_user_ids failed: {}", e.what());
+            return std::make_pair(std::nullopt, e.what());
+        }
+    }
+
+    auto UserService::list_all_users() -> schema::result<std::vector<bsoncxx::document::value>, std::string> {
+        Logger::get_instance().log(ConsoleLogger, "Enter UserService::list_all_users");
+        try {
+            auto cursor = user_collection.find(make_document());
+            std::vector<bsoncxx::document::value> users;
+            for (auto doc: cursor) {
+                users.emplace_back(doc);
+            }
+            return std::make_pair(users, "");
+        }
+        catch (const std::exception &e) {
+            Logger::get_instance().log(ConsoleLogger | BasicLogger, spdlog::level::err,
+                                       "UserService::list_all_users failed: {}", e.what());
+            return std::make_pair(std::nullopt, e.what());
+        }
+    }
+    auto UserService::delete_user(bsoncxx::oid user_id) -> schema::result<bool, std::string> {
+        Logger::get_instance().log(ConsoleLogger, "Enter UserService::delete_user");
+        try {
+            const auto filter = make_document(kvp(schema::key::bson_id, user_id));
+            if (const auto result = user_collection.delete_one(filter.view());
+                result && result.value().deleted_count() >0) {
+                return std::make_pair(true, "");
+            }
+            return std::make_pair(false, "User not found");
+        }catch (const std::exception &e) {
+            Logger::get_instance().log(ConsoleLogger | BasicLogger, spdlog::level::err,
+                                   "UserService::delete_user failed: {}", e.what());
+            return std::make_pair(false, e.what());
         }
     }
 } // namespace service_delight

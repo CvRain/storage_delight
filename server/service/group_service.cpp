@@ -3,7 +3,6 @@
 //
 
 #include "group_service.hpp"
-
 #include "basic_value.hpp"
 #include "logger.hpp"
 #include "schema_key.hpp"
@@ -86,8 +85,8 @@ namespace service_delight {
         Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::add_member");
         try {
             const auto filter = make_document(kvp(schema::key::bson_id, group_id));
-            const auto update =
-                    make_document(update::array::add_to_set, make_document(kvp(schema::key::members_id, member_id)));
+            const auto update = make_document(
+                    kvp(update::array::add_to_set, make_document(kvp(schema::key::members_id, member_id))));
 
             if (const auto result = group_collection.update_one(filter.view(), update.view()); !result.has_value()) {
                 Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
@@ -102,6 +101,35 @@ namespace service_delight {
             return std::make_pair(false, e.what());
         }
     }
+    auto GroupService::add_members(const bsoncxx::oid &group_id, const std::vector<bsoncxx::oid> &member_ids)
+            -> schema::result<bool, std::string> {
+        Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::add_members");
+        try {
+            const auto filter = make_document(kvp(schema::key::bson_id, group_id));
+
+            //todo
+            bsoncxx::builder::basic::array members;
+            for(const auto &member_id : member_ids) {
+                members.append(member_id);
+            }
+
+            const auto update = make_document(kvp(update::array::push,
+                make_document(kvp(schema::key::members_id, members))));
+
+
+            if(const auto result = group_collection.update_one(filter.view(), update.view()); !result.has_value()) {
+                Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
+                                           "GroupService::add_members failed");
+                return std::make_pair(false, "GroupService::add_members failed");
+            }
+            return std::make_pair(true, "");
+
+        }catch (const std::exception &e) {
+            Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
+                                       "Exception in GroupService::add_members: {}", e.what());
+            return std::make_pair(false, e.what());
+        }
+    }
 
     auto GroupService::remove_member(const bsoncxx::oid &group_id, const bsoncxx::oid &member_id)
             -> schema::result<bool, std::string> {
@@ -109,7 +137,7 @@ namespace service_delight {
         try {
             const auto filter = make_document(kvp(schema::key::bson_id, group_id));
             const auto update =
-                    make_document(update::array::pull, make_document(kvp(schema::key::members_id, member_id)));
+                    make_document(kvp(update::array::pull, make_document(kvp(schema::key::members_id, member_id))));
 
             if (const auto result = group_collection.update_one(filter.view(), update.view()); !result.has_value()) {
                 Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,

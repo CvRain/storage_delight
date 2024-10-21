@@ -11,15 +11,15 @@ namespace api {
     public:
         //todo: add middleware
         METHOD_LIST_BEGIN
-        METHOD_ADD(Group::add_member, "/add_member", Patch);
-        METHOD_ADD(Group::remove_member, "/remove_member", Delete);
+        METHOD_ADD(Group::add_member, "/members", Patch);
+        METHOD_ADD(Group::remove_member, "/members", Delete);
 
 
         METHOD_LIST_END
-        void add_member(model_delight::NlohmannJsonRequestPtr &&req,
+        static void add_member(model_delight::NlohmannJsonRequestPtr &&req,
                         std::function<void(const HttpResponsePtr &)> &&callback);
 
-        void remove_member(model_delight::NlohmannJsonRequestPtr &&req,
+        static void remove_member(model_delight::NlohmannJsonRequestPtr &&req,
                            std::function<void(const HttpResponsePtr &)> &&callback);
     };
 } // namespace api
