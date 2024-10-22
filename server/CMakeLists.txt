@@ -49,6 +49,7 @@ set(UTILS_SRC
         utils/string.hpp
         utils/string.cpp
         utils/singleton_prototype.hpp
+        utils/item.h
 )
 
 set(SERVICE_SRC

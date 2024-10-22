@@ -22,30 +22,33 @@ void User::add_user(model_delight::NlohmannJsonRequestPtr &&req,
 
     const auto json_body = req->getNlohmannJsonBody();
     if (json_body.at(schema::key::user_role).get<int>() == schema::UserRole::TypeNone) {
-        callback(model_delight::NlohmannResponse::new_common_response(&model_delight::HttpResponse{}
-                                                                               .set_code(k400BadRequest)
-                                                                               .set_message("Invalid role")
-                                                                               .set_result("k400BadRequest")));
+        nlohmann::json response{{model_delight::basic_value::request::code, k400BadRequest},
+                                {model_delight::basic_value::request::message, "Invalid role"},
+                                {model_delight::basic_value::request::result, "k400BadRequest"},
+                                {model_delight::basic_value::request::data, nlohmann::json{}}};
+        callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
         return;
     }
 
     // 检查role是否合法
     if (const auto user_role = json_body.at(schema::key::user_role).get<int>();
         user_role < 0 || user_role >= schema::TypeRoleMax) {
-        callback(model_delight::NlohmannResponse::new_common_response(&model_delight::HttpResponse{}
-                                                                               .set_code(k400BadRequest)
-                                                                               .set_message("Invalid role")
-                                                                               .set_result("k400BadRequest")));
+        nlohmann::json response{{model_delight::basic_value::request::code, k400BadRequest},
+                                {model_delight::basic_value::request::message, "Invalid role"},
+                                {model_delight::basic_value::request::result, "k400BadRequest"},
+                                {model_delight::basic_value::request::data, nlohmann::json{}}};
+        callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
         return;
     }
 
     // 当role为0时，检查数据库中是否已经存在管理员
     if (const auto user_role = json_body.at(schema::key::user_role).get<int>();
         user_role == schema::TypeAdmin && service_delight::UserService::get_instance().admin_is_exist()) {
-        callback(model_delight::NlohmannResponse::new_common_response(&model_delight::HttpResponse{}
-                                                                               .set_code(k400BadRequest)
-                                                                               .set_message("There is already an admin")
-                                                                               .set_result("k400BadRequest")));
+        nlohmann::json response{{model_delight::basic_value::request::code, k400BadRequest},
+                                {model_delight::basic_value::request::message, "There is already an admin"},
+                                {model_delight::basic_value::request::result, "k400BadRequest"},
+                                {model_delight::basic_value::request::data, nlohmann::json{}}};
+        callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
         return;
     }
 
@@ -57,49 +60,67 @@ void User::add_user(model_delight::NlohmannJsonRequestPtr &&req,
     user.update_time = user.create_time;
     user.group_id = bsoncxx::oid{};
 
-    nlohmann::json json_response;
-    if (const auto [fst, snd] = service_delight::UserService::get_instance().add_user(&user); fst.has_value()) {
-        const auto &result_user = fst.value();
-        json_response[schema::key::user_id] = result_user.id.to_string();
-        json_response[schema::key::name] = result_user.name;
-        json_response[schema::key::user_role] = result_user.role;
-        json_response[schema::key::create_time] = result_user.create_time;
-        json_response[schema::key::update_time] = result_user.update_time;
-        json_response[schema::key::group_id] = result_user.group_id.to_string();
-    }
-    else {
-        nlohmann::json response{{model_delight::basic_value::request::code, k400BadRequest},
-                                {model_delight::basic_value::request::message, "add user failed"},
-                                {model_delight::basic_value::request::result, snd}};
+    auto session = service_delight::MongoProvider::get_instance().start_session();
+    service_delight::MongoProvider::start_transaction(session);
+
+    try {
+        nlohmann::json json_response;
+        if (const auto [fst, snd] = service_delight::UserService::get_instance().add_user(&user); fst.has_value()) {
+            const auto &result_user = fst.value();
+            json_response[schema::key::user_id] = result_user.id.to_string();
+            json_response[schema::key::name] = result_user.name;
+            json_response[schema::key::user_role] = result_user.role;
+            json_response[schema::key::create_time] = result_user.create_time;
+            json_response[schema::key::update_time] = result_user.update_time;
+            json_response[schema::key::group_id] = result_user.group_id.to_string();
+        }
+        else {
+            nlohmann::json response{{model_delight::basic_value::request::code, k400BadRequest},
+                                    {model_delight::basic_value::request::message, "add user failed"},
+                                    {model_delight::basic_value::request::result, snd},
+                                    {model_delight::basic_value::request::data, nlohmann::json{}}};
+            callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
+            service_delight::MongoProvider::abort_transaction(session);
+            return;
+        }
+
+        nlohmann::json response{{model_delight::basic_value::request::code, k200OK},
+                                {model_delight::basic_value::request::message, "add user success"},
+                                {model_delight::basic_value::request::result, "ok"},
+                                {model_delight::basic_value::request::data, json_response}};
+
         callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
-        return;
+
+        schema::DbGroup group;
+        group.id = user.group_id;
+        group.owner_id = bsoncxx::oid{user.id};
+        group.create_time = user.create_time;
+        group.update_time = user.update_time;
+        group.name = std::string{"group for "} + user.name;
+        service_delight::GroupService::get_instance().add_group(&group);
+
+
+        schema::DbOperationLog operation_log;
+        operation_log.action = "add_user";
+        operation_log.bucket_name = "";
+        operation_log.object_name = "";
+        operation_log.current_state = "";
+        operation_log.description = "add user " + user.name;
+        operation_log.previous_state = "";
+        operation_log.user_id = user.id;
+        service_delight::LogService::get_instance().record_operation(&operation_log);
+        service_delight::MongoProvider::commit_transaction(session);
     }
-
-    nlohmann::json response{{model_delight::basic_value::request::code, k200OK},
-                            {model_delight::basic_value::request::message, "add user success"},
-                            {model_delight::basic_value::request::result, "ok"},
-                            {model_delight::basic_value::request::data, json_response}};
-
-    callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
-
-    schema::DbGroup group;
-    group.id = user.group_id;
-    group.owner_id = bsoncxx::oid{user.id};
-    group.create_time = user.create_time;
-    group.update_time = user.update_time;
-    group.name = std::string{"group for "} + user.name;
-    service_delight::GroupService::get_instance().add_group(&group);
-
-
-    schema::DbOperationLog operation_log;
-    operation_log.action = "add_user";
-    operation_log.bucket_name = "";
-    operation_log.object_name = "";
-    operation_log.current_state = "";
-    operation_log.description = "add user " + user.name;
-    operation_log.previous_state = "";
-    operation_log.user_id = user.id;
-    service_delight::LogService::get_instance().record_operation(&operation_log);
+    catch (const std::exception &e) {
+        service_delight::Logger::get_instance().log(service_delight::BasicLogger | service_delight::ConsoleLogger,
+                                                    "add user failed: {}", e.what());
+        nlohmann::json exception_response{{model_delight::basic_value::request::code, k500InternalServerError},
+                                          {model_delight::basic_value::request::message, "add user failed"},
+                                          {model_delight::basic_value::request::result, e.what()},
+                                          {model_delight::basic_value::request::data, nlohmann::json{}}};
+        callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(exception_response)));
+        service_delight::MongoProvider::abort_transaction(session);
+    };
 }
 
 void User::login(model_delight::NlohmannJsonRequestPtr &&req, std::function<void(const HttpResponsePtr &)> &&callback) {
@@ -202,16 +223,20 @@ void User::login(model_delight::NlohmannJsonRequestPtr &&req, std::function<void
     // callback(HttpResponse::newHttpJsonResponse(json_response));
 
     // 使用nlohmann::json进行重构
-    nlohmann::json header{{model_delight::basic_value::jwt::alg, "HS256"}, {model_delight::basic_value::jwt::typ, "JWT"}};
+    nlohmann::json header{{model_delight::basic_value::jwt::alg, "HS256"},
+                          {model_delight::basic_value::jwt::typ, "JWT"}};
 
     service_delight::Logger::get_instance().log(service_delight::ConsoleLogger, spdlog::level::debug,
                                                 "User::login header: {}", header.dump());
 
     const auto current_time = util_delight::Date::get_current_timestamp_32();
 
-    nlohmann::json payload{{model_delight::basic_value::jwt::iss, "storage_delight"}, {model_delight::basic_value::jwt::exp, current_time + 72000},
-                           {model_delight::basic_value::jwt::sub, "login"},           {model_delight::basic_value::jwt::iat, current_time},
-                           {model_delight::basic_value::jwt::aud, user_role},         {schema::key::user_id, user_id}};
+    nlohmann::json payload{{model_delight::basic_value::jwt::iss, "storage_delight"},
+                           {model_delight::basic_value::jwt::exp, current_time + 72000},
+                           {model_delight::basic_value::jwt::sub, "login"},
+                           {model_delight::basic_value::jwt::iat, current_time},
+                           {model_delight::basic_value::jwt::aud, user_role},
+                           {schema::key::user_id, user_id}};
 
     service_delight::Logger::get_instance().log(service_delight::ConsoleLogger, spdlog::level::debug,
                                                 "User::login payload: {}", payload.dump());
@@ -276,10 +301,11 @@ void User::get_user_by_id(model_delight::NlohmannJsonRequestPtr &&req,
             return;
         }
 
-        nlohmann::json response{{model_delight::basic_value::request::code, k200OK},
-                                {model_delight::basic_value::request::message, "User found"},
-                                {model_delight::basic_value::request::result, "ok"},
-                                {model_delight::basic_value::request::data, schema::DbUser::to_json(user_info.value())}};
+        nlohmann::json response{
+                {model_delight::basic_value::request::code, k200OK},
+                {model_delight::basic_value::request::message, "User found"},
+                {model_delight::basic_value::request::result, "ok"},
+                {model_delight::basic_value::request::data, schema::DbUser::to_json(user_info.value())}};
         callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
 
         schema::DbOperationLog operation_log{};

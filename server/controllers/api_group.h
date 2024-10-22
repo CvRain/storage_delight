@@ -11,8 +11,8 @@ namespace api {
     public:
         //todo: add middleware
         METHOD_LIST_BEGIN
-        METHOD_ADD(Group::add_member, "/members", Patch);
-        METHOD_ADD(Group::remove_member, "/members", Delete);
+        METHOD_ADD(Group::add_member, "/members/add", Patch);
+        //METHOD_ADD(Group::remove_member, "/members/remove", Delete);
 
 
         METHOD_LIST_END

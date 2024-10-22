@@ -29,6 +29,7 @@ namespace service_delight {
                 Logger::get_instance().log(BasicLogger | ConsoleLogger, "GroupService::add_group failed");
                 return std::make_pair(std::nullopt, "GroupService::add_group failed");
             }
+
             const auto id = result.value().inserted_id().get_string().value;
             Logger::get_instance().log(BasicLogger | ConsoleLogger, "GroupService::add_group success {}", id);
             return std::make_pair(id.data(), "");
@@ -43,8 +44,8 @@ namespace service_delight {
     auto GroupService::get_group(const bsoncxx::oid &group_id) -> schema::result<schema::DbGroup, std::string> {
         Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::get_group");
         try {
-            const auto result = group_collection.find_one(make_document(kvp(schema::key::bson_id, group_id)));
-            if (result.has_value()) {
+            if (const auto result = group_collection.find_one(make_document(kvp(schema::key::bson_id, group_id)));
+                result.has_value()) {
                 const auto &db_group = result.value();
                 const auto group = schema::DbGroup::from_bson(db_group);
                 return std::make_pair(group, "");
@@ -52,7 +53,7 @@ namespace service_delight {
             return std::make_pair(std::nullopt, "Group not found");
         }
         catch (const std::exception &e) {
-            Logger::get_instance().log(BasicLogger | ConsoleLogger, "Exception in GroupService::get_group: %s",
+            Logger::get_instance().log(BasicLogger | ConsoleLogger, "Exception in GroupService::get_group: {}",
                                        e.what());
             return std::make_pair(std::nullopt, e.what());
         }
@@ -86,7 +87,7 @@ namespace service_delight {
         try {
             const auto filter = make_document(kvp(schema::key::bson_id, group_id));
             const auto update = make_document(
-                    kvp(update::array::add_to_set, make_document(kvp(schema::key::members_id, member_id))));
+                    kvp(update::array::push, make_document(kvp(schema::key::members_id, member_id))));
 
             if (const auto result = group_collection.update_one(filter.view(), update.view()); !result.has_value()) {
                 Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
@@ -101,30 +102,33 @@ namespace service_delight {
             return std::make_pair(false, e.what());
         }
     }
-    auto GroupService::add_members(const bsoncxx::oid &group_id, const std::vector<bsoncxx::oid> &member_ids)
+
+    auto GroupService::add_members(const bsoncxx::oid &group_id, const std::vector<bsoncxx::oid> &members_id)
             -> schema::result<bool, std::string> {
         Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::add_members");
         try {
             const auto filter = make_document(kvp(schema::key::bson_id, group_id));
 
-            //todo
-            bsoncxx::builder::basic::array members;
-            for(const auto &member_id : member_ids) {
-                members.append(member_id);
-            }
-
-            const auto update = make_document(kvp(update::array::push,
-                make_document(kvp(schema::key::members_id, members))));
-
-
-            if(const auto result = group_collection.update_one(filter.view(), update.view()); !result.has_value()) {
-                Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
-                                           "GroupService::add_members failed");
-                return std::make_pair(false, "GroupService::add_members failed");
+            // Push each member ID separately
+            for (const auto &member_id : members_id) {
+                //检查插入的id是否已经存在
+                if(const auto result = is_member(group_id, member_id).first; result == true) {
+                    Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::warn,
+                                                "Member ID already exists in the group: {} Skip", member_id.to_string());
+                    continue;
+                }
+                const auto update = make_document(kvp(update::array::push, make_document(kvp(schema::key::members_id, member_id))));
+                if (const auto result = group_collection.update_one(filter.view(), update.view()); !result.has_value()) {
+                    Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
+                                               "GroupService::add_members failed");
+                    return std::make_pair(false, "GroupService::add_members failed");
+                }
+                Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::debug,
+                    "GroupService::add_members success");
             }
             return std::make_pair(true, "");
-
-        }catch (const std::exception &e) {
+        }
+        catch (const std::exception &e) {
             Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
                                        "Exception in GroupService::add_members: {}", e.what());
             return std::make_pair(false, e.what());
@@ -334,6 +338,21 @@ namespace service_delight {
             Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
                                        "Exception in GroupService::is_bucket_exist: {}", e.what());
             return std::make_pair(false, e.what());
+        }
+    }
+
+    auto GroupService::get_group_owner(const bsoncxx::oid &group_id) -> schema::result<bsoncxx::oid, std::string>{
+        Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::get_group_owner");
+        try {
+            const auto filter = make_document(kvp(schema::key::bson_id, group_id));
+            if (const auto doc = group_collection.find_one(filter.view()); doc.has_value()) {
+                return std::make_pair(doc.value().find(schema::key::owner_id)->get_oid().value, "");
+            }
+            return std::make_pair(std::nullopt, "GroupService::get_group_owner failed");
+        }catch (const std::exception &e) {
+            Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
+                                       "Exception in GroupService::get_group_owner: {}", e.what());
+            return std::make_pair(std::nullopt, e.what());
         }
     }
 } // namespace service_delight

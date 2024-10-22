@@ -27,6 +27,7 @@ namespace service_delight {
     public:
         explicit MongoService(const nlohmann::json &config);
         [[nodiscard]] mongocxx::collection get_collection(const std::string &collection_name);
+        mongocxx::client_session start_session();
 
     private:
         mongocxx::pool pool;
@@ -36,12 +37,14 @@ namespace service_delight {
     public:
         void init(const nlohmann::json &json);
         [[nodiscard]] mongocxx::collection get_collection(const std::string &collection_name)const;
+        static void start_transaction(mongocxx::client_session &session);
+        static void commit_transaction(mongocxx::client_session &session);
+        static void abort_transaction(mongocxx::client_session &session);
+        [[nodiscard]] mongocxx::client_session start_session() const;
 
     private:
         std::unique_ptr<MongoService> mongo_service;
     };
-
-    static std::string get_request_ip(const drogon::HttpRequestPtr& request);
 } // namespace service_delight
 
 #endif //MONGO_SERVICE_HPP

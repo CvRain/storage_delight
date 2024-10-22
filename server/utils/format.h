@@ -6,10 +6,6 @@
 
 #include <nlohmann/json.hpp>
 
-#include "db_schema.hpp"
-#include "models/db_schema.hpp"
-#include "models/schema_key.hpp"
-
 namespace util_delight {
     template <typename T>
     inline bsoncxx::builder::basic::array make_bson_array(const std::vector<T> &values) {
