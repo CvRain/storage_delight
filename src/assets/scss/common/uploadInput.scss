@@ -1,8 +1,0 @@
-@import '../mixin/common/uploadInputMixin.scss';
-
-.uploadInput{
-    @include uploadInputMixin;
-}
-.uploadInputImageLabel{
-    @include uploadInputImageLabelMixin;
-}

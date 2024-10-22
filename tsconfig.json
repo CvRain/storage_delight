@@ -1,39 +1,34 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "useDefineForClassFields": true,
-    "module": "ESNext",
-    "moduleResolution": "Node",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
     "strict": true,
-    "jsx": "preserve",
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "esModuleInterop": true,
-    "lib": ["ESNext", "DOM","WebWorker"],
-    "skipLibCheck": true,
-    "noEmit": true,
-    "types": ["node","element-plus/global","vite/client", "vue", "plugin-resolver"],
-    "typeRoots": ["./node_modules/@types", "./types"],
-    "allowImportingTsExtensions": true,
-
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "baseUrl": ".",
     "paths": {
-      "@":["src"],
-      "@/*":["src/*"],
-      "@components":["src/components"],
-      "@components/*":["src/components/*"],
-      "@st":["src/store"],
-      "@st/*":["src/store/*"],
-      "@assets":["src/assets"],
-      "@assets/*":["src/assets/*"],
-      "@views":["src/views"],
-      "@views/*":["src/views/*"],
-      "@router":["src/router"],
-      "@router/*":["src/router/*"],
-      "@libs":["src/plugins/libs"],
-      "@libs/*":["src/plugins/libs/*"],
+      "@/*": ["./*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "app/lib/placeholder-data.ts",
+    "scripts/seed.js"
+  ],
+  "exclude": ["node_modules"]
 }
