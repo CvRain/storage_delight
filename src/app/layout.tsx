@@ -9,16 +9,16 @@ const RootLayout = ({ children }: React.PropsWithChildren) => (
     <body>
       <AntdRegistry>
           <Layout>
-          <Header>
-            header
-          </Header>
-          <Content>
-            {children}
-          </Content>
-          <Footer>
-            footer
-          </Footer>
-        </Layout>
+            <Header>
+              header
+            </Header>
+            <Content>
+              {children}
+            </Content>
+            <Footer>
+              footer
+            </Footer>
+          </Layout>
       </AntdRegistry>
     </body>
   </html>

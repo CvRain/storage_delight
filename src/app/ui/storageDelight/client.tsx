@@ -14,11 +14,12 @@ export default function Client({
     }
     
 
+
     return (
       <div ref={inputEl} className="flex w-full flex-col md:col-span-4">
         <h2 className='main'>
           client {inputData}
-          <button  onClick={changeAge}>改变</button>
+          <button  onMouseUp={changeAge}>改变</button>
         </h2>
       </div>
     );
