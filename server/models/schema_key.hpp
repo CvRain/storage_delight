@@ -32,6 +32,7 @@ namespace schema::key {
     const std::string timestamp = "timestamp";
     const std::string previous_state = "previous_state";
     const std::string current_state = "current_state";
+    const std::string request_ip = "request_ip";
     const std::string url = "url";
     const std::string bucket_id = "bucket_id";
     const std::string token = "token";

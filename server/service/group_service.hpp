@@ -15,9 +15,26 @@ namespace service_delight {
     public:
         void init();
 
+        /**
+         * 添加用户组
+         * @param group 用户组信息
+         * @return 返回插入信息，以及错误原因
+         */
         auto add_group(schema::DbGroup *group) -> schema::result<std::string, std::string>;
 
+        /**
+         * 获得用户组信息
+         * @param group_id 用户组id
+         * @return DbGroup类型，异常返回std::nullopt和错误信息
+         */
         auto get_group(const bsoncxx::oid &group_id) -> schema::result<schema::DbGroup, std::string>;
+
+        /**
+         * 获得用户组信息
+         * @param group_id 用户组id
+         * @return bsoncxx::document::value类型，异常返回std::nullopt和错误信息
+         */
+        auto get_group_to_bson(const bsoncxx::oid &group_id) -> schema::result<bsoncxx::document::value, std::string>;
 
         /**
          * 检查用户组是否存在
@@ -26,6 +43,19 @@ namespace service_delight {
          */
         auto group_exist(const bsoncxx::oid &group_id) -> schema::result<bool, std::string>;
 
+        /**
+         * 更新用户组信息
+         * @param group 用户组信息
+         * @return 返回插入信息，以及错误原因
+         */
+        auto update_group(schema::DbGroup* group) -> schema::result<bool, std::string>;
+
+        /**
+         * 添加成员至用户组
+         * @param group_id 需要插入的用户工作组oid
+         * @param member_id 需要插入的用户id
+         * @return 返回插入信息，以及错误原因
+         */
         auto add_member(const bsoncxx::oid &group_id, const bsoncxx::oid &member_id) -> schema::result<bool, std::string>;
 
         /**

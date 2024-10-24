@@ -71,6 +71,7 @@ namespace schema {
     public:
         bsoncxx::document::value get_document() override;
         static DbGroup from_bson(const bsoncxx::document::value &value);
+        nlohmann::json to_json();
 
         bsoncxx::oid id;
         std::string name;
@@ -109,6 +110,7 @@ namespace schema {
         std::string previous_state{};
         std::string current_state{};
         std::string description{};
+        std::string request_ip{};
     };
 } // namespace schema
 

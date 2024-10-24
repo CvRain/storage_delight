@@ -108,6 +108,7 @@ void User::add_user(model_delight::NlohmannJsonRequestPtr &&req,
         operation_log.description = "add user " + user.name;
         operation_log.previous_state = "";
         operation_log.user_id = user.id;
+        operation_log.request_ip = req->getRequest().peerAddr().toIp();
         service_delight::LogService::get_instance().record_operation(&operation_log);
         service_delight::MongoProvider::commit_transaction(session);
     }
@@ -254,6 +255,7 @@ void User::login(model_delight::NlohmannJsonRequestPtr &&req, std::function<void
     operation_log.current_state = "success";
     operation_log.description = fmt::to_string(fmt::format("user {} login success in ip: {}", user_name, client_ip));
     operation_log.user_id = user_bson.value().view()[schema::key::bson_id].get_oid().value;
+    operation_log.request_ip = client_ip;
     service_delight::LogService::get_instance().record_operation(&operation_log);
 
     nlohmann::json response_part_data{
@@ -297,6 +299,7 @@ void User::get_user_by_id(model_delight::NlohmannJsonRequestPtr &&req,
             operation_log.current_state = "failed";
             operation_log.description =
                     fmt::to_string(fmt::format("user {} failed to get user by id: {}", user_id, error));
+            operation_log.request_ip = req->getRequest().getPeerAddr().toIp();
             service_delight::LogService::get_instance().record_operation(&operation_log);
             return;
         }
@@ -315,6 +318,7 @@ void User::get_user_by_id(model_delight::NlohmannJsonRequestPtr &&req,
         operation_log.current_state = "success";
         operation_log.description =
                 fmt::to_string(fmt::format("user {} get user by id: {}", user_id, search_id.to_string()));
+        operation_log.request_ip = req->getRequest().getPeerAddr().toIp();
         service_delight::LogService::get_instance().record_operation(&operation_log);
     }
     catch (const std::exception &e) {

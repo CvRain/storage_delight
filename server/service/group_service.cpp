@@ -44,10 +44,16 @@ namespace service_delight {
     auto GroupService::get_group(const bsoncxx::oid &group_id) -> schema::result<schema::DbGroup, std::string> {
         Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::get_group");
         try {
-            if (const auto result = group_collection.find_one(make_document(kvp(schema::key::bson_id, group_id)));
-                result.has_value()) {
-                const auto &db_group = result.value();
-                const auto group = schema::DbGroup::from_bson(db_group);
+            Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::debug,
+                "GroupService::get_group find {}", group_id.to_string());
+            const auto filter = make_document(kvp(schema::key::bson_id, group_id));
+            if (const auto result = group_collection.find_one(filter.view()); result.has_value()) {
+                Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::debug, "GroupService::get_group found");
+                Logger::get_instance().log(BasicLogger | ConsoleLogger,  spdlog::level::debug,
+                    "{}", bsoncxx::to_json(result.value().view()));
+
+                const auto group = schema::DbGroup::from_bson(result.value());
+                Logger::get_instance().log(BasicLogger | ConsoleLogger, "GroupService::get_group success");
                 return std::make_pair(group, "");
             }
             return std::make_pair(std::nullopt, "Group not found");
@@ -55,6 +61,22 @@ namespace service_delight {
         catch (const std::exception &e) {
             Logger::get_instance().log(BasicLogger | ConsoleLogger, "Exception in GroupService::get_group: {}",
                                        e.what());
+            return std::make_pair(std::nullopt, e.what());
+        }
+    }
+    auto GroupService::get_group_to_bson(const bsoncxx::oid &group_id)
+            -> schema::result<bsoncxx::document::value, std::string> {
+        Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::get_group_to_bson");
+        try {
+            if (const auto result = group_collection.find_one(make_document(kvp(schema::key::bson_id, group_id)));
+                result.has_value()) {
+                return std::make_pair(result.value(), "");
+            }
+            return std::make_pair(std::nullopt, "Group not found");
+        }
+        catch (const std::exception &e) {
+            Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
+                "Exception in GroupService::get_group_to_bson: {}", e.what());
             return std::make_pair(std::nullopt, e.what());
         }
     }
@@ -76,6 +98,25 @@ namespace service_delight {
         }
         catch (const std::exception &e) {
             Logger::get_instance().log(BasicLogger | ConsoleLogger, "Exception in GroupService::group_exist: %s",
+                                       e.what());
+            return std::make_pair(false, e.what());
+        }
+    }
+    auto GroupService::update_group(schema::DbGroup *group) -> schema::result<bool, std::string> {
+            Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::update_group");
+        try {
+            const auto filter = make_document(kvp(schema::key::bson_id, group->id));
+            const auto update = make_document(kvp(update::field::set, group->get_document().view()));
+
+            if (const auto result = group_collection.update_one(filter.view(), update.view()); !result.has_value()) {
+                Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::err,
+                                           "GroupService::update_group failed");
+                return std::make_pair(false, "GroupService::update_group failed");
+            }
+            return std::make_pair(true, "");
+        }
+        catch (const std::exception &e) {
+            Logger::get_instance().log(BasicLogger | ConsoleLogger, "Exception in GroupService::update_group: %s",
                                        e.what());
             return std::make_pair(false, e.what());
         }

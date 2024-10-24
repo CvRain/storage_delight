@@ -15,7 +15,7 @@ namespace service_delight {
         user_collection = MongoProvider::get_instance().get_collection(schema::key::collection::user);
     }
 
-    schema::result<schema::DbUser, std::string> UserService::add_user(schema::DbUser *user) {
+    schema::result<schema::DbUser, std::string> UserService::add_user(schema::DbUser *user,mongocxx::client_session* session) {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::add_user");
         try {
 
@@ -37,6 +37,7 @@ namespace service_delight {
 
             const auto user_document = user->get_document();
             const auto result = user_collection.insert_one(user_document.view());
+
             if (!result.has_value()) {
                 Logger::get_instance().log(ConsoleLogger | BasicLogger, "UserService::add_user failed");
                 return std::make_pair(std::nullopt, "UserService::add_user failed");
@@ -121,8 +122,15 @@ namespace service_delight {
     bool UserService::user_is_exist(const bsoncxx::oid &id) {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::user_is_exist");
         try {
-            const auto result = user_collection.find_one(make_document(kvp(schema::key::bson_id, id)));
-            return result.has_value();
+            const auto filter = make_document(kvp(schema::key::bson_id, id));
+            if (const auto result = user_collection.find_one(filter.view());result) {
+                Logger::get_instance().log(ConsoleLogger | BasicLogger, spdlog::level::debug,
+                    "UserService::user_is_exist {} found", id.to_string());
+                return true;
+            }
+            Logger::get_instance().log(ConsoleLogger | BasicLogger,  spdlog::level::debug,
+                "UserService::user_is_exist {} not found", id.to_string());
+            return false;
         }
         catch (const std::exception &e) {
             Logger::get_instance().log(ConsoleLogger | BasicLogger, spdlog::level::err,

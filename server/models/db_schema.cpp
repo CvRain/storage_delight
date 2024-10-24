@@ -59,12 +59,39 @@ DbGroup DbGroup::from_bson(const bsoncxx::document::value &value) {
     group.id = value.view()[key::bson_id].get_oid().value;
     group.name = value.view()[key::name].get_string();
     group.owner_id = value.view()[key::owner_id].get_oid().value;
-    group.members_id = util_delight::get_bson_array_to_vector<bsoncxx::oid>(value.view()[key::members_id].get_array());
-    group.bucket_group_id =
-            util_delight::get_bson_array_to_vector<bsoncxx::oid>(value.view()[key::bucket_group_id].get_array());
+
+    for (const auto members_id_value = value.view()[key::members_id].get_array().value;
+         const auto& it : members_id_value) {
+        group.members_id.emplace_back(it.get_oid().value);
+    }
+
+    for(const auto bucket_group_id_value = value.view()[key::bucket_group_id].get_array().value;
+        const auto& it : bucket_group_id_value) {
+        group.bucket_group_id.emplace_back(it.get_oid().value);
+    }
+
     group.create_time = value.view()[key::create_time].get_int32();
     group.update_time = value.view()[key::update_time].get_int32();
     return group;
+}
+nlohmann::json DbGroup::to_json() {
+    nlohmann::json members_json = nlohmann::json::array();
+    for(const auto& it : members_id) {
+        members_json.emplace_back(it.to_string());
+    }
+
+    nlohmann::json bucket_group_json = nlohmann::json::array();
+    for(const auto& it : bucket_group_id) {
+        bucket_group_json.emplace_back(it.to_string());
+    }
+
+    return nlohmann::json{{key::bson_id, id.to_string()},
+                          {key::name, name},
+                          {key::owner_id, owner_id.to_string()},
+                          {key::members_id, members_json},
+                          {key::bucket_group_id, bucket_group_json},
+                          {key::create_time, create_time},
+                          {key::update_time, update_time}};
 }
 
 bsoncxx::document::value DbPermission::get_document() {
@@ -89,16 +116,22 @@ bsoncxx::document::value DbPermission::get_document() {
                               util_delight::make_bson_array(allow_actions.at(key::permission::allow_list))));
 
     auto document =
-            make_document(kvp(key::bson_id, bsoncxx::oid{id}), kvp(key::name, name), kvp(key::description, description),
-                          kvp(key::bucket_id, bucket_id), kvp(key::allow_actions, std::move(permission_document)));
+            make_document(
+                kvp(key::bson_id, bsoncxx::oid{id}),
+                kvp(key::name, name),
+                kvp(key::description, description),
+                kvp(key::bucket_id, bucket_id),
+                kvp(key::allow_actions, std::move(permission_document))
+                );
 
     return std::move(document);
 }
 
 bsoncxx::document::value DbOperationLog::get_document() {
-    auto document = make_document(kvp(key::bson_id, id), kvp(key::user_id, user_id), kvp(key::bucket_name, bucket_name),
-                                  kvp(key::object_name, object_name), kvp(key::timestamp, timestamp),
-                                  kvp(key::action, action), kvp(key::current_state, current_state),
-                                  kvp(key::previous_state, previous_state), kvp(key::description, description));
+    auto document =
+            make_document(kvp(key::bson_id, id), kvp(key::user_id, user_id), kvp(key::bucket_name, bucket_name),
+                          kvp(key::object_name, object_name), kvp(key::timestamp, timestamp), kvp(key::action, action),
+                          kvp(key::current_state, current_state), kvp(key::previous_state, previous_state),
+                          kvp(key::description, description), kvp(key::request_ip, request_ip));
     return std::move(document);
 }
