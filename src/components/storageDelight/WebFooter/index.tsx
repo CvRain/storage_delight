@@ -1,12 +1,12 @@
 'use client'
 import { useState,useRef,useEffect } from "react";
 import store from '@st/store'; // 确保路径正确
-
 export default function Client({
-    show,
-  }: {
-    show: boolean;
-  }) {
+      show,
+    }: {
+      show?: boolean;
+    }) {
+      
     // const [showFooter, setShowFooter] = useState(show)
 
     // // 模拟 componentDidMount 和 componentWillUnmount
@@ -26,14 +26,9 @@ export default function Client({
 
     return ( 
         <div className="footer">
-            {
-                show && (
-                    <div className="footer-frame">
-                        footer
-                    </div>
-                )
-            }
-            {show}
+            <div className="footer-frame">
+                footer
+            </div>
         </div>
     );
 }

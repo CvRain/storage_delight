@@ -23,6 +23,7 @@
       "@st/*": ["./src/store/*"],
       "@com/*": ["./src/components/*"],
       "@ys/*": ["./src/styles/*"],
+      "@ut/*": ["./src/utils/*"],
     }
   },
   "include": [

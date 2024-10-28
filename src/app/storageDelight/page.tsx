@@ -1,11 +1,11 @@
 "use server";
 
 import React, { use } from 'react';
+import alovaInstance from '@ut/alova';
 
 const fetchData = async () => {
-  const response = await fetch(`${process.env.TEST_API_URL}/hello/say`);
-  const data = await response.json();
-  return data;
+  const response = await alovaInstance.Get('/hello/say');
+  return response
 };
 
 const fetchDataPost = async () => {
@@ -15,7 +15,9 @@ const fetchDataPost = async () => {
 };
 
 const Page:React.FC = () => {
-  const data = use(fetchDataPost());
+  const data = use(fetchData());
+
+  console.log(data)
 
   return (
     <div>

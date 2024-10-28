@@ -1,11 +1,19 @@
 'use client'
 import { useState,useRef,useEffect } from "react";
+import { useSelector, useDispatch } from 'react-redux';
+import {RootState} from '@st/store';
 
+
+const useHeaderValue = () => {
+  return useSelector((state: RootState) => state.globalReducer.headerShow)
+};
 export default function Client({
     show,
   }: {
-    show: boolean;
+    show?: boolean;
   }) {
+    
+    const headerShow = useHeaderValue()
     // const [showHeader, setShowHeader] = useState(show)
 
     // // 模拟 componentDidMount 和 componentWillUnmount
@@ -24,9 +32,9 @@ export default function Client({
     // }, [showHeader]); // 当 count 改变时重新执行
 
     return (
-        <div className="header">
+        <div className="header" style={{ display: headerShow ? 'block' : 'none' }}>
           {
-              show && (
+              headerShow && (
               <div className="header-frame">
                   header
               </div>

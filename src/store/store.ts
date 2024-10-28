@@ -7,7 +7,6 @@ const store = configureStore({
 });
 
 export default store; // 导出 store 实例
-
 // Infer the type of store
 export type AppStore = typeof store;
 

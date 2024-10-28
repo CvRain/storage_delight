@@ -2,9 +2,9 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 // 定义全局状态的类型
 interface GlobalState {
-    headerShow?: boolean;
-    siderShow?: boolean;
-    footerShow?: boolean;
+    headerShow: boolean;
+    siderShow: boolean;
+    footerShow: boolean;
 }
 
 // 定义初始状态

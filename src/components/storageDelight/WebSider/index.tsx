@@ -1,11 +1,18 @@
 'use client'
 import { useState,useRef,useEffect } from "react";
+import { useSelector, useDispatch } from 'react-redux';
+import {RootState} from '@st/store';
 
+const useSiderValue = () => {
+  return useSelector((state: RootState) => state.globalReducer.siderShow)
+};
 export default function Client({
     show,
   }: {
-    show: boolean;
+    show?: boolean;
   }) {
+    
+    const siderShow = useSiderValue()
     // const [showSider, setShowSider] = useState(show)
 
     // // 模拟 componentDidMount 和 componentWillUnmount
@@ -24,9 +31,9 @@ export default function Client({
     // }, [showSider]); // 当 count 改变时重新执行
 
     return (
-        <div className="sider" >
+        <div className="sider" style={{ display: siderShow ? 'block' : 'none' }}>
           {
-              show && (
+              siderShow && (
               <div className="sider-frame">
                   sider
               </div>
