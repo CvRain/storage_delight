@@ -1,18 +1,16 @@
 import { configureStore } from '@reduxjs/toolkit';
-import counterReducer from './features/counterSlice';
-import userReducer from './features/userSlice';
+import rootReducer from './reducers/root';
 
-export const makeStore = () => {
-  return configureStore({
-    reducer: {
-        counter: counterReducer,
-        user:userReducer,
-    },
-  })
-}
+// 创建 Redux store
+const store = configureStore({
+  reducer: rootReducer, // 直接使用 rootReducer
+});
 
-// Infer the type of makeStore
-export type AppStore = ReturnType<typeof makeStore>
+export default store; // 导出 store 实例
+
+// Infer the type of store
+export type AppStore = typeof store;
+
 // Infer the `RootState` and `AppDispatch` types from the store itself
-export type RootState = ReturnType<AppStore['getState']>
-export type AppDispatch = AppStore['dispatch']
+export type RootState = ReturnType<AppStore['getState']>;
+export type AppDispatch = AppStore['dispatch'];

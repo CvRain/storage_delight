@@ -13,8 +13,6 @@ export default function Client({
         setinputServerFetchData(123)
     }
     
-
-
     return (
       <div ref={inputEl} className="flex w-full flex-col md:col-span-4">
         <h2 className='main'>

@@ -19,7 +19,10 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@st/*": ["./src/store/*"],
+      "@com/*": ["./src/components/*"],
+      "@ys/*": ["./src/styles/*"],
     }
   },
   "include": [

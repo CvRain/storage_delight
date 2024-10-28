@@ -2,7 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
+
 }
 
 @layer utilities {
