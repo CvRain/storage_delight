@@ -10,7 +10,7 @@ class Object : public drogon::HttpController<Object>
 {
   public:
     METHOD_LIST_BEGIN
-    METHOD_ADD(Object::upload, "/upload", Post);
+    METHOD_ADD(Object::upload, "/upload", Options,Post);
 
     METHOD_LIST_END
     // your declaration of processing function maybe like this:

@@ -235,6 +235,19 @@ void Group::remove_member(model_delight::NlohmannJsonRequestPtr &&req,
         const auto previous_state = group_info.value().to_json();
         auto current_group_info = group_info.value();
 
+        //检查用户组的owner_id是否是user_id
+        if (current_group_info.owner_id != bsoncxx::oid{field_user_id}) {
+            nlohmann::json response{{model_delight::basic_value::request::code, k400BadRequest},
+                                    {model_delight::basic_value::request::message, "Invalid request"},
+                                    {model_delight::basic_value::request::result, "User is not the owner"},
+                                    {model_delight::basic_value::request::data, {}}};
+            callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
+            service_delight::Logger::get_instance().log(
+                    service_delight::ConsoleLogger, spdlog::level::debug,
+                    "Group::remove_member: Failed to remove member: user is not the owner");
+            return;
+        }
+
         //获得 std::vector<bsoncxx::oid>格式的members_id
         std::vector<bsoncxx::oid> members_id;
         std::ranges::for_each(field_members_id, [&members_id](const std::string& member_id) {

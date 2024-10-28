@@ -10,9 +10,9 @@ namespace api {
     class User final : public HttpController<User> {
     public:
         METHOD_LIST_BEGIN
-        METHOD_ADD(User::add_user, "/add", Post);
-        METHOD_ADD(User::login, "/login", Post);
-        METHOD_ADD(User::get_user_by_id, "/id/{user_id}", Get, "drogon::middleware::LoginMiddleware");
+        METHOD_ADD(User::add_user, "/add", Options, Post);
+        METHOD_ADD(User::login, "/login", Options, Post);
+        METHOD_ADD(User::get_user_by_id, "/id/{user_id}", Options, Get, "drogon::middleware::LoginMiddleware");
 
         METHOD_LIST_END
 
@@ -20,9 +20,9 @@ namespace api {
                              std::function<void(const HttpResponsePtr &)> &&callback);
 
         static void login(model_delight::NlohmannJsonRequestPtr &&req,
-                                 std::function<void(const HttpResponsePtr &)> &&callback);
+                          std::function<void(const HttpResponsePtr &)> &&callback);
 
-        static void get_user_by_id(model_delight::NlohmannJsonRequestPtr &&req, std::function<void(const
-        HttpResponsePtr &)> &&callback);
+        static void get_user_by_id(model_delight::NlohmannJsonRequestPtr &&req,
+                                   std::function<void(const HttpResponsePtr &)> &&callback);
     };
 } // namespace api
