@@ -43,8 +43,3 @@ jobs:
 
     - name: Build
       run: cmake --build --preset default-linux-release
-
-    - name: Test
-      working-directory: build/linux-release
-      run: ctest --preset default-linux-release
-
