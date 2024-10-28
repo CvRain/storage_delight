@@ -20,8 +20,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-
+    - name: Checkout code with submodules
+      uses: actions/checkout@v4
+      with:
+        submodules: true  # 确保子模块被检出
+        
     - name: Configure CMake with Presets
       run: cmake --preset default-linux-release
 
