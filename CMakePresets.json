@@ -36,5 +36,19 @@
       }
     }
   ],
+  "buildPresets": [
+    {
+      "name": "default-linux-debug",
+      "configurePreset": "default-linux-debug"
+    },
+    {
+      "name": "default-linux-release",
+      "configurePreset": "default-linux-release"
+    },
+    {
+      "name": "default-windows-debug",
+      "configurePreset": "default-windows-debug"
+    }
+  ]，
   "version": 4
 }
