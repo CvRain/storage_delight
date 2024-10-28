@@ -24,6 +24,9 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: true  # 确保子模块被检出
+      
+    - name: Install Ninja
+      run: sudo apt-get install -y ninja-build
         
     - name: Configure CMake with Presets
       run: cmake --preset default-linux-release
