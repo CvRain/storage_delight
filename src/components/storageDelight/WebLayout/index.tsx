@@ -12,23 +12,29 @@ import { RootState } from '@st/store';
 const { Header, Content, Footer, Sider } = Layout;
 
 const WebLayout = ({ children }: React.PropsWithChildren) => {
-  const {headerShow,footerShow,siderShow} = useSelector((state: RootState) => state.globalReducer);
+  const {headerShow,footerShow,siderShow} = useSelector((state: RootState) => state.layoutReducer);
 
   const headerStyle: React.CSSProperties = {
     textAlign: 'center',
+    backgroundColor:'#fff',
   };
 
   const contentStyle: React.CSSProperties = {
     padding: '20px',
+    backgroundColor:'#fff',
+    height:'100%',
   };
 
   const siderStyle: React.CSSProperties = {
     textAlign: 'center',
     color: '#fff',
+    backgroundColor:'#fff',
+    height:'100%',
   };
 
   const footerStyle: React.CSSProperties = {
     textAlign: 'center',
+    backgroundColor:'#fff',
   };
 
   const layoutStyle = {
@@ -45,7 +51,7 @@ const WebLayout = ({ children }: React.PropsWithChildren) => {
         )}
         <Layout>
         {siderShow && (
-        <Sider width="15%" style={siderStyle}>
+        <Sider style={siderStyle}>
             <WebSider />
         </Sider>
         )}

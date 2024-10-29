@@ -12,14 +12,12 @@ const App: React.FC = () => {
 
   
     return (
-      <div>
-        <div className="storageDelight-index">
-          <div className="storageDelight-index-"> 
-  
-          </div>
+      <div className="storageDelight-index">
+        <div className="storageDelight-index-"> 
+
+          
+
         </div>
-        <h2>Alova Test</h2>
-        <pre>{JSON.stringify(data, null, 2)}</pre>
       </div>
     );
 }
