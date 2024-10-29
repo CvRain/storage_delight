@@ -24,6 +24,7 @@
       "@com/*": ["./src/components/*"],
       "@ys/*": ["./src/styles/*"],
       "@ut/*": ["./src/utils/*"],
+      "@type/*": ["./src/types/*"],
     }
   },
   "include": [

@@ -1,5 +1,5 @@
 'use client'
-import { useState,useRe,useEffect } from "react";
+import { useState,useRef,useEffect } from "react";
 
 export default function Client({
     a,
