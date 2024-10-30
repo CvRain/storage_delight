@@ -36,7 +36,7 @@
       }
     }
   ],
-   "buildPresets": [
+  "buildPresets": [
     {
       "name": "default-linux-debug",
       "configurePreset": "default-linux-debug"

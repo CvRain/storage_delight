@@ -24,7 +24,7 @@ namespace schema {
         };
         virtual ~MongoDocument() = default;
         virtual bsoncxx::document::value get_document() = 0;
-        // virtual nlohmann::json to_json() = 0;
+        virtual nlohmann::json to_json() = 0;
 
     public:
         bsoncxx::oid id{};
@@ -35,6 +35,7 @@ namespace schema {
     public:
         bsoncxx::document::value get_document() override;
         static nlohmann::json to_json(const bsoncxx::document::value& document);
+        nlohmann::json to_json() override;
 
         std::string name;
         std::string password;
@@ -46,8 +47,9 @@ namespace schema {
     class DbBucket final : public MongoDocument {
     public:
         bsoncxx::document::value get_document() override;
+        nlohmann::json to_json() override;
 
-        std::string data_source;
+        bsoncxx::oid data_source;
         std::string bucket_name;
         bsoncxx::oid group_id;
         bsoncxx::oid permission_id;
@@ -58,8 +60,9 @@ namespace schema {
     class DbDataSource final : public MongoDocument {
     public:
         bsoncxx::document::value get_document() override;
+        nlohmann::json to_json() override;
 
-        std::string id;
+        bsoncxx::oid id;
         std::string name;
         std::string url;
         std::string access_key;
@@ -71,7 +74,7 @@ namespace schema {
     public:
         bsoncxx::document::value get_document() override;
         static DbGroup from_bson(const bsoncxx::document::value &value);
-        nlohmann::json to_json();
+        nlohmann::json to_json() override;
 
         bsoncxx::oid id;
         std::string name;
@@ -89,10 +92,11 @@ namespace schema {
     class DbPermission final : public MongoDocument {
     public:
         bsoncxx::document::value get_document() override;
+        nlohmann::json to_json() override;
 
         bsoncxx::oid bucket_id;
         std::string name;
-        std::map<std::string, std::vector<std::string>> allow_actions;
+        std::map<std::string, std::vector<bsoncxx::oid>> allow_actions;
         std::string description;
         std::string create_time;
         std::string update_time;
@@ -101,6 +105,7 @@ namespace schema {
     class DbOperationLog final : public MongoDocument {
     public:
         bsoncxx::document::value get_document() override;
+        nlohmann::json to_json() override;
 
         bsoncxx::oid user_id{};
         std::string action{};

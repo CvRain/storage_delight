@@ -29,6 +29,15 @@ nlohmann::json DbUser::to_json(const bsoncxx::document::value &document) {
                           {key::create_time, document.view()[key::create_time].get_int32().value},
                           {key::update_time, document.view()[key::update_time].get_int32().value}};
 }
+nlohmann::json DbUser::to_json() {
+    return nlohmann::json{{key::bson_id, id.to_string()},
+                          {key::name, name},
+                          {key::password, password},
+                          {key::user_role, role},
+                          {key::group_id, group_id.to_string()},
+                          {key::create_time, create_time},
+                          {key::update_time, update_time}};
+}
 
 bsoncxx::document::value DbBucket::get_document() {
     auto document =
@@ -38,12 +47,30 @@ bsoncxx::document::value DbBucket::get_document() {
                           kvp(key::create_time, create_time), kvp(key::update_time, update_time));
     return std::move(document);
 }
+nlohmann::json DbBucket::to_json() {
+    return nlohmann::json{{key::bson_id, id.to_string()},
+                          {key::data_source, data_source.to_string()},
+                          {key::bucket_name, bucket_name},
+                          {key::group_id, group_id.to_string()},
+                          {key::permission_id, permission_id.to_string()},
+                          {key::tags, tags},
+                          {key::create_time, create_time},
+                          {key::update_time, update_time}};
+}
 
 bsoncxx::document::value DbDataSource::get_document() {
-    auto document = make_document(kvp(key::bson_id, bsoncxx::oid{id}), kvp(key::name, name), kvp(key::url, url),
+    auto document = make_document(kvp(key::bson_id, id), kvp(key::name, name), kvp(key::url, url),
                                   kvp(key::access_key, access_key), kvp(key::secret_key, secret_key),
                                   kvp(key::create_time, create_time));
     return std::move(document);
+}
+nlohmann::json DbDataSource::to_json() {
+    return nlohmann::json{{key::bson_id, id.to_string()},
+                          {key::name, name},
+                          {key::url, url},
+                          {key::access_key, access_key},
+                          {key::secret_key, secret_key},
+                          {key::create_time, create_time}};
 }
 
 bsoncxx::document::value DbGroup::get_document() {
@@ -61,12 +88,12 @@ DbGroup DbGroup::from_bson(const bsoncxx::document::value &value) {
     group.owner_id = value.view()[key::owner_id].get_oid().value;
 
     for (const auto members_id_value = value.view()[key::members_id].get_array().value;
-         const auto& it : members_id_value) {
+         const auto &it: members_id_value) {
         group.members_id.emplace_back(it.get_oid().value);
     }
 
-    for(const auto bucket_group_id_value = value.view()[key::bucket_group_id].get_array().value;
-        const auto& it : bucket_group_id_value) {
+    for (const auto bucket_group_id_value = value.view()[key::bucket_group_id].get_array().value;
+         const auto &it: bucket_group_id_value) {
         group.bucket_group_id.emplace_back(it.get_oid().value);
     }
 
@@ -76,12 +103,12 @@ DbGroup DbGroup::from_bson(const bsoncxx::document::value &value) {
 }
 nlohmann::json DbGroup::to_json() {
     nlohmann::json members_json = nlohmann::json::array();
-    for(const auto& it : members_id) {
+    for (const auto &it: members_id) {
         members_json.emplace_back(it.to_string());
     }
 
     nlohmann::json bucket_group_json = nlohmann::json::array();
-    for(const auto& it : bucket_group_id) {
+    for (const auto &it: bucket_group_id) {
         bucket_group_json.emplace_back(it.to_string());
     }
 
@@ -116,15 +143,23 @@ bsoncxx::document::value DbPermission::get_document() {
                               util_delight::make_bson_array(allow_actions.at(key::permission::allow_list))));
 
     auto document =
-            make_document(
-                kvp(key::bson_id, bsoncxx::oid{id}),
-                kvp(key::name, name),
-                kvp(key::description, description),
-                kvp(key::bucket_id, bucket_id),
-                kvp(key::allow_actions, std::move(permission_document))
-                );
+            make_document(kvp(key::bson_id, bsoncxx::oid{id}), kvp(key::name, name), kvp(key::description, description),
+                          kvp(key::bucket_id, bucket_id), kvp(key::allow_actions, std::move(permission_document)));
 
     return std::move(document);
+}
+
+nlohmann::json DbPermission::to_json() {
+    nlohmann::json allow_actions_json = nlohmann::json::object();
+    for (const auto &[fst, snd]: allow_actions) {
+        for(const auto &it: snd) {
+            allow_actions_json[fst].emplace_back(it.to_string());
+        }
+    }
+    return nlohmann::json{{key::bson_id, id.to_string()},           {key::name, name},
+                          {key::description, description},          {key::bucket_id, bucket_id.to_string()},
+                          {key::allow_actions, allow_actions_json}, {key::create_time, create_time},
+                          {key::update_time, update_time}};
 }
 
 bsoncxx::document::value DbOperationLog::get_document() {
@@ -134,4 +169,11 @@ bsoncxx::document::value DbOperationLog::get_document() {
                           kvp(key::current_state, current_state), kvp(key::previous_state, previous_state),
                           kvp(key::description, description), kvp(key::request_ip, request_ip));
     return std::move(document);
+}
+nlohmann::json DbOperationLog::to_json() {
+    return nlohmann::json{{key::bson_id, id.to_string()},      {key::user_id, user_id.to_string()},
+                          {key::bucket_name, bucket_name},     {key::object_name, object_name},
+                          {key::timestamp, timestamp},         {key::action, action},
+                          {key::current_state, current_state}, {key::previous_state, previous_state},
+                          {key::description, description},     {key::request_ip, request_ip}};
 }
