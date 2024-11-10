@@ -63,6 +63,8 @@ set(SERVICE_SRC
         service/group_service.hpp
         service/log_service.cpp
         service/log_service.hpp
+        service/storage_service.cpp
+        service/storage_service.hpp
 )
 
 include_directories(${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include)

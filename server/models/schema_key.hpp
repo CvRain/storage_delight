@@ -54,9 +54,10 @@ namespace schema::key {
     }
 
     namespace collection {
-        const std::string user = "user";
-        const std::string group = "group";
-        const std::string operation_logs = "operation_logs";
+        constexpr std::string_view user = "user";
+        constexpr std::string_view group = "group";
+        constexpr std::string_view operation_logs = "operation_logs";
+        constexpr std::string_view data_source = "data_source";
     }
 }
 

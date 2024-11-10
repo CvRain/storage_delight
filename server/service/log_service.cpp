@@ -8,7 +8,7 @@
 
 namespace service_delight {
     void LogService::init() {
-        log_collection = MongoProvider::get_instance().get_collection(schema::key::collection::operation_logs);
+        log_collection = MongoProvider::get_instance().get_collection(schema::key::collection::operation_logs.data());
     }
 
     void LogService::record_operation(schema::DbOperationLog *operation_log) {

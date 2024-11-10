@@ -2,6 +2,8 @@
 
 #include <drogon/HttpController.h>
 
+#include "basic_value.hpp"
+#include "filters/user_filter.hpp"
 #include "nlohmann_json_request.hpp"
 
 using namespace drogon;
@@ -12,7 +14,7 @@ namespace api {
         METHOD_LIST_BEGIN
         METHOD_ADD(User::add_user, "/add", Options, Post);
         METHOD_ADD(User::login, "/login", Options, Post);
-        METHOD_ADD(User::get_user_by_id, "/id/{user_id}", Options, Get, "drogon::middleware::LoginMiddleware");
+        METHOD_ADD(User::get_user_by_id, "/id/{user_id}", Options, Get);
 
         METHOD_LIST_END
 

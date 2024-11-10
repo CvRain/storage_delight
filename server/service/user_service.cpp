@@ -12,7 +12,7 @@ namespace service_delight {
     void UserService::init() {
         Logger::get_instance().log(ConsoleLogger, "UserService init");
 
-        user_collection = MongoProvider::get_instance().get_collection(schema::key::collection::user);
+        user_collection = MongoProvider::get_instance().get_collection(schema::key::collection::user.data());
     }
 
     schema::result<schema::DbUser, std::string> UserService::add_user(schema::DbUser *user,mongocxx::client_session* session) {

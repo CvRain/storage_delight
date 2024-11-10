@@ -12,7 +12,7 @@ using namespace model_delight::bson_operator;
 namespace service_delight {
     void GroupService::init() {
         Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::init");
-        group_collection = MongoProvider::get_instance().get_collection(schema::key::collection::group);
+        group_collection = MongoProvider::get_instance().get_collection(schema::key::collection::group.data());
     }
 
     auto GroupService::add_group(schema::DbGroup *group) -> schema::result<std::string, std::string> {

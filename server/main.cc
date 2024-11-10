@@ -8,6 +8,7 @@
 #include "service/log_service.hpp"
 #include "service/logger.hpp"
 #include "service/mongo_service.hpp"
+#include "service/storage_service.hpp"
 #include "service/user_service.hpp"
 #include "utils/string.hpp"
 
@@ -137,5 +138,6 @@ void service_init(const nlohmann::json &setting) {
     service_delight::MongoProvider::get_instance().init(setting);
     service_delight::UserService::get_instance().init();
     service_delight::GroupService::get_instance().init();
+    service_delight::StorageService::get_instance().init();
     service_delight::LogService::get_instance().init();
 }
