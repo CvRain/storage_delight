@@ -8,7 +8,7 @@
 
 using namespace service_delight;
 
-auto StorageService::init() {
+auto StorageService::init() -> void {
     Logger::get_instance().log(ConsoleLogger, "StorageService init");
     data_source_collection = MongoProvider::get_instance().get_collection(schema::key::collection::data_source.data());
 }
@@ -22,7 +22,7 @@ auto StorageService::append_storage(schema::DbDataSource *data_source) -> schema
         if (const auto [result, error_msg] = check_storage_exist(data_source->id);
             result.has_value() && result.value() == true) {
             Logger::get_instance().log(ConsoleLogger, spdlog::level::warn,
-                                       "StorageService append_storage: storage name: {} has been exist", storage_name);
+                                       "StorageService::append_storage: storage name: {} has been exist", storage_name);
             return std::make_pair(false, "storage name has been exist");
         }
     }
@@ -83,10 +83,11 @@ auto StorageService::get_storage_by_name(const std::string &name)
 auto StorageService::list_all_storage_ids() -> schema::result<std::vector<bsoncxx::oid>, std::string_view> {
     service_delight::Logger::get_instance().log(ConsoleLogger, "StorageService list_all_storage_ids");
     try {
-        const auto result = data_source_collection.find(make_document());
+        auto result = data_source_collection.find(make_document());
         std::vector<bsoncxx::oid> ids;
-        for (const auto &item: result) {
-            ids.emplace_back(item[schema::key::bson_id].get_oid().value);
+        for(auto &&it : result) {
+            const auto one_id = it.find(schema::key::bson_id)->get_oid().value;
+            ids.emplace_back(one_id);
         }
         return std::make_pair(ids, "");
     }
@@ -96,8 +97,55 @@ auto StorageService::list_all_storage_ids() -> schema::result<std::vector<bsoncx
         return std::make_pair(std::nullopt, e.what());
     }
 }
-auto StorageService::list_all_storages() -> schema::result<std::vector<bsoncxx::document::value>, std::string_view>{
+auto StorageService::list_all_storages() -> schema::result<std::vector<bsoncxx::document::value>, std::string_view> {
+    service_delight::Logger::get_instance().log(ConsoleLogger, "StorageService list_all_storages");
+    try {
+        auto result = data_source_collection.find(make_document());
+        std::vector<bsoncxx::document::value> storages;
+        for (auto &&item: result) {
+            storages.emplace_back(item);
+        }
+        return std::make_pair(storages, "");
+    }
+    catch (const std::exception &e) {
+        service_delight::Logger::get_instance().log(ConsoleLogger | BasicLogger, spdlog::level::err,
+                                                    "StorageService list_all_storages: {}", e.what());
+        return std::make_pair(std::nullopt, e.what());
+    }
+}
+auto StorageService::remove_storage(const bsoncxx::oid &id) -> schema::result<bool, std::string_view> {
+    service_delight::Logger::get_instance().log(ConsoleLogger, "StorageService remove_storage");
 
+    try {
+        const auto result = data_source_collection.delete_one(make_document(kvp(schema::key::bson_id, id)));
+        if (result.has_value() && result.value().result().deleted_count() == 1) {
+            return std::make_pair(true, "");
+        }
+        return std::make_pair(false, "delete storage failed");
+    }
+    catch (const std::exception &e) {
+        service_delight::Logger::get_instance().log(ConsoleLogger | BasicLogger, spdlog::level::err,
+                                                    "StorageService remove_storage: {}", e.what());
+        return std::make_pair(false, e.what());
+    }
+}
+auto StorageService::update_storage(schema::DbDataSource* data_source) -> schema::result<bool, std::string_view> {
+    service_delight::Logger::get_instance().log(ConsoleLogger, "StorageService update_storage");
+    try {
+        const auto update_id = data_source->id;
+        const auto update_document = data_source->get_document().view();
+        const auto result = data_source_collection.update_one(make_document(kvp(schema::key::bson_id, update_id)),
+                                                               update_document);
+        if (result.has_value() && result.value().result().modified_count() == 1) {
+            return std::make_pair(true, "");
+        }
+        return std::make_pair(false, "update storage failed");
+    }
+    catch (const std::exception &e) {
+        service_delight::Logger::get_instance().log(ConsoleLogger | BasicLogger, spdlog::level::err,
+                                                    "StorageService update_storage: {}", e.what());
+        return std::make_pair(false, e.what());
+    }
 }
 
 auto StorageService::check_storage_exist(const bsoncxx::oid &id) -> schema::result<bool, std::string_view> {

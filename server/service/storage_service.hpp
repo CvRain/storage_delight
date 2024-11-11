@@ -40,7 +40,7 @@ namespace service_delight {
          * @return 如果查询成功返回查询后的document，失败则为std::nullopt和错误原因
          */
         auto get_storage_by_name(const std::string &name)
-                -> schema::result<bsoncxx::document::value, std::string_view>; // todo
+                -> schema::result<bsoncxx::document::value, std::string_view>;
 
         /**
          * @brief 列出所有存储源的id
@@ -59,14 +59,14 @@ namespace service_delight {
          * @param id 存储源的id
          * @return 如果删除成功返回true，失败则为false和错误原因
          */
-        auto remove_storage(const bsoncxx::oid &id) -> schema::result<bool, std::string_view>; // todo
+        auto remove_storage(const bsoncxx::oid &id) -> schema::result<bool, std::string_view>;
 
         /**
          * @brief 更新存储源
          * @param data_source 接受DbDataSource结构
          * @return 如果更新成功返回true，失败则为false和错误原因
          */
-        auto update_storage(const schema::DbDataSource &data_source) -> schema::result<bool, std::string_view>; // todo
+        auto update_storage(schema::DbDataSource *data_source) -> schema::result<bool, std::string_view>;
 
         /**
          * @brief 检查存储源是否存在

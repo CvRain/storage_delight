@@ -19,6 +19,8 @@ cmake-build-*
 .vs
 .cmake
 
+
+bin
 vcpkg_installed
 
 Folder.DotSettings.user

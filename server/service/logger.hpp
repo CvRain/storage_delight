@@ -21,6 +21,13 @@
 namespace service_delight {
     enum LogOutput : int { ConsoleLogger = 1, BasicLogger, DailyLogger };
 
+    template<typename T>
+    concept StringLike = std::same_as<T, std::string>
+                        or std::same_as<T, std::string_view>
+                        or std::same_as<T, const std::basic_string<char> &>
+                        or requires(T a) { std::to_string(a); }
+                        or requires(T a) { std::basic_string<char>(a); };
+
     class Logger final : public util_delight::Singleton<Logger> {
     public:
         ~Logger() = default;
@@ -34,10 +41,12 @@ namespace service_delight {
         [[nodiscard]] std::shared_ptr<spdlog::logger> get_console_logger() const;
 
         template<typename... Args>
-        void log(int log_output, fmt::format_string<Args...> fmt, Args &&...args);
+        void log(int log_output, fmt::format_string<Args...> fmt, Args &&...args)
+            requires(StringLike<Args> && ...);
 
         template<typename... Args>
-        void log(int log_output, spdlog::level::level_enum level, fmt::format_string<Args...> fmt, Args &&...args);
+        void log(int log_output, spdlog::level::level_enum level, fmt::format_string<Args...> fmt, Args &&...args)
+            requires(StringLike<Args> && ...);
 
     private:
         std::shared_ptr<spdlog::logger> basic_logger;
@@ -46,7 +55,9 @@ namespace service_delight {
     };
 
     template<typename... Args>
-    void Logger::log(const int log_output, fmt::format_string<Args...> fmt, Args &&...args) {
+    void Logger::log(const int log_output, fmt::format_string<Args...> fmt, Args &&...args)
+        requires(StringLike<Args> && ...)
+    {
         // log_output can be: ConsoleLogger, BasicLogger, DailyLogger
         // or ConsoleLogger | BasicLogger | DailyLogger etc..
         // 判断是否需要输出到控制台
@@ -70,7 +81,9 @@ namespace service_delight {
 
     template<typename... Args>
     void Logger::log(const int log_output, spdlog::level::level_enum level, fmt::format_string<Args...> fmt,
-                     Args &&...args) {
+                     Args &&...args)
+        requires(StringLike<Args> && ...)
+    {
         if (log_output & ConsoleLogger) {
             console_logger->log(level, fmt, std::forward<Args>(args)...);
             console_logger->flush();
