@@ -14,9 +14,10 @@
 #include "utils/format.h"
 
 namespace schema {
-    enum UserRole : int { TypeNone = -1, TypeAdmin = 0, TypeUser = 1, TypeRoleMax };
+    enum class UserRole : int32_t { TypeNone = -1, TypeAdmin = 0, TypeUser = 1, TypeRoleMax };
 
-    class MongoDocument {
+    class MongoDocument
+    {
     public:
         MongoDocument() {
             id = bsoncxx::oid{};
@@ -31,7 +32,8 @@ namespace schema {
         int32_t create_time{};
     };
 
-    class DbUser final : public MongoDocument {
+    class DbUser final : public MongoDocument
+    {
     public:
         bsoncxx::document::value get_document() override;
         static nlohmann::json to_json(const bsoncxx::document::value& document);
@@ -40,11 +42,12 @@ namespace schema {
         std::string name;
         std::string password;
         bsoncxx::oid group_id;
-        int32_t role = UserRole::TypeUser;
+        int32_t role = static_cast<int32_t>(UserRole::TypeUser);
         int32_t update_time;
     };
 
-    class DbBucket final : public MongoDocument {
+    class DbBucket final : public MongoDocument
+    {
     public:
         bsoncxx::document::value get_document() override;
         nlohmann::json to_json() override;
@@ -57,23 +60,26 @@ namespace schema {
         int32_t update_time;
     };
 
-    class DbDataSource final : public MongoDocument {
+    class DbDataSource final : public MongoDocument
+    {
     public:
         bsoncxx::document::value get_document() override;
         nlohmann::json to_json() override;
+        static DbDataSource from_bson(const bsoncxx::document::value& value);
 
         bsoncxx::oid id;
         std::string name;
         std::string url;
         std::string access_key;
         std::string secret_key;
-        std::string create_time;
+        int32_t create_time;
     };
 
-    class DbGroup final : public MongoDocument {
+    class DbGroup final : public MongoDocument
+    {
     public:
         bsoncxx::document::value get_document() override;
-        static DbGroup from_bson(const bsoncxx::document::value &value);
+        static DbGroup from_bson(const bsoncxx::document::value& value);
         nlohmann::json to_json() override;
 
         bsoncxx::oid id;
@@ -89,7 +95,8 @@ namespace schema {
      * @param allow_actions: key: action name, value: user id
      * e.g. "allow_read":["0001","0002","0003"]
      */
-    class DbPermission final : public MongoDocument {
+    class DbPermission final : public MongoDocument
+    {
     public:
         bsoncxx::document::value get_document() override;
         nlohmann::json to_json() override;
@@ -102,7 +109,8 @@ namespace schema {
         std::string update_time;
     };
 
-    class DbOperationLog final : public MongoDocument {
+    class DbOperationLog final : public MongoDocument
+    {
     public:
         bsoncxx::document::value get_document() override;
         nlohmann::json to_json() override;
@@ -111,12 +119,13 @@ namespace schema {
         std::string action{};
         std::string bucket_name{};
         std::string object_name{};
+        std::string source_name{};
         int32_t timestamp = util_delight::Date::get_current_timestamp_32();
         std::string previous_state{};
         std::string current_state{};
         std::string description{};
         std::string request_ip{};
     };
-} // namespace schema
+}   // namespace schema
 
-#endif // STORAGE_DELIGHT_DB_SCHEMA_HPP
+#endif   // STORAGE_DELIGHT_DB_SCHEMA_HPP

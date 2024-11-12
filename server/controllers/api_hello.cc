@@ -130,7 +130,7 @@ void Hello::get_date_source_model(model_delight::NlohmannJsonRequestPtr &&ptr,
                                   std::function<void(const HttpResponsePtr &)> &&callback) {
     schema::DbDataSource data_source;
     data_source.access_key = "test access key";
-    data_source.create_time = "test create time";
+    data_source.create_time = 0;
     data_source.id = bsoncxx::oid{};
     data_source.name = "test name";
     data_source.secret_key = "test secret key";

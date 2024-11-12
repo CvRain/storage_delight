@@ -18,6 +18,7 @@ namespace schema::key {
     const std::string update_time = "update_time";
     const std::string data_source = "data_source";
     const std::string bucket_name = "bucket_name";
+    const std::string source_name = "source_name";
     const std::string permission_id = "permission_id";
     const std::string tags = "tags";
     const std::string access_key = "access_key";

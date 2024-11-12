@@ -5,6 +5,7 @@
 #include "storage_service.hpp"
 
 #include "service/log_service.hpp"
+#include "utils/item.h"
 
 using namespace service_delight;
 
@@ -15,6 +16,12 @@ auto StorageService::init() -> void {
 
 auto StorageService::append_storage(schema::DbDataSource *data_source) -> schema::result<bool, std::string_view> {
     Logger::get_instance().log(ConsoleLogger, "StorageService append_storage");
+
+    // 检查是否能够连接到MinIO服务器
+    if (const auto minio_connection = util_delight::Item::check_minio_server_connection(data_source->url);
+        !minio_connection) {
+        return std::make_pair(false, "minio server connection failed");
+    }
 
     // 检查数据库中是否存在同一个名称
     try {
@@ -85,7 +92,7 @@ auto StorageService::list_all_storage_ids() -> schema::result<std::vector<bsoncx
     try {
         auto result = data_source_collection.find(make_document());
         std::vector<bsoncxx::oid> ids;
-        for(auto &&it : result) {
+        for (auto &&it: result) {
             const auto one_id = it.find(schema::key::bson_id)->get_oid().value;
             ids.emplace_back(one_id);
         }
@@ -117,8 +124,8 @@ auto StorageService::remove_storage(const bsoncxx::oid &id) -> schema::result<bo
     service_delight::Logger::get_instance().log(ConsoleLogger, "StorageService remove_storage");
 
     try {
-        const auto result = data_source_collection.delete_one(make_document(kvp(schema::key::bson_id, id)));
-        if (result.has_value() && result.value().result().deleted_count() == 1) {
+        if (const auto result = data_source_collection.delete_one(make_document(kvp(schema::key::bson_id, id)));
+            result.has_value() && result.value().result().deleted_count() == 1) {
             return std::make_pair(true, "");
         }
         return std::make_pair(false, "delete storage failed");
@@ -129,13 +136,13 @@ auto StorageService::remove_storage(const bsoncxx::oid &id) -> schema::result<bo
         return std::make_pair(false, e.what());
     }
 }
-auto StorageService::update_storage(schema::DbDataSource* data_source) -> schema::result<bool, std::string_view> {
+auto StorageService::update_storage(schema::DbDataSource *data_source) -> schema::result<bool, std::string_view> {
     service_delight::Logger::get_instance().log(ConsoleLogger, "StorageService update_storage");
     try {
         const auto update_id = data_source->id;
         const auto update_document = data_source->get_document().view();
-        const auto result = data_source_collection.update_one(make_document(kvp(schema::key::bson_id, update_id)),
-                                                               update_document);
+        const auto result =
+                data_source_collection.update_one(make_document(kvp(schema::key::bson_id, update_id)), update_document);
         if (result.has_value() && result.value().result().modified_count() == 1) {
             return std::make_pair(true, "");
         }

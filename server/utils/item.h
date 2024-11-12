@@ -5,20 +5,23 @@
 #ifndef ITEM_H
 #define ITEM_H
 
-#include <drogon/HttpRequest.h>
 #include <string>
-
-#include "basic_value.hpp"
+#include <curl/curl.h>
 
 namespace util_delight {
     class Item {
     public:
-        static std::string get_request_ip(drogon::HttpRequestPtr &&request) {
-            if (const auto x_forward_for = request->getHeader(model_delight::basic_value::header::x_forwarded_for);
-                !x_forward_for.empty()) {
-                return x_forward_for;
+        static auto check_minio_server_connection(const std::string_view& url) -> bool {
+            CURL* curl = curl_easy_init();
+            if (!curl) {
+                return false;
             }
-            return request->getPeerAddr().toIp();
+            curl_easy_setopt(curl, CURLOPT_URL, url.data());
+            curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
+            curl_easy_cleanup(curl);
+
+            const CURLcode res = curl_easy_perform(curl);
+            return res == CURLE_OK;
         }
     };
 } // namespace util_delight

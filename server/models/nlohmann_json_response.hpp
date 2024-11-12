@@ -8,12 +8,31 @@
 #include <drogon/HttpResponse.h>
 #include <nlohmann/json.hpp>
 
+#include "db_schema.hpp"
 #include "http_response.hpp"
+#include "basic_value.hpp"
 
 namespace model_delight {
     struct TestResponse {
         int code;
         std::string message;
+    };
+
+    struct BasicResponse {
+        int code;
+        std::string_view message;
+        std::string_view result;
+        nlohmann::json data{};
+
+        nlohmann::json to_json() {
+            nlohmann::json json{
+                    {model_delight::basic_value::request::code, code},
+                    {model_delight::basic_value::request::message, message},
+                    {model_delight::basic_value::request::result, result},
+                    {"data", data}
+            };
+            return json;
+        }
     };
 
 

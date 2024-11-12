@@ -21,7 +21,7 @@ void User::add_user(model_delight::NlohmannJsonRequestPtr &&req,
                                                 "Enter controller: User::add_user");
 
     const auto json_body = req->getNlohmannJsonBody();
-    if (json_body.at(schema::key::user_role).get<int>() == schema::UserRole::TypeNone) {
+    if (json_body.at(schema::key::user_role).get<int32_t>() == static_cast<int32_t>(schema::UserRole::TypeNone)) {
         nlohmann::json response{{model_delight::basic_value::request::code, k400BadRequest},
                                 {model_delight::basic_value::request::message, "Invalid role"},
                                 {model_delight::basic_value::request::result, "k400BadRequest"},
@@ -31,8 +31,9 @@ void User::add_user(model_delight::NlohmannJsonRequestPtr &&req,
     }
 
     // 检查role是否合法
-    if (const auto user_role = json_body.at(schema::key::user_role).get<int>();
-        user_role < 0 || user_role >= schema::TypeRoleMax) {
+    if (const auto user_role = json_body.at(schema::key::user_role).get<int32_t>();
+        user_role < 0
+        or user_role >= static_cast<int32_t>(schema::UserRole::TypeRoleMax)) {
         nlohmann::json response{{model_delight::basic_value::request::code, k400BadRequest},
                                 {model_delight::basic_value::request::message, "Invalid role"},
                                 {model_delight::basic_value::request::result, "k400BadRequest"},
@@ -43,7 +44,7 @@ void User::add_user(model_delight::NlohmannJsonRequestPtr &&req,
 
     // 当role为0时，检查数据库中是否已经存在管理员
     if (const auto user_role = json_body.at(schema::key::user_role).get<int>();
-        user_role == schema::TypeAdmin && service_delight::UserService::get_instance().admin_is_exist()) {
+        user_role == static_cast<int32_t>(schema::UserRole::TypeAdmin) and service_delight::UserService::get_instance().admin_is_exist()) {
         nlohmann::json response{{model_delight::basic_value::request::code, k400BadRequest},
                                 {model_delight::basic_value::request::message, "There is already an admin"},
                                 {model_delight::basic_value::request::result, "k400BadRequest"},
