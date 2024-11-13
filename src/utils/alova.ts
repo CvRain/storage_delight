@@ -7,7 +7,7 @@ import adapterFetch from 'alova/fetch';
 
 const alovaInstance = createAlova({
   baseURL: process.env.TEST_API_URL || 'http://www.kursharp.cn:21654/api',
-  requestAdapter: adapterFetch(),
+  requestAdapter: axiosRequestAdapter(),
   responded: response => response.json()
 });
 

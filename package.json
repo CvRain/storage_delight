@@ -9,11 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@alova/adapter-axios": "^2.0.10",
     "@ant-design/cssinjs": "^1.21.1",
     "@ant-design/nextjs-registry": "^1.0.1",
     "@reduxjs/toolkit": "^2.3.0",
-    "alova": "^3.1.1",
+    "alova": "^3.2.3",
     "antd": "^5.21.5",
+    "axios": "^1.7.7",
     "dayjs": "^1.11.13",
     "next": "^14.2.12",
     "react": "^18.3.1",

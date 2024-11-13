@@ -44,26 +44,26 @@ const WebLayout = ({ children }: React.PropsWithChildren) => {
 
   return (
     <Layout style={layoutStyle}>
-        {headerShow && (
-        <Header style={headerStyle}>
-            <WebHeader />
-        </Header>
-        )}
-        <Layout>
         {siderShow && (
         <Sider style={siderStyle}>
             <WebSider />
         </Sider>
         )}
+        <Layout>
+        {headerShow && (
+        <Header style={headerStyle}>
+            <WebHeader />
+        </Header>
+        )}
         <Content style={contentStyle}>
             {children}
         </Content>
-        </Layout>
         {footerShow && (
         <Footer style={footerStyle}>
             <WebFooter />
         </Footer>
         )}
+        </Layout>
     </Layout>
   );
 };

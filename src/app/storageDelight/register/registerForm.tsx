@@ -3,7 +3,7 @@ import React, { use } from 'react';
 import alovaInstance from '@ut/alova';
 import { useRequest } from 'alova/client';
 import { useState,useRef,useEffect } from "react";
-import { LoginInfo } from '@type/loginInfo';
+import { RegisterInfo } from '@type/registerInfo';
 import { Card,Input,Button } from 'antd';
 import Link from 'next/link';
 
@@ -11,10 +11,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@st/store';
 import { changeHeaderShow,changeFooterShow,changeSiderShow } from '@st/reducers/layout';
 
-const LoginForm:React.FC = () => {
-    const [loginName, setLoginName] = useState<string>('')
-    const [loginPassword, setLoginPassword] = useState<string>('')
-    const [loginInfo, setLoginInfo] = useState<LoginInfo>({
+const RegisterForm:React.FC = () => {
+    const [registerName, setRegisterName] = useState<string>('')
+    const [registerPassword, setRegisterPassword] = useState<string>('')
+    const [registerInfo, setRegisterInfo] = useState<RegisterInfo>({
         name:'',
         password: '',
         role:0,
@@ -41,12 +41,12 @@ const LoginForm:React.FC = () => {
 
     
     const addUserRequest = useRequest(
-        (loginData: LoginInfo) => alovaInstance.Put('/user/add', loginData),
+        (registerData: RegisterInfo) => alovaInstance.Put('/user/add', registerData),
         { immediate: false }
     );
 
-    const loginRequest = useRequest(
-        (loginData: LoginInfo) => alovaInstance.Put('/user/login', loginData),
+    const registerRequest = useRequest(
+        (registerData: RegisterInfo) => alovaInstance.Put('/user/register', registerData),
         { immediate: false }
     );
 
@@ -59,44 +59,44 @@ const LoginForm:React.FC = () => {
     });
 
 
-    loginRequest.onSuccess((response) => {
-        console.log('Login successful:', response);
+    registerRequest.onSuccess((response) => {
+        console.log('register successful:', response);
     });
 
-    loginRequest.onError((error) => {
-        console.error('Login failed:', error);
+    registerRequest.onError((error) => {
+        console.error('register failed:', error);
     });
 
-    const login: React.MouseEventHandler<HTMLButtonElement> = (event)=>{
+    const register: React.MouseEventHandler<HTMLButtonElement> = (event)=>{
         console.log(event);
-        setLoginInfo({
-            name:loginName,
-            password:loginPassword,
-            role:loginInfo.role
+        setRegisterInfo({
+            name:registerName,
+            password:registerPassword,
+            role:registerInfo.role
         })
         // 发送请求
-        loginRequest.send(loginInfo);
+        registerRequest.send(registerInfo);
     }
     return (
-        <div className="storageDelight-loginform">
-            <div className="storageDelight-loginform-card">
-            <Card title="登录" extra={<Link  href="/storageDelight/register">注册</Link>}>
-                <div className="storageDelight-loginform-card-name">
+        <div className="storageDelight-registerform">
+            <div className="storageDelight-registerform-card">
+            <Card title="登录" extra={<Link  href="/storageDelight/login">登录</Link>}>
+                <div className="storageDelight-registerform-card-name">
                     <Input
                         id="name"
-                        value={loginName}
+                        value={registerName}
                         placeholder="请输入用户名"
                     />
                 </div>
-                <div className="storageDelight-loginform-card-password">
+                <div className="storageDelight-registerform-card-password">
                     <Input
                         id="name"
-                        value={loginPassword}
+                        value={registerPassword}
                         placeholder="请输入密码"
                     />
                 </div>
-                <div className="storageDelight-loginform-card-btn">
-                    <Button type="primary" size="large" onMouseUp={login}>登录</Button>
+                <div className="storageDelight-registerform-card-btn">
+                    <Button type="primary" size="large" onMouseUp={register}>注册</Button>
                 </div>
             </Card>
             </div>
@@ -104,4 +104,4 @@ const LoginForm:React.FC = () => {
     );
 };
 
-export default LoginForm;
+export default RegisterForm;

@@ -1,6 +1,6 @@
 .header-frame{
     display: grid;
-    grid-template-columns: 5% 80% 15%;
+    grid-template-columns: 85% 15%;
     align-items: center;
 }
 .header-operation{

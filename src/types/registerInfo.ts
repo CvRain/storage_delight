@@ -1,4 +1,4 @@
-export interface LoginInfo {
+export interface RegisterInfo {
     name?: string;
     password?: string;
     token?: string;
