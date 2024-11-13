@@ -16,23 +16,23 @@ namespace api {
         METHOD_ADD(StorageSource::add_source, "/add", Options, Put);
         METHOD_ADD(StorageSource::remove_source, "/remove", Options, Delete);
         METHOD_ADD(StorageSource::list_all_source, "/list", Options, Get);
-        METHOD_ADD(StorageSource::list_all_ids, "/list_ids", Options, Get);
+        METHOD_ADD(StorageSource::list_all_ids, "/ids", Options, Get);
         METHOD_ADD(StorageSource::get_one_source, "/one", Options, Get);
 
         METHOD_LIST_END
-        static void add_source(model_delight::NlohmannJsonRequestPtr &&request,
+        static void add_source(model_delight::NlohmannJsonRequestPtr        &&request,
                                std::function<void(const HttpResponsePtr &)> &&callback);
 
-        static void remove_source(model_delight::NlohmannJsonRequestPtr &&request,
+        static void remove_source(model_delight::NlohmannJsonRequestPtr        &&request,
                                   std::function<void(const HttpResponsePtr &)> &&callback);
 
-        static void list_all_source(model_delight::NlohmannJsonRequestPtr &&request,
+        static void list_all_source(model_delight::NlohmannJsonRequestPtr        &&request,
                                     std::function<void(const HttpResponsePtr &)> &&callback);
 
-        static void list_all_ids(model_delight::NlohmannJsonRequestPtr &&request,
+        static void list_all_ids(model_delight::NlohmannJsonRequestPtr        &&request,
                                  std::function<void(const HttpResponsePtr &)> &&callback);
 
-        static void get_one_source(model_delight::NlohmannJsonRequestPtr &&request,
+        static void get_one_source(model_delight::NlohmannJsonRequestPtr        &&request,
                                    std::function<void(const HttpResponsePtr &)> &&callback);
     };
-} // namespace api
+}  // namespace api

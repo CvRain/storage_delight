@@ -64,7 +64,7 @@ void Hello::get_user_model(model_delight::NlohmannJsonRequestPtr &&ptr,
     user.id = bsoncxx::oid{};
     user.name = "test";
     user.password = "test";
-    user.role = schema::UserRole::TypeUser;
+    user.role = static_cast<int32_t>(schema::UserRole::TypeUser);
     user.update_time = 0;
     user.create_time = util_delight::Date::get_current_timestamp_32();
     callback(model_delight::NlohmannResponse::new_nlohmann_json_response(user.to_json()));
