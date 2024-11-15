@@ -1,14 +1,26 @@
 // alova.ts
-import { createAlova } from 'alova';
+import { createAlova,StatesHook } from 'alova';
+// import adapterFetch from 'alova/fetch';
 
-import adapterFetch from 'alova/fetch';
+import { axiosRequestAdapter } from '@alova/adapter-axios';
+import ReactHook from 'alova/react';
 
-// import { axiosRequestAdapter } from '@alova/adapter-axios';
 
 const alovaInstance = createAlova({
   baseURL: process.env.TEST_API_URL || 'http://www.kursharp.cn:21654/api',
   requestAdapter: axiosRequestAdapter(),
-  responded: response => response.json()
+  statesHook: ReactHook,
+  // responded: response => response
+  responded:{
+    // response自动被推断为AxiosResponse类型
+    onSuccess(response) {
+      // response自动被推断为AxiosResponse类型
+      return response.data;
+    },
+    onError(err) {
+      return err;
+    }
+  }
 });
 
 export default alovaInstance;
