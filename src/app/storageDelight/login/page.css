@@ -1,5 +1,9 @@
 .storageDelight-login{
     display: flex;
     justify-content: center;
-    padding: 100px 0px;
+    padding-top: 100px;
+}
+.storageDelight-loginform-card{
+    display:grid;
+    row-gap:10px;
 }

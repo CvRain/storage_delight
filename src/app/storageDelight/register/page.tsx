@@ -12,7 +12,7 @@ const fetchData = async () => {
 const Page:React.FC = () => {
 
   return (
-    <div className="storageDelight-login">
+    <div className="storageDelight-register">
         <RegisterForm></RegisterForm>
     </div>
   );

@@ -1,0 +1,9 @@
+.storageDelight-register{
+    display: flex;
+    justify-content: center;
+    padding-top: 100px;
+}
+.storageDelight-registerform-card{
+    display:grid;
+    row-gap:10px;
+}

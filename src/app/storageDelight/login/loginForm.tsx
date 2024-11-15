@@ -77,29 +77,41 @@ const LoginForm:React.FC = () => {
         // 发送请求
         loginRequest.send(loginInfo);
     }
+    
+    const nameInputChange = (event) => {
+        console.log(event);
+        setLoginName(event.target.value);
+    }
+    const passwordInputChange = (event) => {
+        console.log(event);
+        setLoginPassword(event.target.value);
+    }
+
     return (
         <div className="storageDelight-loginform">
-            <div className="storageDelight-loginform-card">
             <Card title="登录" extra={<Link  href="/storageDelight/register">注册</Link>}>
-                <div className="storageDelight-loginform-card-name">
-                    <Input
-                        id="name"
-                        value={loginName}
-                        placeholder="请输入用户名"
-                    />
-                </div>
-                <div className="storageDelight-loginform-card-password">
-                    <Input
-                        id="name"
-                        value={loginPassword}
-                        placeholder="请输入密码"
-                    />
-                </div>
-                <div className="storageDelight-loginform-card-btn">
-                    <Button type="primary" size="large" onMouseUp={login}>登录</Button>
+                <div className="storageDelight-loginform-card">
+                    <div className="storageDelight-loginform-card-name">
+                        <Input
+                            id="name"
+                            value={loginName}
+                            onChange={nameInputChange}
+                            placeholder="请输入用户名"
+                        />
+                    </div>
+                    <div className="storageDelight-loginform-card-password">
+                        <Input.Password
+                            id="password"
+                            value={loginPassword}
+                            onChange={passwordInputChange}
+                            placeholder="请输入密码"
+                        />
+                    </div>
+                    <div className="storageDelight-loginform-card-btn">
+                        <Button type="primary" size="large" onMouseUp={login} block>登录</Button>
+                    </div>
                 </div>
             </Card>
-            </div>
         </div>
     );
 };
