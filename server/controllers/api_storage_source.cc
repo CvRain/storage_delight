@@ -18,7 +18,7 @@ void StorageSource::add_source(model_delight::NlohmannJsonRequestPtr        &&re
     const auto field_integrity =
             request_body.contains(schema::key::name) and request_body.contains(schema::key::url) and
             request_body.contains(schema::key::access_key) and request_body.contains(schema::key::secret_key) and
-            request_body.contains(schema::key::user_id);
+            request_body.contains(schema::key::user_id) and request_body.contains(schema::key::is_https);
 
     if (not field_integrity) {
         auto response = model_delight::BasicResponse{
@@ -33,6 +33,7 @@ void StorageSource::add_source(model_delight::NlohmannJsonRequestPtr        &&re
     data_source.secret_key  = request_body[schema::key::secret_key].get<std::string>();
     data_source.url         = request_body[schema::key::url].get<std::string>();
     data_source.create_time = util_delight::Date::get_current_timestamp_32();
+    data_source.is_https = request_body[schema::key::is_https].get<bool>();
 
     // 检查插入情况
     if (const auto [result, error] = service_delight::StorageService::get_instance().append_storage(&data_source);
@@ -86,10 +87,9 @@ void StorageSource::remove_source(model_delight::NlohmannJsonRequestPtr        &
                                                 spdlog::level::info,
                                                 "StorageSource::remove_source");
 
-    const auto request_body = request->getNlohmannJsonBody();
-    const auto field_integrity =
-            request_body.contains(schema::key::user_id)
-    and request_body.contains(model_delight::basic_value::request::source_id);
+    const auto request_body    = request->getNlohmannJsonBody();
+    const auto field_integrity = request_body.contains(schema::key::user_id) and
+                                 request_body.contains(model_delight::basic_value::request::source_id);
 
     if (not field_integrity) {
         auto response = model_delight::BasicResponse{
@@ -98,12 +98,13 @@ void StorageSource::remove_source(model_delight::NlohmannJsonRequestPtr        &
         return;
     }
 
-    const auto bson_id = bsoncxx::oid{request_body[model_delight::basic_value::request::source_id].get<std::string_view>()};
+    const auto bson_id =
+            bsoncxx::oid{request_body[model_delight::basic_value::request::source_id].get<std::string_view>()};
 
     try {
         service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
-            spdlog::level::debug,
-            "StorageSource::remove_source try to fetch storage source name");
+                                                    spdlog::level::debug,
+                                                    "StorageSource::remove_source try to fetch storage source name");
 
         const auto [fst, snd] = service_delight::StorageService::get_instance().get_storage_by_id(bson_id);
 

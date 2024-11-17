@@ -52,8 +52,10 @@ namespace model_delight::basic_value {
     }  // namespace jwt
 
     namespace middleware {
-        const std::string LoginAuth = "drogon::middleware::LoginMiddleware";
-        const std::string AdminAuth = "drogon::middleware::AdminAuth";
+        constexpr std::string_view LoginAuth = "drogon::middleware::LoginMiddleware";
+        constexpr std::string_view AdminAuth = "drogon::middleware::AdminAuth";
+        constexpr std::string_view UserExist = "drogon::middleware::UserExist";
+
     }  // namespace middleware
 }  // namespace model_delight::basic_value
 

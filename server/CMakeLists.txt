@@ -27,6 +27,8 @@ set(CTL_SRC
 set(FILTER_SRC
         filters/user_filter.hpp
         filters/user_filter.cpp
+        filters/user_exist.cpp
+        filters/user_exist.hpp
 )
 aux_source_directory(plugins PLUGIN_SRC)
 
@@ -65,6 +67,8 @@ set(SERVICE_SRC
         service/log_service.hpp
         service/storage_service.cpp
         service/storage_service.hpp
+        service/bucket_service.cpp
+        service/bucket_service.hpp
 )
 
 include_directories(${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include)

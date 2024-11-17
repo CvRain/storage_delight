@@ -13,7 +13,7 @@ namespace storage_delight::core {
     }
 
     minio::s3::ListBucketsResponse
-    BucketOperation::listBuckets() {
+    BucketOperation::list_buckets() {
         return execute_operation([&]() {
             return client.ListBuckets();
         }, "List buckets");

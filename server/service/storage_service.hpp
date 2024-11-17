@@ -5,6 +5,7 @@
 #ifndef STORAGE_SERVICE_HPP
 #define STORAGE_SERVICE_HPP
 
+#include "client.hpp"
 #include "models/db_schema.hpp"
 #include "service/mongo_service.hpp"
 #include "type.hpp"
@@ -19,28 +20,27 @@ namespace service_delight {
          */
         auto init() -> void;
 
+        auto init_flag() const -> const bool &;
+
         /**
          * @brief 添加存储源
          * @param data_source 接受DbDataSource结构
          */
-        auto append_storage(schema::DbDataSource *data_source)
-        -> schema::result<bool, std::string_view>;
+        auto append_storage(schema::DbDataSource *data_source) -> schema::result<bool, std::string_view>;
 
         /**
          * @brief 通过id获取存储源
          * @param id 存储源的id
          * @return 如果查询成功返回查询后的document，失败则为std::nullopt和错误原因
          */
-        auto get_storage_by_id(const bsoncxx::oid &id)
-                -> schema::result<bsoncxx::document::value, std::string_view>;
+        auto get_storage_by_id(const bsoncxx::oid &id) -> schema::result<bsoncxx::document::value, std::string_view>;
 
         /**
          * @brief 通过名称获取存储源
          * @param name 存储源的名称
          * @return 如果查询成功返回查询后的document，失败则为std::nullopt和错误原因
          */
-        auto get_storage_by_name(const std::string &name)
-                -> schema::result<bsoncxx::document::value, std::string_view>;
+        auto get_storage_by_name(const std::string &name) -> schema::result<bsoncxx::document::value, std::string_view>;
 
         /**
          * @brief 列出所有存储源的id
@@ -73,16 +73,27 @@ namespace service_delight {
          * @param id 存储源的id
          * @return 如果存在返回true，不存在返回false，失败则为false和错误原因
          */
-        auto check_storage_exist(const bsoncxx::oid &id) -> schema::result<bool, std::string_view>;
+        auto is_exist(const bsoncxx::oid &id) -> schema::result<bool, std::string_view>;
 
         /**
          * @brief 检查存储源是否存在
          * @param name 存储源的名称
          * @return 如果存在返回true，不存在返回false，失败则为false和错误原因
          */
-        auto check_storage_exist(const std::string &name) -> schema::result<bool, std::string_view>;
+        auto is_exist(const std::string &name) -> schema::result<bool, std::string_view>;
+
+        auto active_storage(const bsoncxx::oid &id) -> schema::result<bool, std::string_view>;
+
+        auto active_all_storage() -> schema::result<bool, std::string_view>;
+
+        auto inactive_storage(const bsoncxx::oid &id) -> schema::result<bool, std::string_view>;
+
+        auto inactive_all_storage() -> schema::result<bool, std::string_view>;
+
     private:
         mongocxx::collection data_source_collection;
+        bool is_init = false;
+        storage_delight::core::ClientGroup client_group;
     };
 } // namespace service_delight
 #endif // STORAGE_SERVICE_HPP

@@ -37,6 +37,7 @@ namespace schema::key {
     const std::string url = "url";
     const std::string bucket_id = "bucket_id";
     const std::string token = "token";
+    const std::string is_https = "is_https";
 
     namespace permission {
         const std::string allow_read = "allow_read";
@@ -59,6 +60,8 @@ namespace schema::key {
         constexpr std::string_view group = "group";
         constexpr std::string_view operation_logs = "operation_logs";
         constexpr std::string_view data_source = "data_source";
+        constexpr std::string_view bucket = "bucket";
+        constexpr std::string_view permission = "permission";
     }
 }
 

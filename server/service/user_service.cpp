@@ -29,7 +29,7 @@ namespace service_delight {
                 return std::make_pair(std::nullopt, "User name is empty");
             }
 
-            if (user_is_exist(user->name)) {
+            if (is_exist(user->name)) {
                 Logger::get_instance().log(
                         ConsoleLogger | BasicLogger, "UserService::add_user {} already exist", user->name);
                 return std::make_pair(std::nullopt, "User already exist");
@@ -57,7 +57,7 @@ namespace service_delight {
 
         try {
             const auto user_name = value[schema::key::name].get_string().value;
-            if (user_is_exist(user_name.data())) {
+            if (is_exist(user_name.data())) {
                 Logger::get_instance().log(
                         ConsoleLogger | BasicLogger, "UserService::add_user_v2 {} already exist", user_name);
                 return std::make_pair(std::nullopt, "User already exist");
@@ -113,13 +113,13 @@ namespace service_delight {
         }
     }
 
-    bool UserService::user_is_exist(const std::string &user_name) {
+    bool UserService::is_exist(const std::string &user_name) {
         // schema::key::name is "name"
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::user_is_exist");
         return user_collection.find_one(make_document(kvp(schema::key::name, user_name))).has_value();
     }
 
-    bool UserService::user_is_exist(const bsoncxx::oid &id) {
+    bool UserService::is_exist(const bsoncxx::oid &id) {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::user_is_exist");
         try {
             const auto filter = make_document(kvp(schema::key::bson_id, id));

@@ -73,6 +73,7 @@ namespace schema {
         std::string access_key;
         std::string secret_key;
         int32_t create_time;
+        bool is_https;
     };
 
     class DbGroup final : public MongoDocument

@@ -13,13 +13,38 @@ namespace api {
     class StorageSource final : public drogon::HttpController<StorageSource> {
     public:
         METHOD_LIST_BEGIN
-        METHOD_ADD(StorageSource::add_source, "/add", Options, Put);
-        METHOD_ADD(StorageSource::remove_source, "/remove", Options, Delete);
-        METHOD_ADD(StorageSource::list_all_source, "/list", Options, Get);
-        METHOD_ADD(StorageSource::list_all_ids, "/ids", Options, Get);
-        METHOD_ADD(StorageSource::get_one_source, "/one", Options, Get);
+        METHOD_ADD(StorageSource::add_source,
+                   "/add",
+                   Options,
+                   Put,
+                   model_delight::basic_value::middleware::UserExist.data());
+
+        METHOD_ADD(StorageSource::remove_source,
+                   "/remove",
+                   Options,
+                   Delete,
+                   model_delight::basic_value::middleware::UserExist.data());
+
+        METHOD_ADD(StorageSource::list_all_source,
+                   "/list",
+                   Options,
+                   Get,
+                   model_delight::basic_value::middleware::UserExist.data());
+
+        METHOD_ADD(StorageSource::list_all_ids,
+                   "/ids",
+                   Options,
+                   Get,
+                   model_delight::basic_value::middleware::UserExist.data());
+
+        METHOD_ADD(StorageSource::get_one_source,
+                   "/one",
+                   Options,
+                   Get,
+                   model_delight::basic_value::middleware::UserExist.data());
 
         METHOD_LIST_END
+
         static void add_source(model_delight::NlohmannJsonRequestPtr        &&request,
                                std::function<void(const HttpResponsePtr &)> &&callback);
 

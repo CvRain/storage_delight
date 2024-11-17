@@ -135,5 +135,6 @@ void Hello::get_date_source_model(model_delight::NlohmannJsonRequestPtr &&ptr,
     data_source.name = "test name";
     data_source.secret_key = "test secret key";
     data_source.url = "test url";
+    data_source.is_https = false;
     callback(model_delight::NlohmannResponse::new_nlohmann_json_response(data_source.to_json()));
 }

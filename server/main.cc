@@ -4,6 +4,7 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/daily_file_sink.h>
 
+#include "service/bucket_service.hpp"
 #include "service/group_service.hpp"
 #include "service/log_service.hpp"
 #include "service/logger.hpp"
@@ -11,9 +12,6 @@
 #include "service/storage_service.hpp"
 #include "service/user_service.hpp"
 #include "utils/string.hpp"
-
-//    auto provider = core::Client::make_provider("uiJ2kXR4V1ceWJPkHNfT", "7KBobqxCWyLQKhARhs6paIsmI4rwx1kx8Zpjghhd");
-//    minio::s3::BaseUrl url{"http://server.cloudvl.cn:10569", false}
 
 void service_init(const nlohmann::json &setting);
 
@@ -140,4 +138,5 @@ void service_init(const nlohmann::json &setting) {
     service_delight::GroupService::get_instance().init();
     service_delight::StorageService::get_instance().init();
     service_delight::LogService::get_instance().init();
+    service_delight::BucketService::get_instance().init();
 }

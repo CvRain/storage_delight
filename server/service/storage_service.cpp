@@ -4,6 +4,7 @@
 
 #include "storage_service.hpp"
 
+#include "client.hpp"
 #include "service/log_service.hpp"
 #include "utils/item.h"
 
@@ -12,7 +13,13 @@ using namespace service_delight;
 auto StorageService::init() -> void {
     Logger::get_instance().log(ConsoleLogger, "StorageService init");
     data_source_collection = MongoProvider::get_instance().get_collection(schema::key::collection::data_source.data());
+    is_init                = true;
+
+    //加载所有存储
+    active_all_storage();
 }
+
+auto StorageService::init_flag() const -> const bool & { return is_init; }
 
 auto StorageService::append_storage(schema::DbDataSource *data_source) -> schema::result<bool, std::string_view> {
     Logger::get_instance().log(ConsoleLogger, "StorageService append_storage");
@@ -34,9 +41,7 @@ auto StorageService::append_storage(schema::DbDataSource *data_source) -> schema
     // 检查数据库中是否存在同一个名称
     try {
         const auto storage_name = data_source->name;
-        if (const auto [result, error_msg] = check_storage_exist(storage_name);
-            result.has_value() && result.value() == true)
-        {
+        if (const auto [result, error_msg] = is_exist(storage_name); result.has_value() && result.value() == true) {
             Logger::get_instance().log(ConsoleLogger,
                                        spdlog::level::info,
                                        "StorageService::append_storage: storage name: {} has been exist",
@@ -100,6 +105,7 @@ auto StorageService::get_storage_by_name(const std::string &name)
         return std::make_pair(std::nullopt, e.what());
     }
 }
+
 auto StorageService::list_all_storage_ids() -> schema::result<std::vector<bsoncxx::oid>, std::string_view> {
     service_delight::Logger::get_instance().log(ConsoleLogger, "StorageService list_all_storage_ids");
     try {
@@ -117,6 +123,7 @@ auto StorageService::list_all_storage_ids() -> schema::result<std::vector<bsoncx
         return std::make_pair(std::nullopt, e.what());
     }
 }
+
 auto StorageService::list_all_storages() -> schema::result<std::vector<bsoncxx::document::value>, std::string_view> {
     service_delight::Logger::get_instance().log(ConsoleLogger, "StorageService list_all_storages");
     try {
@@ -124,9 +131,10 @@ auto StorageService::list_all_storages() -> schema::result<std::vector<bsoncxx::
 
         std::vector<bsoncxx::document::value> storages;
         for (auto &&item: result) {
-            service_delight::Logger::get_instance().log(ConsoleLogger, spdlog::level::debug,
-                "StorageService list_all_storages: Find source:{}",
-                item.find(schema::key::bson_id)->get_oid().value.to_string());
+            service_delight::Logger::get_instance().log(ConsoleLogger,
+                                                        spdlog::level::debug,
+                                                        "StorageService list_all_storages: Find source:{}",
+                                                        item.find(schema::key::bson_id)->get_oid().value.to_string());
             storages.emplace_back(item);
         }
         return std::make_pair(storages, "");
@@ -150,9 +158,7 @@ auto StorageService::remove_storage(const bsoncxx::oid &id) -> schema::result<bo
     }
     catch (const std::exception &e) {
         service_delight::Logger::get_instance().log(
-                ConsoleLogger | BasicLogger,
-                spdlog::level::err,
-                "StorageService remove_storage: {}", e.what());
+                ConsoleLogger | BasicLogger, spdlog::level::err, "StorageService remove_storage: {}", e.what());
         return std::make_pair(false, e.what());
     }
 }
@@ -175,7 +181,7 @@ auto StorageService::update_storage(schema::DbDataSource *data_source) -> schema
     }
 }
 
-auto StorageService::check_storage_exist(const bsoncxx::oid &id) -> schema::result<bool, std::string_view> {
+auto StorageService::is_exist(const bsoncxx::oid &id) -> schema::result<bool, std::string_view> {
     service_delight::Logger::get_instance().log(ConsoleLogger, "StorageService check_storage_exist");
 
     try {
@@ -190,7 +196,7 @@ auto StorageService::check_storage_exist(const bsoncxx::oid &id) -> schema::resu
     }
 }
 
-auto StorageService::check_storage_exist(const std::string &name) -> schema::result<bool, std::string_view> {
+auto StorageService::is_exist(const std::string &name) -> schema::result<bool, std::string_view> {
     service_delight::Logger::get_instance().log(ConsoleLogger, "StorageService check_storage_exist");
     try {
         const auto result =
@@ -202,4 +208,92 @@ auto StorageService::check_storage_exist(const std::string &name) -> schema::res
                 ConsoleLogger | BasicLogger, spdlog::level::err, "StorageService check_storage_exist:{}", e.what());
         return std::make_pair(false, e.what());
     }
+}
+
+auto StorageService::active_storage(const bsoncxx::oid &id) -> schema::result<bool, std::string_view> {
+    Logger::get_instance().log(ConsoleLogger, "Enter StorageService active_storage");
+
+    try {
+        // 获得存储源
+        const auto [document, error] = get_storage_by_id(id);
+        if (not document.has_value()) {
+            throw std::runtime_error(error.data());
+        }
+
+        const auto storage  = schema::DbDataSource::from_bson(document.value());
+        auto       provider = storage_delight::core::Client::make_provider(storage.access_key, storage.secret_key);
+        auto       url      = minio::s3::BaseUrl{storage.url, storage.is_https};
+
+        Logger::get_instance().log(
+                ConsoleLogger | BasicLogger, spdlog::level::info, "Active storage: {}", storage.name);
+        client_group.push_back(storage.name.data(), std::make_shared<storage_delight::core::Client>(url, &provider));
+    }
+    catch (const std::exception &e) {
+        Logger::get_instance().log(
+                ConsoleLogger | BasicLogger, spdlog::level::err, "StorageService active_storage:{}", e.what());
+        return std::make_pair(false, e.what());
+    }
+    return std::make_pair(true, "");
+}
+
+auto StorageService::active_all_storage() -> schema::result<bool, std::string_view> {
+    Logger::get_instance().log(ConsoleLogger, "Enter StorageService active_storage");
+
+    try {
+        const auto [documents, error] = list_all_storages();
+        if (not documents.has_value()) {
+            throw std::runtime_error(error.data());
+        }
+
+        for (const auto &document: documents.value()) {
+            const auto storage  = schema::DbDataSource::from_bson(document);
+            auto       provider = storage_delight::core::Client::make_provider(storage.access_key, storage.secret_key);
+            auto       url      = minio::s3::BaseUrl{storage.url, storage.is_https};
+
+            Logger::get_instance().log(
+                    ConsoleLogger | BasicLogger, spdlog::level::info, "Active storage: {}", storage.name);
+            client_group.push_back(storage.name.data(),
+                                   std::make_shared<storage_delight::core::Client>(url, &provider));
+        }
+    }
+    catch (std::exception &e) {
+        Logger::get_instance().log(
+                ConsoleLogger | BasicLogger, spdlog::level::err, "StorageService active_storage: {}", e.what());
+        return std::make_pair(false, e.what());
+    }
+    return std::make_pair(true, "");
+}
+
+auto StorageService::inactive_storage(const bsoncxx::oid &id) -> schema::result<bool, std::string_view> {
+    Logger::get_instance().log(ConsoleLogger, "Enter StorageService inactive_storage");
+
+    try {
+        const auto [document, error] = get_storage_by_id(id);
+        if (not document.has_value()) {
+            throw std::runtime_error(error.data());
+        }
+        const auto storage = schema::DbDataSource::from_bson(document.value());
+        client_group.remove(storage.name);
+    }
+    catch (const std::exception &e) {
+        Logger::get_instance().log(
+                ConsoleLogger | BasicLogger, spdlog::level::err, "StorageService::inactive_storage {}", e.what());
+        return std::make_pair(false, e.what());
+    }
+
+    return std::make_pair(true, "");
+}
+
+auto StorageService::inactive_all_storage()-> schema::result<bool, std::string_view>{
+    Logger::get_instance().log(ConsoleLogger, "Enter StorageService inactive_all_storage");
+
+    try {
+        client_group.clear();
+    }
+    catch (const std::exception &e) {
+        Logger::get_instance().log(
+                ConsoleLogger | BasicLogger, spdlog::level::err, "StorageService::inactive_all_storage {}", e.what());
+        return std::make_pair(false, e.what());
+    }
+    return std::make_pair(true, "");
 }

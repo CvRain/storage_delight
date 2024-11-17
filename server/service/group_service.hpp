@@ -41,7 +41,7 @@ namespace service_delight {
          * @param group_id 用户组id
          * @return 如果存在此用户组则返回true否则返回false,异常返回std::nullopt和错误信息
          */
-        auto group_exist(const bsoncxx::oid &group_id) -> schema::result<bool, std::string>;
+        auto is_exist(const bsoncxx::oid &group_id) -> schema::result<bool, std::string>;
 
         /**
          * 更新用户组信息

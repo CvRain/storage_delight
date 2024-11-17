@@ -19,7 +19,7 @@ namespace service_delight {
         Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::add_group");
 
         // check group exist
-        if (const auto result = group_exist(group->id).first; result == true) {
+        if (const auto result = is_exist(group->id).first; result == true) {
             Logger::get_instance().log(BasicLogger | ConsoleLogger, "Leave GroupService::add_group");
             return std::make_pair(std::nullopt, "Group already exist");
         }
@@ -81,7 +81,7 @@ namespace service_delight {
         }
     }
 
-    auto GroupService::group_exist(const bsoncxx::oid &group_id) -> schema::result<bool, std::string> {
+    auto GroupService::is_exist(const bsoncxx::oid &group_id) -> schema::result<bool, std::string> {
         Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::group_exist");
         const auto bson_group_id = bsoncxx::oid{group_id};
         try {

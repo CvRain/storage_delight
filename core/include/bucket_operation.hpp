@@ -20,7 +20,7 @@ namespace storage_delight::core {
         bucket_exists(const std::string_view &bucketName);
 
         minio::s3::ListBucketsResponse
-        listBuckets();
+        list_buckets();
 
         void delete_bucket_encryption(const std::string &bucketName);
 

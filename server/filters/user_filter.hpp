@@ -8,7 +8,7 @@
 #include <drogon/HttpMiddleware.h>
 
 namespace drogon::middleware {
-    class LoginMiddleware : public HttpMiddleware<LoginMiddleware> {
+    class LoginMiddleware final : public HttpMiddleware<LoginMiddleware> {
     public:
         LoginMiddleware() = default;
 
