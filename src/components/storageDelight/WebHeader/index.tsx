@@ -37,7 +37,7 @@ const items: MenuItem[] = [
     children: [
       {
         type: 'group',
-        label: '',
+        label: '下载版本',
         children: [
           { label: 'x64版本', key: 'sf' },
           { label: 'Option 2', key: 'setting:2' },

@@ -3,7 +3,11 @@ import React from 'react';
 import { useState,useRef,useEffect } from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import {RootState} from '@st/store';
-import { AppstoreOutlined, MailOutlined, SettingOutlined } from '@ant-design/icons';
+import { 
+  AppstoreOutlined,
+   MailOutlined, 
+   DatabaseOutlined,
+   SettingOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Menu,Image,Button } from 'antd';
 
@@ -20,21 +24,39 @@ const items: MenuItem[] = [
         label: '用户设置',
         type: 'group',
         children: [
-          { key: 'login', label: '登录' },
+          { key: 'userinfo', label: '用户信息' },
           {
-            key: 'sub3',
+            key: '用户',
             label: 'Submenu',
-            children: [
-              { key: '7', label: 'Option 7' },
-              { key: '8', label: 'Option 8' },
-            ],
+            // children: [
+            //   { key: '7', label: 'Option 7' },
+            //   { key: '8', label: 'Option 8' },
+            // ],
           },
         ],
       },
     ],
   },
+  
   {
     type: 'divider',
+  },
+
+  {
+    label: '桶管理',
+    key: 'bucket',
+    icon: <DatabaseOutlined />,
+    disabled: true,
+    children: [
+      {
+        type: 'group',
+        key: 'bucketManager',
+        label: '存储桶管理',
+        children: [
+          { label: '列表', key: 'list' },
+        ],
+      },
+    ],
   },
 ];
 
@@ -64,6 +86,10 @@ export default function Client({
       console.log('click ', e);
     };
 
+    const selectMenuItem: MenuProps['onSelect'] = (e) => {
+      console.log('select ', e);
+    };
+
     return (
         <div className="sider">
             <div className="sider-frame">
@@ -79,7 +105,7 @@ export default function Client({
                 />
               </div>
                 <Menu
-                  onClick={onClick}
+                  onSelect={selectMenuItem}
                   defaultSelectedKeys={['1']}
                   defaultOpenKeys={['user']}
                   mode="inline"
