@@ -1,7 +1,13 @@
 'use client'
 import { useState,useRef,useEffect } from "react";
 import { useSelector, useDispatch } from 'react-redux';
-import { SettingOutlined,HomeOutlined,LoginOutlined } from '@ant-design/icons';
+import { 
+  SettingOutlined,
+  HomeOutlined,
+  LoginOutlined,
+  PayCircleOutlined,
+  CustomerServiceOutlined, 
+  FileSearchOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Menu,Image,Button } from 'antd';
 import "./index.css"
@@ -10,20 +16,30 @@ import Link from "next/link";
 const items: MenuItem[] = [
   {
     label: '主页',
-    key: 'mail',
+    key: 'home',
     icon: <HomeOutlined />,
   },
   {
-    label: 'Navigation Three - Submenu',
-    key: 'SubMenu',
-    icon: <SettingOutlined />,
+    label: '文档',
+    key: 'document',
+    icon: <FileSearchOutlined />,
+  },
+  {
+    label: '定价',
+    key: 'mail',
+    icon: <PayCircleOutlined />,
+  },
+  {
+    label: '支持与服务',
+    key: 'service',
+    icon: <CustomerServiceOutlined />,
     disabled: true,
     children: [
       {
         type: 'group',
-        label: 'Item 1',
+        label: '',
         children: [
-          { label: 'Option 1', key: 'setting:1' },
+          { label: 'x64版本', key: 'sf' },
           { label: 'Option 2', key: 'setting:2' },
         ],
       },
@@ -37,14 +53,14 @@ const items: MenuItem[] = [
       },
     ],
   },
-  {
-    key: 'alipay',
-    label: (
-      <a href="https://ant.design" target="_blank" rel="noopener noreferrer">
-        Navigation Four - Link
-      </a>
-    ),
-  },
+  // {
+  //   key: 'alipay',
+  //   label: (
+  //     <a href="https://ant.design" target="_blank" rel="noopener noreferrer">
+  //       Navigation Four - Link
+  //     </a>
+  //   ),
+  // },
 ];
 
 type MenuItem = Required<MenuProps>['items'][number];
