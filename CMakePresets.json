@@ -8,7 +8,7 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_CXX_COMPILER": "/usr/bin/g++",
         "CMAKE_C_COMPILER": "/usr/bin/gcc",
-        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "CMAKE_TOOLCHAIN_FILE": "/home/cvrain/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake",
         "CMAKE_PREFIX_PATH": "/usr"
       }
     },
@@ -20,19 +20,8 @@
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_CXX_COMPILER": "g++",
         "CMAKE_C_COMPILER": "gcc",
-        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "CMAKE_TOOLCHAIN_FILE": "/home/cvrain/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake",
         "CMAKE_PREFIX_PATH": "/usr"
-      }
-    },
-    {
-      "name": "default-windows-debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/windows-debug",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_CXX_COMPILER": "C:/msys64/mingw64/bin/g++.exe",
-        "CMAKE_C_COMPILER": "C:/msys64/mingw64/bin/gcc.exe",
-        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake"
       }
     }
   ],
@@ -44,10 +33,6 @@
     {
       "name": "default-linux-release",
       "configurePreset": "default-linux-release"
-    },
-    {
-      "name": "default-windows-debug",
-      "configurePreset": "default-windows-debug"
     }
   ],
   "version": 4
