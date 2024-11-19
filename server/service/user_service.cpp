@@ -15,7 +15,7 @@ namespace service_delight {
         user_collection = MongoProvider::get_instance().get_collection(schema::key::collection::user.data());
     }
 
-    schema::result<schema::DbUser, std::string> UserService::add_user(schema::DbUser           *user,
+    schema::result<schema::DbUser, std::string> UserService::add_one(schema::DbUser           *user,
                                                                       mongocxx::client_session *session) {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::add_user");
         try {
@@ -51,7 +51,7 @@ namespace service_delight {
         return std::make_pair(*user, "");
     }
 
-    schema::result<bsoncxx::document::value, std::string> UserService::add_user_v2(
+    schema::result<bsoncxx::document::value, std::string> UserService::add_one_v2(
             const bsoncxx::document::value &value) {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::add_user_v2");
 
@@ -69,7 +69,7 @@ namespace service_delight {
                 return std::make_pair(std::nullopt, "UserService::add_user_v2 failed");
             }
 
-            const auto user = get_user_by_id(insert_result.value().inserted_id().get_oid().value);
+            const auto user = get_by_id(insert_result.value().inserted_id().get_oid().value);
             return user;
         }
         catch (const std::exception &e) {
@@ -78,7 +78,7 @@ namespace service_delight {
         }
     }
 
-    schema::result<bsoncxx::document::value, std::string> UserService::get_user_by_id(const bsoncxx::oid &id) {
+    schema::result<bsoncxx::document::value, std::string> UserService::get_by_id(const bsoncxx::oid &id) {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::get_user_by_id");
         try {
             const auto user_document = user_collection.find_one(make_document(kvp(schema::key::bson_id, id)));
@@ -95,7 +95,7 @@ namespace service_delight {
         }
     }
 
-    schema::result<bsoncxx::document::value, std::string> UserService::get_user_by_name(const std::string &user_name) {
+    schema::result<bsoncxx::document::value, std::string> UserService::get_by_name(const std::string &user_name) {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::get_user_by_name");
         try {
             const auto user_document = user_collection.find_one(make_document(kvp(schema::key::name, user_name)));
@@ -158,7 +158,7 @@ namespace service_delight {
             return false;
         }
     }
-    auto UserService::list_user_ids() -> schema::result<std::vector<bsoncxx::oid>, std::string> {
+    auto UserService::list_ids() -> schema::result<std::vector<bsoncxx::oid>, std::string> {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::list_user_ids");
         try {
             auto                      cursor = user_collection.find(make_document());
@@ -175,7 +175,7 @@ namespace service_delight {
         }
     }
 
-    auto UserService::list_all_users() -> schema::result<std::vector<bsoncxx::document::value>, std::string> {
+    auto UserService::list_users() -> schema::result<std::vector<bsoncxx::document::value>, std::string> {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::list_all_users");
         try {
             auto                                  cursor = user_collection.find(make_document());
@@ -193,7 +193,7 @@ namespace service_delight {
             return std::make_pair(std::nullopt, e.what());
         }
     }
-    auto UserService::delete_user(bsoncxx::oid user_id) -> schema::result<bool, std::string> {
+    auto UserService::remove_one(bsoncxx::oid user_id) -> schema::result<bool, std::string> {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::delete_user");
         try {
             const auto filter = make_document(kvp(schema::key::bson_id, user_id));

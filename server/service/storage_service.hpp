@@ -14,18 +14,9 @@
 namespace service_delight {
     class StorageService final : public util_delight::Singleton<StorageService> {
     public:
-        ~StorageService() = default;
-        /**
-         * @brief 初始化存储服务
-         */
+        ~    StorageService() = default;
         auto init() -> void;
-
         auto init_flag() const -> const bool &;
-
-        /**
-         * @brief 添加存储源
-         * @param data_source 接受DbDataSource结构
-         */
         auto append_storage(schema::DbDataSource *data_source) -> schema::result<bool, std::string_view>;
 
         /**
@@ -40,7 +31,7 @@ namespace service_delight {
          * @param name 存储源的名称
          * @return 如果查询成功返回查询后的document，失败则为std::nullopt和错误原因
          */
-        auto get_storage_by_name(const std::string &name) -> schema::result<bsoncxx::document::value, std::string_view>;
+        auto get_storage_by_name(const std::string_view &name) -> schema::result<bsoncxx::document::value, std::string_view>;
 
         /**
          * @brief 列出所有存储源的id
@@ -86,9 +77,13 @@ namespace service_delight {
 
         auto active_all_storage() -> schema::result<bool, std::string_view>;
 
+        auto is_active(const std::string_view &source_name) -> schema::result<bool, std::string_view>;
+
         auto inactive_storage(const bsoncxx::oid &id) -> schema::result<bool, std::string_view>;
 
         auto inactive_all_storage() -> schema::result<bool, std::string_view>;
+
+        auto get_client(const std::string_view& source_name) -> std::optional<std::shared_ptr<storage_delight::core::Client>>;
 
     private:
         mongocxx::collection data_source_collection;

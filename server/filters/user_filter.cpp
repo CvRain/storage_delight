@@ -103,7 +103,7 @@ namespace drogon::middleware {
         //         .get_sqlite_service()
         //         .get_user_by_id(jwt_body.payload.user_id);
         const auto user_id = bsoncxx::oid{jwt_body.payload.user_id};
-        const auto [user, error_str] = service_delight::UserService::get_instance().get_user_by_id(user_id);
+        const auto [user, error_str] = service_delight::UserService::get_instance().get_by_id(user_id);
 
         if(!user.has_value()) {
             nlohmann::json response{

@@ -15,7 +15,7 @@ namespace service_delight {
         group_collection = MongoProvider::get_instance().get_collection(schema::key::collection::group.data());
     }
 
-    auto GroupService::add_group(schema::DbGroup *group) -> schema::result<std::string, std::string> {
+    auto GroupService::add_one(schema::DbGroup *group) -> schema::result<std::string, std::string> {
         Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::add_group");
 
         // check group exist
@@ -41,7 +41,7 @@ namespace service_delight {
         }
     }
 
-    auto GroupService::get_group(const bsoncxx::oid &group_id) -> schema::result<schema::DbGroup, std::string> {
+    auto GroupService::get_one(const bsoncxx::oid &group_id) -> schema::result<schema::DbGroup, std::string> {
         Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::get_group");
         try {
             Logger::get_instance().log(BasicLogger | ConsoleLogger, spdlog::level::debug,
@@ -64,7 +64,7 @@ namespace service_delight {
             return std::make_pair(std::nullopt, e.what());
         }
     }
-    auto GroupService::get_group_to_bson(const bsoncxx::oid &group_id)
+    auto GroupService::get_one_to_bson(const bsoncxx::oid &group_id)
             -> schema::result<bsoncxx::document::value, std::string> {
         Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::get_group_to_bson");
         try {
@@ -102,7 +102,7 @@ namespace service_delight {
             return std::make_pair(false, e.what());
         }
     }
-    auto GroupService::update_group(schema::DbGroup *group) -> schema::result<bool, std::string> {
+    auto GroupService::update_one(schema::DbGroup *group) -> schema::result<bool, std::string> {
             Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::update_group");
         try {
             const auto filter = make_document(kvp(schema::key::bson_id, group->id));
@@ -262,7 +262,7 @@ namespace service_delight {
         }
     }
 
-    auto GroupService::get_all_groups() -> schema::result<std::vector<bsoncxx::document::value>, std::string> {
+    auto GroupService::get_all() -> schema::result<std::vector<bsoncxx::document::value>, std::string> {
         Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::get_all_groups");
         try {
             std::vector<bsoncxx::document::value> groups;
@@ -279,7 +279,7 @@ namespace service_delight {
         }
     }
 
-    auto GroupService::delete_group(const bsoncxx::oid &group_id) -> schema::result<bool, std::string> {
+    auto GroupService::remove_one(const bsoncxx::oid &group_id) -> schema::result<bool, std::string> {
         Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::delete_group");
         try {
             const auto filter = make_document(kvp(schema::key::bson_id, group_id));
@@ -382,7 +382,7 @@ namespace service_delight {
         }
     }
 
-    auto GroupService::get_group_owner(const bsoncxx::oid &group_id) -> schema::result<bsoncxx::oid, std::string>{
+    auto GroupService::get_owner(const bsoncxx::oid &group_id) -> schema::result<bsoncxx::oid, std::string>{
         Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::get_group_owner");
         try {
             const auto filter = make_document(kvp(schema::key::bson_id, group_id));

@@ -10,17 +10,24 @@
 
 using namespace service_delight;
 
+/**
+ * @brief 初始化存储服务
+ */
 auto StorageService::init() -> void {
     Logger::get_instance().log(ConsoleLogger, "StorageService init");
     data_source_collection = MongoProvider::get_instance().get_collection(schema::key::collection::data_source.data());
     is_init                = true;
 
-    //加载所有存储
+    // 加载所有存储
     active_all_storage();
 }
 
 auto StorageService::init_flag() const -> const bool & { return is_init; }
 
+/**
+ * @brief 添加存储源
+ * @param data_source 接受DbDataSource结构
+ */
 auto StorageService::append_storage(schema::DbDataSource *data_source) -> schema::result<bool, std::string_view> {
     Logger::get_instance().log(ConsoleLogger, "StorageService append_storage");
 
@@ -89,11 +96,11 @@ auto StorageService::get_storage_by_id(const bsoncxx::oid &id)
     }
 }
 
-auto StorageService::get_storage_by_name(const std::string &name)
+auto StorageService::get_storage_by_name(const std::string_view &name)
         -> schema::result<bsoncxx::document::value, std::string_view> {
     service_delight::Logger::get_instance().log(ConsoleLogger, "StorageService get_storage_by_name");
     try {
-        const auto result = data_source_collection.find_one(make_document(kvp(schema::key::name, name)));
+        const auto result = data_source_collection.find_one(make_document(kvp(schema::key::name, name.data())));
         if (!result.has_value()) {
             return std::make_pair(std::nullopt, "storage not found");
         }
@@ -264,6 +271,11 @@ auto StorageService::active_all_storage() -> schema::result<bool, std::string_vi
     return std::make_pair(true, "");
 }
 
+auto StorageService::is_active(const std::string_view &source_name) -> schema::result<bool, std::string_view> {
+    Logger::get_instance().log(ConsoleLogger, "Enter StorageService is_active");
+    return std::make_pair(client_group.get_client(source_name).has_value(), "");
+}
+
 auto StorageService::inactive_storage(const bsoncxx::oid &id) -> schema::result<bool, std::string_view> {
     Logger::get_instance().log(ConsoleLogger, "Enter StorageService inactive_storage");
 
@@ -284,7 +296,7 @@ auto StorageService::inactive_storage(const bsoncxx::oid &id) -> schema::result<
     return std::make_pair(true, "");
 }
 
-auto StorageService::inactive_all_storage()-> schema::result<bool, std::string_view>{
+auto StorageService::inactive_all_storage() -> schema::result<bool, std::string_view> {
     Logger::get_instance().log(ConsoleLogger, "Enter StorageService inactive_all_storage");
 
     try {
@@ -296,4 +308,8 @@ auto StorageService::inactive_all_storage()-> schema::result<bool, std::string_v
         return std::make_pair(false, e.what());
     }
     return std::make_pair(true, "");
+}
+auto StorageService::get_client(const std::string_view &source_name)
+        -> std::optional<std::shared_ptr<storage_delight::core::Client>>{
+    return client_group.get_client(source_name);
 }

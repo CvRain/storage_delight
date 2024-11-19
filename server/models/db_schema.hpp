@@ -51,13 +51,14 @@ namespace schema {
     public:
         bsoncxx::document::value get_document() override;
         nlohmann::json to_json() override;
+        static DbBucket from_bson(const bsoncxx::document::value& value);
 
         bsoncxx::oid data_source;
         std::string bucket_name;
-        bsoncxx::oid group_id;
-        bsoncxx::oid permission_id;
-        std::vector<std::string> tags;
-        int32_t update_time;
+        bsoncxx::oid group_id{};
+        bsoncxx::oid permission_id{};
+        std::vector<std::string> tags{};
+        int32_t update_time{};
     };
 
     class DbDataSource final : public MongoDocument

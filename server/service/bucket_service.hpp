@@ -14,7 +14,14 @@ namespace service_delight {
     public:
         ~    BucketService() = default;
         void init();
-        auto check_bucket_exist(const std::string &bucket_name) -> schema::result<bool, std::string_view>;
+        auto add_one(const bsoncxx::oid& source_id, const std::string_view& bucket_name)
+                -> schema::result<bsoncxx::oid, std::string_view>;
+        auto add_one(const std::string_view& source_name, const std::string_view& bucket_name)
+                -> schema::result<bsoncxx::oid, std::string_view>;
+        auto remove_one(const bsoncxx::oid& bucket_id) -> schema::result<bool, std::string_view>;
+        auto remove_one(const std::string_view& bucket_name) -> schema::result<bool, std::string_view>;
+        auto is_exist(const bsoncxx::oid& bucket_id) -> schema::result<bool, std::string_view>;
+        auto is_exist(const std::string_view& bucket_name) -> schema::result<bool, std::string_view>;
 
     private:
         mongocxx::collection bucket_collection;

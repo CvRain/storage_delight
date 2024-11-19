@@ -66,7 +66,7 @@ void User::add_user(model_delight::NlohmannJsonRequestPtr &&req,
 
     try {
         nlohmann::json json_response;
-        if (const auto [fst, snd] = service_delight::UserService::get_instance().add_user(&user); fst.has_value()) {
+        if (const auto [fst, snd] = service_delight::UserService::get_instance().add_one(&user); fst.has_value()) {
             const auto &result_user = fst.value();
             json_response[schema::key::user_id] = result_user.id.to_string();
             json_response[schema::key::name] = result_user.name;
@@ -98,7 +98,7 @@ void User::add_user(model_delight::NlohmannJsonRequestPtr &&req,
         group.create_time = user.create_time;
         group.update_time = user.update_time;
         group.name = std::string{"group for "} + user.name;
-        service_delight::GroupService::get_instance().add_group(&group);
+        service_delight::GroupService::get_instance().add_one(&group);
 
 
         schema::DbOperationLog operation_log;
@@ -155,7 +155,7 @@ void User::login(model_delight::NlohmannJsonRequestPtr &&req, std::function<void
     const auto user_name = req->getNlohmannJsonBody().at(schema::key::name).get<std::string>();
     const auto password = req->getNlohmannJsonBody().at(schema::key::password).get<std::string>();
     // 检查用户是否存在
-    const auto [user_bson, result_string] = service_delight::UserService::get_instance().get_user_by_name(user_name);
+    const auto [user_bson, result_string] = service_delight::UserService::get_instance().get_by_name(user_name);
 
     if (!user_bson.has_value()) {
         nlohmann::json response;
@@ -279,7 +279,7 @@ void User::get_user_by_id(model_delight::NlohmannJsonRequestPtr &&req,
         const auto user_id = req->getRequest().getParameter("user_id");
         const auto search_id = bsoncxx::oid{req->getRequest().getParameter("search_id")};
 
-        const auto [user_info, error] = service_delight::UserService::get_instance().get_user_by_id(search_id);
+        const auto [user_info, error] = service_delight::UserService::get_instance().get_by_id(search_id);
 
         // 未找到用户或者搜索出现错误
         if (!user_info.has_value()) {

@@ -84,10 +84,10 @@ void Group::add_member(model_delight::NlohmannJsonRequestPtr        &&req,
         member_ids.reserve(members_group.size());
 
         const auto group_previous_state =
-                service_delight::GroupService::get_instance().get_group_to_bson(group_id).first.value();
+                service_delight::GroupService::get_instance().get_one_to_bson(group_id).first.value();
 
         // 检查user_id是否是group_id的owner
-        if (const auto [result, error] = service_delight::GroupService::get_instance().get_group_owner(group_id);
+        if (const auto [result, error] = service_delight::GroupService::get_instance().get_owner(group_id);
             !result.has_value() || result.value() != user_id)
         {
             nlohmann::json response{
@@ -158,7 +158,7 @@ void Group::add_member(model_delight::NlohmannJsonRequestPtr        &&req,
         }
 
         const auto group_current_state =
-                service_delight::GroupService::get_instance().get_group_to_bson(group_id).first.value();
+                service_delight::GroupService::get_instance().get_one_to_bson(group_id).first.value();
 
         // 写入日志
         schema::DbOperationLog operation_log{};
@@ -237,7 +237,7 @@ void Group::remove_member(model_delight::NlohmannJsonRequestPtr        &&req,
 
         // 获得当前状态的用户组信息
         auto [group_info, group_info_err] =
-                service_delight::GroupService::get_instance().get_group(bsoncxx::oid{field_group_id});
+                service_delight::GroupService::get_instance().get_one(bsoncxx::oid{field_group_id});
         if (!group_info.has_value()) {
             nlohmann::json response{{model_delight::basic_value::request::code, k500InternalServerError},
                                     {model_delight::basic_value::request::message, "Failed to remove member"},
@@ -297,7 +297,7 @@ void Group::remove_member(model_delight::NlohmannJsonRequestPtr        &&req,
 
         // 更新数据库信息
         const auto [update_result, error] =
-                service_delight::GroupService::get_instance().update_group(&current_group_info);
+                service_delight::GroupService::get_instance().update_one(&current_group_info);
         if (!update_result) {
             nlohmann::json response{{model_delight::basic_value::request::code, k500InternalServerError},
                                     {model_delight::basic_value::request::message, "Failed to remove member"},

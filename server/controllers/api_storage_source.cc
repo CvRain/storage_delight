@@ -141,6 +141,8 @@ void StorageSource::remove_source(model_delight::NlohmannJsonRequestPtr        &
         operation_log.request_ip     = request->getRequest().getPeerAddr().toIp();
         operation_log.user_id        = bsoncxx::oid{request_body[schema::key::user_id].get<std::string_view>()};
         service_delight::LogService::get_instance().record_operation(&operation_log);
+
+        //todo 删除Bucket中所有使用到此source_id的document
     }
     catch (const std::exception &e) {
         service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,

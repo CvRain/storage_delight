@@ -66,6 +66,23 @@ nlohmann::json DbBucket::to_json() {
                           {key::create_time, create_time},
                           {key::update_time, update_time}};
 }
+DbBucket DbBucket::from_bson(const bsoncxx::document::value& value) {
+    DbBucket bucket;
+
+    bucket.id          = value.view()[key::bson_id].get_oid().value;
+    bucket.bucket_name = value.view()[key::bucket_name].get_string();
+    bucket.data_source  = value.view()[key::data_source].get_oid().value;
+    bucket.group_id    = value.view()[key::group_id].get_oid().value;
+    bucket.permission_id = value.view()[key::permission_id].get_oid().value;
+    bucket.create_time = value.view()[key::create_time].get_int32();
+    bucket.update_time = value.view()[key::update_time].get_int32();
+
+    for(const auto tag : value.view()[key::tags].get_array().value) {
+        bucket.tags.emplace_back(tag.get_string());
+    }
+
+    return bucket;
+}
 
 bsoncxx::document::value DbDataSource::get_document() {
     auto document = make_document(kvp(key::bson_id, id),
