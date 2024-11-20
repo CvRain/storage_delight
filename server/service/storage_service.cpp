@@ -28,7 +28,7 @@ auto StorageService::init_flag() const -> const bool & { return is_init; }
  * @brief 添加存储源
  * @param data_source 接受DbDataSource结构
  */
-auto StorageService::append_storage(schema::DbDataSource *data_source) -> schema::result<bool, std::string_view> {
+auto StorageService::append_storage(schema::DbDataSource *data_source) -> schema::result<bsoncxx::oid, std::string_view> {
     Logger::get_instance().log(ConsoleLogger, "StorageService append_storage");
 
     // 检查是否能够连接到MinIO服务器
@@ -36,13 +36,13 @@ auto StorageService::append_storage(schema::DbDataSource *data_source) -> schema
         if (const auto minio_connection = util_delight::Item::check_minio_server_connection(data_source->url);
             !minio_connection)
         {
-            return std::make_pair(false, "minio server connection failed");
+            return std::make_pair(std::nullopt, "minio server connection failed");
         }
     }
     catch (const std::exception &e) {
         Logger::get_instance().log(
                 ConsoleLogger | BasicLogger, spdlog::level::err, "StorageService append_storage: {}", e.what());
-        return std::make_pair(false, e.what());
+        return std::make_pair(std::nullopt, e.what());
     }
 
     // 检查数据库中是否存在同一个名称
@@ -53,13 +53,13 @@ auto StorageService::append_storage(schema::DbDataSource *data_source) -> schema
                                        spdlog::level::info,
                                        "StorageService::append_storage: storage name: {} has been exist",
                                        storage_name);
-            return std::make_pair(false, "storage name has been exist");
+            throw std::runtime_error("storage name has been exist");
         }
     }
     catch (const std::exception &e) {
         Logger::get_instance().log(
                 ConsoleLogger | BasicLogger, spdlog::level::err, "StorageService append_storage: {}", e.what());
-        return std::make_pair(false, e.what());
+        return std::make_pair(std::nullopt, e.what());
     }
 
     // 尝试插入数据
@@ -69,14 +69,14 @@ auto StorageService::append_storage(schema::DbDataSource *data_source) -> schema
             result.has_value() && result.value().result().inserted_count() == 1)
         {
             Logger::get_instance().log(ConsoleLogger, "StorageService append_storage: insert storage success");
-            return std::make_pair(true, "");
+            return std::make_pair(result.value().inserted_id().get_oid().value, "");
         }
-        return std::make_pair(false, "insert storage failed");
+        throw std::runtime_error("insert storage failed");
     }
     catch (const std::exception &e) {
         service_delight::Logger::get_instance().log(
                 ConsoleLogger | BasicLogger, spdlog::level::err, "StorageService append_storage: {}", e.what());
-        return std::make_pair(false, e.what());
+        return std::make_pair(std::nullopt, e.what());
     }
 }
 auto StorageService::get_storage_by_id(const bsoncxx::oid &id)
@@ -233,7 +233,7 @@ auto StorageService::active_storage(const bsoncxx::oid &id) -> schema::result<bo
 
         Logger::get_instance().log(
                 ConsoleLogger | BasicLogger, spdlog::level::info, "Active storage: {}", storage.name);
-        client_group.push_back(storage.name.data(), std::make_shared<storage_delight::core::Client>(url, &provider));
+        client_group.push_back(storage.id, std::make_shared<storage_delight::core::Client>(url, &provider));
     }
     catch (const std::exception &e) {
         Logger::get_instance().log(
@@ -259,7 +259,7 @@ auto StorageService::active_all_storage() -> schema::result<bool, std::string_vi
 
             Logger::get_instance().log(
                     ConsoleLogger | BasicLogger, spdlog::level::info, "Active storage: {}", storage.name);
-            client_group.push_back(storage.name.data(),
+            client_group.push_back(storage.id,
                                    std::make_shared<storage_delight::core::Client>(url, &provider));
         }
     }
@@ -271,21 +271,16 @@ auto StorageService::active_all_storage() -> schema::result<bool, std::string_vi
     return std::make_pair(true, "");
 }
 
-auto StorageService::is_active(const std::string_view &source_name) -> schema::result<bool, std::string_view> {
+auto StorageService::is_active(const bsoncxx::oid& id) -> schema::result<bool, std::string_view> {
     Logger::get_instance().log(ConsoleLogger, "Enter StorageService is_active");
-    return std::make_pair(client_group.get_client(source_name).has_value(), "");
+    return std::make_pair(client_group.is_exist(id), "");
 }
 
 auto StorageService::inactive_storage(const bsoncxx::oid &id) -> schema::result<bool, std::string_view> {
     Logger::get_instance().log(ConsoleLogger, "Enter StorageService inactive_storage");
 
     try {
-        const auto [document, error] = get_storage_by_id(id);
-        if (not document.has_value()) {
-            throw std::runtime_error(error.data());
-        }
-        const auto storage = schema::DbDataSource::from_bson(document.value());
-        client_group.remove(storage.name);
+        client_group.remove(id);
     }
     catch (const std::exception &e) {
         Logger::get_instance().log(
@@ -309,7 +304,26 @@ auto StorageService::inactive_all_storage() -> schema::result<bool, std::string_
     }
     return std::make_pair(true, "");
 }
-auto StorageService::get_client(const std::string_view &source_name)
+
+auto StorageService::source_name(const bsoncxx::oid &source_id) -> schema::result<std::string, std::string_view> {
+    Logger::get_instance().log(ConsoleLogger, "Enter StorageService source_name");
+
+    try {
+        const auto document = data_source_collection.find_one(make_document(kvp(schema::key::bson_id, source_id)));
+        if (not document.has_value()) {
+            return std::make_pair(std::nullopt, "No such source");
+        }
+        const auto source_name = document->find(schema::key::name)->get_string().value;
+        return std::make_pair(source_name.data(), "");
+    }
+    catch (const std::exception &e) {
+        Logger::get_instance().log(
+                ConsoleLogger | BasicLogger, spdlog::level::err, "StorageService::source_name {}", e.what());
+        return std::make_pair(std::nullopt, e.what());
+    }
+}
+
+auto StorageService::get_client(const bsoncxx::oid& id)
         -> std::optional<std::shared_ptr<storage_delight::core::Client>>{
-    return client_group.get_client(source_name);
+    return client_group.get_client(id);
 }

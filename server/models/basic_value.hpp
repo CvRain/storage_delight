@@ -20,7 +20,6 @@ namespace model_delight::basic_value {
         const std::string          total     = "total";
         const std::string          page      = "page";
         const std::string          page_size = "page_size";
-        constexpr std::string_view source_id = "source_id";
     }  // namespace request
 
     namespace header {

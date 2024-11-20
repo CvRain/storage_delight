@@ -6,6 +6,7 @@
 #define USER_EXIST_HPP
 
 #include <drogon/HttpMiddleware.h>
+#include "drogon_specialization.hpp"
 
 namespace drogon::middleware {
     class UserExist final : public HttpMiddleware<UserExist> {

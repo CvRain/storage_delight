@@ -45,7 +45,8 @@ void Group::add_member(model_delight::NlohmannJsonRequestPtr        &&req,
                                                     json_body.at(schema::key::user_id).get<std::string>());
 
         // 检查user_id是否存在
-        if (!service_delight::UserService::get_instance().is_exist(user_id)) {
+        const auto [user_exist_result, user_exist_error] = service_delight::UserService::get_instance().is_exist(user_id);
+        if (not user_exist_result.has_value() || user_exist_result.value() == false) {
             nlohmann::json response{{model_delight::basic_value::request::code, k400BadRequest},
                                     {model_delight::basic_value::request::message, "Invalid request"},
                                     {model_delight::basic_value::request::result, "group owner not exist"},
@@ -113,7 +114,8 @@ void Group::add_member(model_delight::NlohmannJsonRequestPtr        &&req,
 
         // 检查member_id中的用户是否存在
         if (std::ranges::any_of(member_ids, [](const auto &member_id) {
-                return !service_delight::UserService::get_instance().is_exist(member_id);
+                const auto [user_exist_result,error] = service_delight::UserService::get_instance().is_exist(member_id);
+                return user_exist_result.has_value() && user_exist_result.value() == true;
             }))
         {
             nlohmann::json response{{model_delight::basic_value::request::code, k400BadRequest},
@@ -219,9 +221,21 @@ void Group::remove_member(model_delight::NlohmannJsonRequestPtr        &&req,
         const auto field_members_id = json_body.at(schema::key::members_id).get<std::vector<std::string>>();
 
         // 检查用户是否存在
-        if (const auto user_exist =
-                    service_delight::UserService::get_instance().is_exist(bsoncxx::oid{field_user_id});
-            user_exist == false)
+        const auto [user_exist_result,error] = service_delight::UserService::get_instance().is_exist(field_user_id);
+        if(not user_exist_result.has_value()) {
+            nlohmann::json response{{model_delight::basic_value::request::code, k500InternalServerError},
+                                    {model_delight::basic_value::request::message, "k500InternalServerError"},
+                                    {model_delight::basic_value::request::result, error},
+                                    {model_delight::basic_value::request::data, {}}};
+            callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
+            service_delight::Logger::get_instance().log(
+                    service_delight::ConsoleLogger,
+                    spdlog::level::debug,
+                    "Group::remove_member: Failed to remove member: user not found");
+            return;
+        }
+
+        if (user_exist_result.value()== false)
         {
             nlohmann::json response{{model_delight::basic_value::request::code, k400BadRequest},
                                     {model_delight::basic_value::request::message, "Invalid request"},
@@ -296,18 +310,18 @@ void Group::remove_member(model_delight::NlohmannJsonRequestPtr        &&req,
         current_group_info.members_id.assign(filtered_view.begin(), filtered_view.end());
 
         // 更新数据库信息
-        const auto [update_result, error] =
+        const auto [update_result, update_error] =
                 service_delight::GroupService::get_instance().update_one(&current_group_info);
         if (!update_result) {
             nlohmann::json response{{model_delight::basic_value::request::code, k500InternalServerError},
                                     {model_delight::basic_value::request::message, "Failed to remove member"},
-                                    {model_delight::basic_value::request::result, error},
+                                    {model_delight::basic_value::request::result, update_error},
                                     {model_delight::basic_value::request::data, {}}};
             callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
             service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
                                                         spdlog::level::err,
                                                         "Group::remove_member: Failed to remove member: {}",
-                                                        error);
+                                                        update_error);
             return;
         }
         nlohmann::json response{{model_delight::basic_value::request::code, k200OK},

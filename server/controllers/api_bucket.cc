@@ -1,37 +1,37 @@
 #include "api_bucket.h"
 
+#include "drogon_specialization.hpp"
 #include "service/bucket_service.hpp"
 #include "service/group_service.hpp"
 #include "service/log_service.hpp"
 #include "service/logger.hpp"
 #include "service/storage_service.hpp"
-#include "service/user_service.hpp"
 
 using namespace api;
 
-void Bucket::add_bucket(model_delight::NlohmannJsonRequestPtr&&       req,
-                        std::function<void(const HttpResponsePtr&)>&& callback) {
+void Bucket::add_bucket(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
     service_delight::Logger::get_instance().log(service_delight::ConsoleLogger, "Enter Bucket::add bucket");
 
     // 检查json是否包括必要字段
-    const auto json_body = req->getNlohmannJsonBody();
+    const auto json_body = nlohmann::json{req->body()};
+    std::cout << req->body() << std::endl;
     if (const auto result = json_body.contains(schema::key::user_id) and
-                            json_body.contains(schema::key::bucket_name) and
-                            json_body.contains(schema::key::source_name);
+                            json_body.contains(schema::key::bucket_name) and json_body.contains(schema::key::source_id);
         result == false)
     {
         model_delight::BasicResponse response{
                 .code = k400BadRequest, .message = "k400BadRequest", .result = "json body is invalid", .data = {}};
-        callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response.to_json())));
+        callback(newHttpJsonResponse(response.to_json()));
+        return;
     }
 
     const auto user_id     = json_body.at(schema::key::user_id).get<std::string>();
     const auto bucket_name = json_body.at(schema::key::bucket_name).get<std::string>();
-    const auto source_name = json_body.at(schema::key::source_name).get<std::string>();
+    const auto source_id   = bsoncxx::oid{json_body.at(schema::key::source_id).get<std::string>()};
 
     try {
-        // 检查source_name 是否存在
-        if (const auto [is_exist, error] = service_delight::StorageService::get_instance().is_exist(source_name);
+        //检查source是否存在
+        if (const auto [is_exist, error] = service_delight::StorageService::get_instance().is_exist(source_id);
             not is_exist.has_value() || is_exist.value() == false)
         {
             service_delight::Logger::get_instance().log(
@@ -51,7 +51,7 @@ void Bucket::add_bucket(model_delight::NlohmannJsonRequestPtr&&       req,
         }
 
         // 获得source client
-        const auto client = service_delight::StorageService::get_instance().get_client(source_name);
+        const auto client = service_delight::StorageService::get_instance().get_client(source_id);
 
         // 在存储源中创建桶
         if (const auto make_bucket_response = client.value()->get_bucket_operation().make_bucket(bucket_name);
@@ -69,15 +69,16 @@ void Bucket::add_bucket(model_delight::NlohmannJsonRequestPtr&&       req,
 
         // 在数据库中记录bucket
         const auto [insert_result, error] =
-                service_delight::BucketService::get_instance().add_one(source_name, bucket_name);
+                service_delight::BucketService::get_instance().add_one(source_id, bucket_name);
         if (not insert_result.has_value()) {
-            service_delight::Logger::get_instance().log(service_delight::ConsoleLogger, spdlog::level::err, "Bucket::add_bucket", error);
+            service_delight::Logger::get_instance().log(
+                    service_delight::ConsoleLogger, spdlog::level::err, "Bucket::add_bucket", error);
 
             auto response = model_delight::BasicResponse{.code    = k500InternalServerError,
                                                          .message = "k500InternalServerError",
                                                          .result  = error.data(),
                                                          .data    = {}};
-            throw exception::BaseException{std::move(response)};
+            throw exception::BaseException{response};
         }
 
         service_delight::Logger::get_instance().log(service_delight::ConsoleLogger, "Bucket::add bucket success");
@@ -90,7 +91,7 @@ void Bucket::add_bucket(model_delight::NlohmannJsonRequestPtr&&       req,
                                                             .data    = nlohmann::json{
                                                                        {schema::key::bucket_id, insert_id},
                                                                        {schema::key::bucket_name, bucket_name},
-                                                                       {schema::key::source_name, source_name},
+                                                                       {schema::key::source_name, source_id.to_string()},
                                                      }};
         callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response.to_json())));
 
@@ -98,10 +99,10 @@ void Bucket::add_bucket(model_delight::NlohmannJsonRequestPtr&&       req,
         schema::DbOperationLog operation_log{};
         operation_log.action        = "add bucket";
         operation_log.bucket_name   = bucket_name;
-        operation_log.source_name   = source_name;
+        operation_log.source_id     = source_id;
         operation_log.current_state = "success";
         operation_log.description   = "success";
-        operation_log.request_ip    = req->getRequest().peerAddr().toIp();
+        operation_log.request_ip    = req->getPeerAddr().toIp();
         operation_log.timestamp     = util_delight::Date::get_current_timestamp_32();
         operation_log.user_id       = bsoncxx::oid{user_id};
         service_delight::LogService::get_instance().record_operation(&operation_log);
@@ -117,10 +118,10 @@ void Bucket::add_bucket(model_delight::NlohmannJsonRequestPtr&&       req,
         schema::DbOperationLog operation_log{};
         operation_log.action        = "add bucket";
         operation_log.bucket_name   = bucket_name;
-        operation_log.source_name   = source_name;
+        operation_log.source_id     = source_id;
         operation_log.current_state = "failed";
         operation_log.description   = e.what();
-        operation_log.request_ip    = req->getRequest().peerAddr().toIp();
+        operation_log.request_ip    = req->getPeerAddr().toIp();
         operation_log.timestamp     = util_delight::Date::get_current_timestamp_32();
         operation_log.user_id       = bsoncxx::oid{user_id};
 
@@ -138,13 +139,19 @@ void Bucket::add_bucket(model_delight::NlohmannJsonRequestPtr&&       req,
         schema::DbOperationLog operation_log{};
         operation_log.action        = "add bucket";
         operation_log.bucket_name   = bucket_name;
-        operation_log.source_name   = source_name;
+        operation_log.source_id     = source_id;
         operation_log.current_state = "failed";
         operation_log.description   = e.what();
-        operation_log.request_ip    = req->getRequest().peerAddr().toIp();
+        operation_log.request_ip    = req->getPeerAddr().toIp();
         operation_log.timestamp     = util_delight::Date::get_current_timestamp_32();
         operation_log.user_id       = bsoncxx::oid{user_id};
         service_delight::LogService::get_instance().record_operation(&operation_log);
     }
     service_delight::Logger::get_instance().log(service_delight::ConsoleLogger, "Exit Bucket::add_bucket");
+}
+
+void Bucket::remove_bucket(model_delight::NlohmannJsonRequestPtr&&       req,
+                           std::function<void(const HttpResponsePtr&)>&& callback) {}
+
+void Bucket::set_owner(model_delight::NlohmannJsonRequestPtr&& req, std::function<void(const HttpResponsePtr&)>&& callback){
 }

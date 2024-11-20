@@ -69,7 +69,7 @@ int main() {
     // 全局异常处理
     drogon::app().setExceptionHandler([](const std::exception &e, const drogon::HttpRequestPtr &req,
                                          std::function<void(drogon::HttpResponsePtr &)> &&callback) {
-        LOG_DEBUG << e.what();
+        //LOG_DEBUG << e.what();
         Json::Value json;
         json["code"] = drogon::k500InternalServerError;
         json["error"] = e.what();

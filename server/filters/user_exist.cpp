@@ -8,6 +8,7 @@
 #include "service/logger.hpp"
 #include "service/user_service.hpp"
 #include "type.hpp"
+#include "drogon_specialization.hpp"
 
 namespace drogon::middleware {
     void UserExist::invoke(const HttpRequestPtr& request, MiddlewareNextCallback&& nextCb, MiddlewareCallback&& mcb) {
@@ -15,17 +16,21 @@ namespace drogon::middleware {
         try {
             // 检查是否存在schema::key::user_id元素
             if (request->getBody().empty() || not request->getJsonObject()->isMember(schema::key::user_id)) {
-                throw exception::BaseException{model_delight::BasicResponse{.code    = k400BadRequest,
-                                                                            .message = "Invalid request",
-                                                                            .result  = "Request key not found",
-                                                                            .data{}}};
+                throw exception::BaseException{model_delight::BasicResponse{
+                        .code = k400BadRequest, .message = "Invalid request", .result = "Request key not found"}};
             }
 
             const auto body    = *request->getJsonObject();
-            const auto user_id = body[schema::key::user_id].asString();
-            if (service_delight::UserService::get_instance().is_exist(bsoncxx::oid{user_id}) == false) {
+            const auto user_id = bsoncxx::oid{body[schema::key::user_id].asString()};
+
+            const auto [user_exist_result, error] = service_delight::UserService::get_instance().is_exist(user_id);
+            if (not user_exist_result.has_value()) {
                 throw exception::BaseException{model_delight::BasicResponse{
-                        .code = k400BadRequest, .message = "User does not exist", .result = {}, .data{}}};
+                        .code = k500InternalServerError, .message = "k500InternalServerError", .result = error}};
+            }
+            if (user_exist_result.value() == false) {
+                throw exception::BaseException{model_delight::BasicResponse{
+                        .code = k400BadRequest, .message = "k400BadRequest", .result = "User not exist", .data{}}};
             }
             service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
                                                         "Enter UserExist::invoke: check completed!");
@@ -34,19 +39,22 @@ namespace drogon::middleware {
         catch (const exception::BaseException& e) {
             service_delight::Logger::get_instance().log(
                     service_delight::ConsoleLogger, spdlog::level::info, "UserExist::invoke: {}", e.what());
-            mcb(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(e.response().to_json())));
+
+            mcb(toResponse<const nlohmann::json&>((e.response().to_json())));
         }
         catch (const std::exception& e) {
             service_delight::Logger::get_instance().log(
                     service_delight::ConsoleLogger, spdlog::level::err, "UserExist::invoke: {}", e.what());
 
-            auto response = model_delight::BasicResponse{
-                    .code    = k500InternalServerError,
-                    .message = e.what(),
-                    .result  = "k500InternalServerError",
-                    .data{},
-            };
-            mcb(model_delight::NlohmannResponse::new_nlohmann_json_response(response.to_json()));
+            const auto response =
+                    model_delight::BasicResponse{
+                            .code    = k500InternalServerError,
+                            .message = e.what(),
+                            .result  = "k500InternalServerError",
+                            .data{},
+                    }
+                            .to_json();
+            mcb(toResponse<const nlohmann::json&>(response));
         }
     }
 }  // namespace drogon::middleware

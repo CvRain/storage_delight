@@ -33,12 +33,11 @@ void StorageSource::add_source(model_delight::NlohmannJsonRequestPtr        &&re
     data_source.secret_key  = request_body[schema::key::secret_key].get<std::string>();
     data_source.url         = request_body[schema::key::url].get<std::string>();
     data_source.create_time = util_delight::Date::get_current_timestamp_32();
-    data_source.is_https = request_body[schema::key::is_https].get<bool>();
+    data_source.is_https    = request_body[schema::key::is_https].get<bool>();
 
     // 检查插入情况
-    if (const auto [result, error] = service_delight::StorageService::get_instance().append_storage(&data_source);
-        not result.has_value() or result.value() == false)
-    {
+    const auto [result, error] = service_delight::StorageService::get_instance().append_storage(&data_source);
+    if (not result.has_value() or result.value() == bsoncxx::oid{}) {
         service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
                                                     spdlog::level::info,
                                                     "StorageSource::add_source failed: {}",
@@ -52,7 +51,6 @@ void StorageSource::add_source(model_delight::NlohmannJsonRequestPtr        &&re
         // 记录插入失败日志
         schema::DbOperationLog operation_log;
         operation_log.action         = "add_source";
-        operation_log.source_name    = data_source.name;
         operation_log.current_state  = "failed";
         operation_log.description    = error;
         operation_log.previous_state = "none";
@@ -72,7 +70,7 @@ void StorageSource::add_source(model_delight::NlohmannJsonRequestPtr        &&re
                                                 "StorageSource::add_source success");
     schema::DbOperationLog operation_log;
     operation_log.action         = "add_source";
-    operation_log.source_name    = data_source.name;
+    operation_log.source_id      = result.value();
     operation_log.current_state  = "success";
     operation_log.description    = "add storage source success";
     operation_log.previous_state = "none";
@@ -89,7 +87,7 @@ void StorageSource::remove_source(model_delight::NlohmannJsonRequestPtr        &
 
     const auto request_body    = request->getNlohmannJsonBody();
     const auto field_integrity = request_body.contains(schema::key::user_id) and
-                                 request_body.contains(model_delight::basic_value::request::source_id);
+                                 request_body.contains(schema::key::source_id);
 
     if (not field_integrity) {
         auto response = model_delight::BasicResponse{
@@ -99,20 +97,12 @@ void StorageSource::remove_source(model_delight::NlohmannJsonRequestPtr        &
     }
 
     const auto bson_id =
-            bsoncxx::oid{request_body[model_delight::basic_value::request::source_id].get<std::string_view>()};
+            bsoncxx::oid{request_body[schema::key::source_id].get<std::string_view>()};
 
     try {
         service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
                                                     spdlog::level::debug,
                                                     "StorageSource::remove_source try to fetch storage source name");
-
-        const auto [fst, snd] = service_delight::StorageService::get_instance().get_storage_by_id(bson_id);
-
-        const auto source_name = fst.value().find(schema::key::name)->get_string().value;
-        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
-                                                    spdlog::level::info,
-                                                    "StorageSource::remove_source: {}",
-                                                    source_name);
 
         if (const auto [result, error] = service_delight::StorageService::get_instance().remove_storage(bson_id);
             not result.has_value() or result.value() == false)
@@ -134,15 +124,15 @@ void StorageSource::remove_source(model_delight::NlohmannJsonRequestPtr        &
 
         schema::DbOperationLog operation_log;
         operation_log.action         = "remove_source";
-        operation_log.source_name    = source_name;
+        operation_log.source_id      = bson_id;
         operation_log.current_state  = "success";
         operation_log.description    = "remove storage source success";
-        operation_log.previous_state = "none";
+        operation_log.previous_state = "none";  //todo 考虑是否要记录删除前的数据
         operation_log.request_ip     = request->getRequest().getPeerAddr().toIp();
         operation_log.user_id        = bsoncxx::oid{request_body[schema::key::user_id].get<std::string_view>()};
         service_delight::LogService::get_instance().record_operation(&operation_log);
 
-        //todo 删除Bucket中所有使用到此source_id的document
+        // todo 删除Bucket中所有使用到此source_id的document
     }
     catch (const std::exception &e) {
         service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
@@ -282,7 +272,7 @@ void StorageSource::get_one_source(model_delight::NlohmannJsonRequestPtr        
 
     const auto request_body    = request->getNlohmannJsonBody();
     const auto field_integrity = request_body.contains(schema::key::user_id) and
-                                 request_body.contains(model_delight::basic_value::request::source_id);
+                                 request_body.contains(schema::key::source_id);
 
     if (not field_integrity) {
         auto response = model_delight::BasicResponse{
@@ -293,7 +283,7 @@ void StorageSource::get_one_source(model_delight::NlohmannJsonRequestPtr        
 
     const auto user_id = bsoncxx::oid{request_body[schema::key::user_id].get<std::string_view>()};
     const auto data_source_id =
-            bsoncxx::oid{request_body[model_delight::basic_value::request::source_id].get<std::string_view>()};
+            bsoncxx::oid{request_body[schema::key::source_id].get<std::string_view>()};
     const auto [result, error] = service_delight::StorageService::get_instance().get_storage_by_id(data_source_id);
 
     if (not result.has_value()) {

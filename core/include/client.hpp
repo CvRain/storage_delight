@@ -5,11 +5,11 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-#include <miniocpp/client.h>
-#include <memory>
-#include <vector>
-#include <mutex>
 #include <map>
+#include <memory>
+#include <miniocpp/client.h>
+#include <mutex>
+#include <vector>
 
 #include "bucket_operation.hpp"
 #include "object_operation.hpp"
@@ -27,7 +27,7 @@ namespace storage_delight::core {
 
 
     private:
-        minio::s3::Client client;
+        minio::s3::Client                client;
         std::shared_ptr<BucketOperation> bucket_operation;
         std::shared_ptr<ObjectOperation> object_operation;
     };
@@ -40,11 +40,11 @@ namespace storage_delight::core {
 
         std::optional<std::shared_ptr<Client>> operator[](const std::string_view &clientName);
 
-        void push_back(std::pair<std::string, std::shared_ptr<Client>>&& client);
+        void push_back(std::pair<std::string, std::shared_ptr<Client>> &&client);
 
         void push_back(std::string &&clientName, std::shared_ptr<Client> &&client);
 
-        void remove(const std::string_view& clientName);
+        void remove(const std::string_view &clientName);
 
         void clear();
 
@@ -54,8 +54,63 @@ namespace storage_delight::core {
 
     private:
         std::unordered_map<std::string, std::shared_ptr<Client>> clients = {};
-        mutable std::mutex mutex;
+        mutable std::mutex                                       mutex;
     };
-}
 
-#endif //CLIENT_H
+    template<typename T>
+    class ClientGroupV2 {
+    public:
+             ClientGroupV2() = default;
+        auto get_client(const T& key) -> std::optional<std::shared_ptr<Client>>;
+        auto operator[](const T& key) -> std::optional<std::shared_ptr<Client>>;
+        void push_back(const T& key, std::shared_ptr<Client> client);
+        void remove(T key);
+        void clear();
+        auto is_exist(const T& key) -> bool;
+        auto size() const -> size_t;
+        ~    ClientGroupV2() = default;
+
+    private:
+        std::map<T, std::shared_ptr<Client>> clients = {};
+        mutable std::mutex                             mutex;
+    };
+
+    template<typename T>
+    auto ClientGroupV2<T>::get_client(const T& key) -> std::optional<std::shared_ptr<Client>> {
+        std::lock_guard<std::mutex> lock(mutex);
+        const auto                  it = clients.find(key);
+        return it != clients.end() ? std::make_optional(it->second) : std::nullopt;
+    }
+
+    template<typename T>
+    auto ClientGroupV2<T>::operator[](const T& key) -> std::optional<std::shared_ptr<Client>> {
+        return get_client(key);
+    }
+
+    template<typename T>
+    void ClientGroupV2<T>::push_back(const T& key, std::shared_ptr<Client> client) {
+        std::lock_guard<std::mutex> lock(mutex);
+        clients.insert(std::make_pair(key, client));
+    }
+    template<typename T>
+    void ClientGroupV2<T>::remove(T key) {
+        std::lock_guard<std::mutex> lock(mutex);
+        clients.erase(key);
+    }
+    template<typename T>
+    void ClientGroupV2<T>::clear() {
+        std::lock_guard<std::mutex> lock(mutex);
+        clients.clear();
+    }
+    template<typename T>
+    auto ClientGroupV2<T>::is_exist(const T& key) -> bool {
+        return clients.contains(key);
+    }
+
+    template<typename T>
+    std::size_t ClientGroupV2<T>::size() const {
+        return clients.size();
+    }
+}  // namespace storage_delight::core
+
+#endif  // CLIENT_H

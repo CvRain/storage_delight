@@ -10,11 +10,13 @@
 using namespace api;
 
 auto Hello::say(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) -> void {
-    callback(model_delight::NlohmannResponse::new_common_response(
-            &model_delight::HttpResponse{}
-                     .set_code(k200OK)
-                     .set_message(std::to_string(util_delight::Date::get_current_timestamp_32()))
-                     .set_result("ok")));
+    auto json_body = fromRequest<nlohmann::json>(*req);
+    const nlohmann::json response{
+        {"code", k200OK},
+        {"message", "Hello world!"},
+        {"result", "k200OK"}
+    };
+    callback(newHttpJsonResponse(response));
 }
 
 void Hello::echo(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback,

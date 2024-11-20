@@ -23,8 +23,8 @@ namespace service_delight {
                 -> schema::result<bsoncxx::document::value, std::string>;
         auto get_by_id(const bsoncxx::oid &id) -> schema::result<bsoncxx::document::value, std::string>;
         auto get_by_name(const std::string &user_name) -> schema::result<bsoncxx::document::value, std::string>;
-        bool is_exist(const std::string &user_name);
-        bool is_exist(const bsoncxx::oid &id);
+        auto is_exist(const std::string &user_name) -> schema::result<bool, std::string>;
+        auto is_exist(const bsoncxx::oid &id) -> schema::result<bool, std::string>;
         bool admin_is_exist();
 
         auto list_ids() -> schema::result<std::vector<bsoncxx::oid>, std::string>;

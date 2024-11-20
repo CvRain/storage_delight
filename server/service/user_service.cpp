@@ -16,7 +16,7 @@ namespace service_delight {
     }
 
     schema::result<schema::DbUser, std::string> UserService::add_one(schema::DbUser           *user,
-                                                                      mongocxx::client_session *session) {
+                                                                     mongocxx::client_session *session) {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::add_user");
         try {
             if (user == nullptr) {
@@ -29,7 +29,7 @@ namespace service_delight {
                 return std::make_pair(std::nullopt, "User name is empty");
             }
 
-            if (is_exist(user->name)) {
+            if (is_exist(user->name).first) {
                 Logger::get_instance().log(
                         ConsoleLogger | BasicLogger, "UserService::add_user {} already exist", user->name);
                 return std::make_pair(std::nullopt, "User already exist");
@@ -57,7 +57,14 @@ namespace service_delight {
 
         try {
             const auto user_name = value[schema::key::name].get_string().value;
-            if (is_exist(user_name.data())) {
+            const auto [is_exist_result, error] = is_exist(user_name.data());
+
+            if(not is_exist_result.has_value()) {
+                Logger::get_instance().log(
+                        ConsoleLogger | BasicLogger, "UserService::add_user_v2 error {}", error);
+                return std::make_pair(std::nullopt, "UserService::add_user_v2 failed");
+            }
+            if (is_exist_result.value() == true) {
                 Logger::get_instance().log(
                         ConsoleLogger | BasicLogger, "UserService::add_user_v2 {} already exist", user_name);
                 return std::make_pair(std::nullopt, "User already exist");
@@ -113,33 +120,42 @@ namespace service_delight {
         }
     }
 
-    bool UserService::is_exist(const std::string &user_name) {
-        // schema::key::name is "name"
+    auto UserService::is_exist(const std::string &user_name) -> schema::result<bool, std::string> {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::user_is_exist");
-        return user_collection.find_one(make_document(kvp(schema::key::name, user_name))).has_value();
+        try {
+            const auto filter = make_document(kvp(schema::key::name, user_name));
+            if (const auto result = user_collection.find_one(filter.view()); result) {
+                Logger::get_instance().log(
+                        ConsoleLogger, spdlog::level::debug, "UserService::user_is_exist {} found", user_name);
+                return std::make_pair(true, "");
+            }
+            Logger::get_instance().log(
+                    ConsoleLogger, spdlog::level::debug, "UserService::user_is_exist {} not found", user_name);
+            return std::make_pair(false, "");
+        }
+        catch (const std::exception &e) {
+            Logger::get_instance().log(ConsoleLogger, "UserService::user_is_exist failed: {}", e.what());
+            return std::make_pair(std::nullopt, e.what());
+        }
     }
 
-    bool UserService::is_exist(const bsoncxx::oid &id) {
+    auto UserService::is_exist(const bsoncxx::oid &id) -> schema::result<bool, std::string> {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::user_is_exist");
         try {
             const auto filter = make_document(kvp(schema::key::bson_id, id));
             if (const auto result = user_collection.find_one(filter.view()); result) {
-                Logger::get_instance().log(ConsoleLogger | BasicLogger,
-                                           spdlog::level::debug,
-                                           "UserService::user_is_exist {} found",
-                                           id.to_string());
-                return true;
+                Logger::get_instance().log(
+                        ConsoleLogger, spdlog::level::debug, "UserService::user_is_exist {} found", id.to_string());
+                return std::make_pair(true, "");
             }
-            Logger::get_instance().log(ConsoleLogger | BasicLogger,
-                                       spdlog::level::debug,
-                                       "UserService::user_is_exist {} not found",
-                                       id.to_string());
-            return false;
+            Logger::get_instance().log(
+                    ConsoleLogger, spdlog::level::debug, "UserService::user_is_exist {} not found", id.to_string());
+            return std::make_pair(false, "User not found");
         }
         catch (const std::exception &e) {
             Logger::get_instance().log(
                     ConsoleLogger | BasicLogger, spdlog::level::err, "UserService::user_is_exist failed: {}", e.what());
-            return false;
+            return std::make_pair(std::nullopt, e.what());
         }
     }
 

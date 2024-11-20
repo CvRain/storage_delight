@@ -38,6 +38,7 @@ namespace schema::key {
     const std::string bucket_id = "bucket_id";
     const std::string token = "token";
     const std::string is_https = "is_https";
+    const std::string source_id = "source_id";
 
     namespace permission {
         const std::string allow_read = "allow_read";

@@ -121,7 +121,7 @@ namespace schema {
         std::string action{};
         std::string bucket_name{};
         std::string object_name{};
-        std::string source_name{};
+        bsoncxx::oid source_id{};
         int32_t timestamp = util_delight::Date::get_current_timestamp_32();
         std::string previous_state{};
         std::string current_state{};
