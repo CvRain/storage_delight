@@ -19,7 +19,7 @@
 namespace storage_delight::core {
     class ObjectOperation : public BaseOperation {
     public:
-        explicit ObjectOperation(minio::s3::Client &client);
+        explicit ObjectOperation(const std::shared_ptr<minio::s3::Client>& client);
 
         template<typename T, typename... Args>
         static std::list<T> make_list(T first, Args... args) {
@@ -105,17 +105,18 @@ namespace storage_delight::core {
                    std::basic_string_view<char> fileContent);
 
         minio::s3::PutObjectResponse
-        put_object(const std::string_view &bucketName, const std::string_view &objectName, types::file_content file);
+        put_object(const std::string_view &bucketName, const std::string_view &objectName,
+                                                const types::file_content &file);
 
         minio::s3::PutObjectResponse
         put_object_response(const std::string_view &bucketName, const std::string_view &objectName,
                             std::basic_string_view<char> fileContent,
-                            std::function<bool(minio::http::ProgressFunctionArgs)> progressCallback);
+                const std::function<bool(minio::http::ProgressFunctionArgs)> &progressCallback);
 
         minio::s3::PutObjectResponse
         put_object_response(const std::string_view &bucketName, const std::string_view &objectName,
-                            types::file_content file,
-                            std::function<bool(minio::http::ProgressFunctionArgs)> progressCallback);
+                const types::file_content                             &file,
+                const std::function<bool(minio::http::ProgressFunctionArgs)> &progressCallback);
 
         minio::s3::RemoveObjectResponse
         remove_object(const std::string_view &bucketName, const std::string_view &objectName);
@@ -124,7 +125,7 @@ namespace storage_delight::core {
         remove_object(const std::string_view &bucketName, const std::vector<std::string_view> &objectName);
 
         minio::s3::SetObjectLockConfigResponse
-        set_object_lock_config(const std::string_view &bucketName, minio::s3::SetObjectLockConfigArgs config);
+        set_object_lock_config(const std::string_view &bucketName, const minio::s3::SetObjectLockConfigArgs& config);
 
         minio::s3::SetObjectTagsResponse
         set_object_tags(const std::string_view &bucketName, const std::string_view &objectName,
@@ -135,9 +136,9 @@ namespace storage_delight::core {
 
         minio::s3::UploadObjectResponse
         upload_object(const std::string_view &bucketName, const std::string_view &objectName,
-                      types::file_content fileContent);
+                                                      const types::file_content &fileContent);
     private:
-        minio::s3::Client &client;
+        const std::shared_ptr<minio::s3::Client>& client;
     };
 }
 

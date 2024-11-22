@@ -14,52 +14,59 @@
 #include "utils/string.hpp"
 
 void service_init(const nlohmann::json &setting);
+void debug_execute();
 
 int main() {
     service_delight::Logger::get_instance().init();
-    service_delight::Logger::get_instance().log(service_delight::BasicLogger | service_delight::ConsoleLogger |
-                                                        service_delight::DailyLogger,
-                                                "Hello storage delight");
+    service_delight::Logger::get_instance().log(
+            service_delight::BasicLogger | service_delight::ConsoleLogger | service_delight::DailyLogger,
+            "Hello storage delight");
 
     // 初始化访问密钥
     util_delight::StringEncryption::secret_string = util_delight::StringEncryption::generate_secret();
     service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
-                                                "Secret key: {}", util_delight::StringEncryption::secret_string);
+                                                "Secret key: {}",
+                                                util_delight::StringEncryption::secret_string);
 
     // 初始化配置文件
     const std::string setting_path = "config.json";
     std::cout << &setting_path << std::endl;
     if (!std::filesystem::exists(setting_path)) {
-        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger, spdlog::level::err,
-                                                    "Config file not found: {}", setting_path);
+        service_delight::Logger::get_instance().log(
+                service_delight::ConsoleLogger, spdlog::level::err, "Config file not found: {}", setting_path);
         return 1;
     }
     // 读取【config.json】配置文件
     std::ifstream config_file(setting_path);
 
     if (!config_file.is_open()) {
-        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger, spdlog::level::err,
-                                                    "Failed to open config file: {}", setting_path);
+        service_delight::Logger::get_instance().log(
+                service_delight::ConsoleLogger, spdlog::level::err, "Failed to open config file: {}", setting_path);
         return 1;
     }
     nlohmann::json config_json;
     config_file >> config_json;
 
     service_init(config_json);
+    debug_execute();
 
     if (!config_json.contains("listeners")) {
-        service_delight::Logger::get_instance().log(spdlog::level::err, "No listeners found in config file",
-                                                    service_delight::BasicLogger | service_delight::ConsoleLogger |
-                                                            service_delight::DailyLogger);
+        service_delight::Logger::get_instance().log(
+                spdlog::level::err,
+                "No listeners found in config file",
+                service_delight::BasicLogger | service_delight::ConsoleLogger | service_delight::DailyLogger);
     }
     for (const auto &listener: config_json["listeners"]) {
         std::string address = listener.value("address", "0.0.0.0");
-        int port = listener.value("port", 80);
-        const bool https = listener.value("https", false);
+        int         port    = listener.value("port", 80);
+        const bool  https   = listener.value("https", false);
 
         service_delight::Logger::get_instance().log(
                 service_delight::BasicLogger | service_delight::ConsoleLogger | service_delight::DailyLogger,
-                "Listening on address: {}, port: {}, {}", address, port, https ? "HTTPS" : "HTTP");
+                "Listening on address: {}, port: {}, {}",
+                address,
+                port,
+                https ? "HTTPS" : "HTTP");
     }
 
 
@@ -67,20 +74,22 @@ int main() {
     drogon::app().loadConfigFile(setting_path);
 
     // 全局异常处理
-    drogon::app().setExceptionHandler([](const std::exception &e, const drogon::HttpRequestPtr &req,
+    drogon::app().setExceptionHandler([](const std::exception                            &e,
+                                         const drogon::HttpRequestPtr                    &req,
                                          std::function<void(drogon::HttpResponsePtr &)> &&callback) {
-        //LOG_DEBUG << e.what();
+        // LOG_DEBUG << e.what();
         Json::Value json;
-        json["code"] = drogon::k500InternalServerError;
+        json["code"]  = drogon::k500InternalServerError;
         json["error"] = e.what();
-        json["data"] = "";
-        auto resp = drogon::HttpResponse::newHttpJsonResponse(json);
+        json["data"]  = "";
+        auto resp     = drogon::HttpResponse::newHttpJsonResponse(json);
         callback(resp);
     });
 
     // 跨域
     drogon::app()
-            .registerPreRoutingAdvice([](const drogon::HttpRequestPtr &req, drogon::FilterCallback &&stop,
+            .registerPreRoutingAdvice([](const drogon::HttpRequestPtr &req,
+                                         drogon::FilterCallback      &&stop,
                                          drogon::FilterChainCallback &&pass) {
                 if (req->method() == drogon::HttpMethod::Options) {
                     const auto resp = drogon::HttpResponse::newHttpResponse();
@@ -137,6 +146,22 @@ void service_init(const nlohmann::json &setting) {
     service_delight::UserService::get_instance().init();
     service_delight::GroupService::get_instance().init();
     service_delight::StorageService::get_instance().init();
+    service_delight::StorageService::get_instance().active_all_storage();
     service_delight::LogService::get_instance().init();
     service_delight::BucketService::get_instance().init();
+}
+
+void debug_execute() {
+    service_delight::Logger::get_instance().log(service_delight::BasicLogger, spdlog::level::info, "Debug mode");
+    minio::s3::BaseUrl           base_url("http://127.0.0.1:9000", false);
+    minio::creds::StaticProvider provider("U4vtLhgcAwvcluonw5Ih", "GU3MaxaoqYNqDTXpDL7yLOT9NLE7lpdcjwA2CpWD");
+    minio::s3::Client            client(base_url, &provider);
+    std::cout << "session token" << provider.Fetch().session_token << std::endl;
+    const auto list_bucket_result = client.ListBuckets();
+    std::cout << list_bucket_result.buckets.size();
+    //
+    // storage_delight::core::ClientGroupV2<bsoncxx::oid> client_group{};
+    // client_group.push_back(bsoncxx::oid{"673ea940b4f544a2c2092b3d"}, std::make_shared<storage_delight::core::Client>(base_url, &provider));
+    // auto client   = client_group.get_client(bsoncxx::oid{"673ea940b4f544a2c2092b3d"});
+    // auto response = client->get()->get_bucket_operation().make_bucket("test");
 }

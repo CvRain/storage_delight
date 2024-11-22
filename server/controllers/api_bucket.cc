@@ -9,18 +9,18 @@
 
 using namespace api;
 
-void Bucket::add_bucket(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
+void Bucket::add_bucket(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback) {
     service_delight::Logger::get_instance().log(service_delight::ConsoleLogger, "Enter Bucket::add bucket");
 
-    // 检查json是否包括必要字段
-    const auto json_body = nlohmann::json{req->body()};
-    std::cout << req->body() << std::endl;
+    const auto json_body = fromRequest<nlohmann::json>(*req);
     if (const auto result = json_body.contains(schema::key::user_id) and
                             json_body.contains(schema::key::bucket_name) and json_body.contains(schema::key::source_id);
         result == false)
     {
         model_delight::BasicResponse response{
                 .code = k400BadRequest, .message = "k400BadRequest", .result = "json body is invalid", .data = {}};
+        service_delight::Logger::get_instance().log(
+                service_delight::ConsoleLogger, "json body is invalid {}", json_body.dump());
         callback(newHttpJsonResponse(response.to_json()));
         return;
     }
@@ -30,7 +30,7 @@ void Bucket::add_bucket(const HttpRequestPtr &req, std::function<void(const Http
     const auto source_id   = bsoncxx::oid{json_body.at(schema::key::source_id).get<std::string>()};
 
     try {
-        //检查source是否存在
+        // 检查source是否存在
         if (const auto [is_exist, error] = service_delight::StorageService::get_instance().is_exist(source_id);
             not is_exist.has_value() || is_exist.value() == false)
         {
@@ -41,20 +41,42 @@ void Bucket::add_bucket(const HttpRequestPtr &req, std::function<void(const Http
         }
 
         // 检查数据库中是否存在bucket
-        if (const auto [is_exist, error] = service_delight::BucketService::get_instance().is_exist(bucket_name);
-            not is_exist.has_value() || is_exist.value() == false)
-        {
+        const auto [is_exist, is_exist_error] = service_delight::BucketService::get_instance().is_exist(bucket_name);
+        if (not is_exist.has_value()) {
             service_delight::Logger::get_instance().log(
-                    service_delight::ConsoleLogger, spdlog::level::info, "Bucket::add_bucket {}", error);
+                    service_delight::ConsoleLogger, spdlog::level::info, "Bucket::add_bucket {}", is_exist_error);
+            throw exception::BaseException{model_delight::BasicResponse{.code    = k500InternalServerError,
+                                                                        .message = "k500InternalServerError",
+                                                                        .result  = is_exist_error,
+                                                                        .data    = {}}};
+        }
+
+        if (is_exist.value() == true) {
+            service_delight::Logger::get_instance().log(
+                    service_delight::ConsoleLogger, spdlog::level::info, "Bucket::add_bucket {}", "bucket is exist");
             throw exception::BaseException{model_delight::BasicResponse{
-                    .code = k400BadRequest, .message = "k400BadRequest", .result = error, .data = {}}};
+                    .code = k400BadRequest, .message = "k400BadRequest", .result = "bucket is exist", .data = {}}};
         }
 
         // 获得source client
-        const auto client = service_delight::StorageService::get_instance().get_client(source_id);
+        const auto client = service_delight::StorageService::get_instance().generate_client(source_id);
+        if (client == nullptr) {
+            service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
+                                                        spdlog::level::err,
+                                                        "Bucket::add_bucket {}",
+                                                        "client is nullptr");
+            throw exception::BaseException{model_delight::BasicResponse{
+                    .code    = k500InternalServerError,
+                    .message = "k500InternalServerError",
+                    .result  = "client nullptr",
+            }};
+        }
+        service_delight::Logger::get_instance().log(
+                service_delight::ConsoleLogger, spdlog::level::debug, "Bucket::add_bucket: get client success");
 
-        // 在存储源中创建桶
-        if (const auto make_bucket_response = client.value()->get_bucket_operation().make_bucket(bucket_name);
+        // minio::s3::MakeBucketArgs args;
+        // args.bucket = bucket_name;
+        if (const auto make_bucket_response = client->get_bucket_operation()->make_bucket(bucket_name);
             !make_bucket_response)
         {
             service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
@@ -150,8 +172,40 @@ void Bucket::add_bucket(const HttpRequestPtr &req, std::function<void(const Http
     service_delight::Logger::get_instance().log(service_delight::ConsoleLogger, "Exit Bucket::add_bucket");
 }
 
+void Bucket::list_buckets(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback) {
+    service_delight::Logger::get_instance().log(service_delight::ConsoleLogger, "Enter Bucket::list_buckets");
+
+    try {
+        const auto request_body = fromRequest<nlohmann::json>(*req);
+        const auto user_id      = request_body.at(schema::key::user_id).get<std::string>();
+        const auto source_id    = request_body.at(schema::key::source_id).get<std::string>();
+
+        const auto client = service_delight::StorageService::get_instance().get_client(bsoncxx::oid{source_id});
+        for (const auto  list_bucket_response = client.value()->get_bucket_operation()->list_buckets();
+             const auto& bucket: list_bucket_response.buckets)
+        {
+            service_delight::Logger::get_instance().log(
+                    service_delight::BasicLogger, "Bucket::list_buckets bucket: {}", bucket.name);
+        }
+
+        const auto [bucket_document,bucket_document_err] = service_delight::BucketService::get_instance().list();
+        //todo
+    }
+    catch (const std::exception& e) {
+        service_delight::Logger::get_instance().log(service_delight::BasicLogger | service_delight::ConsoleLogger,
+                                                    spdlog::level::err,
+                                                    "Bucket::list_buckets {}",
+                                                    e.what());
+        model_delight::BasicResponse response{
+                .code = k500InternalServerError, .message = "k500InternalServerError", .result = e.what(), .data = {}};
+        callback(model_delight::NlohmannResponse::new_nlohmann_json_response(response.to_json()));
+    }
+}
+
 void Bucket::remove_bucket(model_delight::NlohmannJsonRequestPtr&&       req,
-                           std::function<void(const HttpResponsePtr&)>&& callback) {}
+                           std::function<void(const HttpResponsePtr&)>&& callback) {
+    service_delight::Logger::get_instance().log(service_delight::ConsoleLogger, "Enter Bucket::remove_bucket");
+}
 
 void Bucket::set_owner(model_delight::NlohmannJsonRequestPtr&& req, std::function<void(const HttpResponsePtr&)>&& callback){
 }

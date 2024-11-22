@@ -32,7 +32,7 @@ namespace drogon {
     template <>
     inline nlohmann::json fromRequest<nlohmann::json>(const HttpRequest &req) {
         if (const auto& json_ptr = req.jsonObject()) {
-            return nlohmann::json{req.body()};
+            return nlohmann::json::parse(req.body());
         }
         return {}; // 返回空的JSON对象
     }

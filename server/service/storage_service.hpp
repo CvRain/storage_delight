@@ -49,12 +49,15 @@ namespace service_delight {
 
         auto source_name(const bsoncxx::oid& source_id) -> schema::result<std::string, std::string_view>;
 
-        auto get_client(const bsoncxx::oid& id) -> std::optional<std::shared_ptr<storage_delight::core::Client>>;
+        auto get_client(const bsoncxx::oid& source_id) -> std::optional<std::shared_ptr<storage_delight::core::Client>>;
+
+        auto generate_client(const bsoncxx::oid& source_id) -> std::shared_ptr<storage_delight::core::Client>;
 
     private:
         mongocxx::collection data_source_collection;
         bool is_init = false;
         storage_delight::core::ClientGroupV2<bsoncxx::oid> client_group;
+        mutable std::mutex mutex_{};
     };
 } // namespace service_delight
 #endif // STORAGE_SERVICE_HPP

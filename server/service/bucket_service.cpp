@@ -102,11 +102,13 @@ namespace service_delight {
     auto BucketService::is_exist(const bsoncxx::oid& bucket_id) -> schema::result<bool, std::string_view> {
         Logger::get_instance().log(ConsoleLogger, "Enter BucketService::is_exist");
         try {
-            const auto find_result = bucket_collection.find_one(make_document(kvp(schema::key::bucket_id, bucket_id)));
-            if (!find_result) {
-                throw std::runtime_error("BucketService::is_exist: find bucket failed");
+            if (const auto find_result =
+                        bucket_collection.find_one(make_document(kvp(schema::key::bucket_id, bucket_id))))
+            {
+                Logger::get_instance().log(ConsoleLogger, "BucketService::is_exist: find bucket success");
+                return std::make_pair(true, "");
             }
-            return std::make_pair(find_result.has_value(), "");
+            return std::make_pair(false, "BucketService::is_exist: find bucket failed");
         }
         catch (const std::exception& e) {
             Logger::get_instance().log(
@@ -120,14 +122,52 @@ namespace service_delight {
         try {
             const auto find_result =
                     bucket_collection.find_one(make_document(kvp(schema::key::bucket_name, bucket_name)));
-            if (!find_result) {
-                throw std::runtime_error("BucketService::is_exist: find bucket failed");
+            if (find_result) {
+                Logger::get_instance().log(ConsoleLogger, "BucketService::is_exist: find bucket success");
+                return std::make_pair(true, "");
             }
-            return std::make_pair(find_result.has_value(), "");
+            return std::make_pair(false, "BucketService::is_exist: find bucket failed");
         }
         catch (const std::exception& e) {
             Logger::get_instance().log(
                     ConsoleLogger | BasicLogger, spdlog::level::err, "BucketService::is_exist: find bucket failed");
+            return std::make_pair(std::nullopt, e.what());
+        }
+    }
+
+    auto BucketService::list() -> schema::result<std::vector<bsoncxx::document::value>, std::string_view> {
+        Logger::get_instance().log(ConsoleLogger, "Enter BucketService::list");
+        try {
+            // 获取collection中的所有documents
+            const auto                            find_result = bucket_collection.find({});
+            std::vector<bsoncxx::document::value> result;
+            for (auto&& doc: find_result) {
+                result.emplace_back(bsoncxx::document::value(doc));
+            }
+            return std::make_pair(result, "");
+        }
+        catch (const std::exception& e) {
+            Logger::get_instance().log(
+                    ConsoleLogger | BasicLogger, spdlog::level::err, "BucketService::list: find bucket failed");
+            return std::make_pair(std::nullopt, e.what());
+        }
+    }
+
+    auto BucketService::list(const bsoncxx::oid& id)
+            -> schema::result<std::vector<bsoncxx::document::value>, std::string_view> {
+        Logger::get_instance().log(ConsoleLogger, "Enter BucketService::list");
+        try {
+            // 获取collection中的所有documents
+            const auto find_result = bucket_collection.find(make_document(kvp(schema::key::source_id, id)));
+            std::vector<bsoncxx::document::value> result;
+            for (auto&& doc: find_result) {
+                result.emplace_back(bsoncxx::document::value(doc));
+            }
+            return std::make_pair(result, "");
+        }
+        catch (const std::exception& e) {
+            Logger::get_instance().log(
+                    ConsoleLogger | BasicLogger, spdlog::level::err, "BucketService::list: find bucket failed");
             return std::make_pair(std::nullopt, e.what());
         }
     }

@@ -14,7 +14,7 @@
 namespace storage_delight::core {
     class BucketOperation : public BaseOperation {
     public:
-        explicit BucketOperation(minio::s3::Client &client);
+        explicit BucketOperation(const std::shared_ptr<minio::s3::Client>& client);
 
         minio::s3::BucketExistsResponse
         bucket_exists(const std::string_view &bucketName);
@@ -59,7 +59,7 @@ namespace storage_delight::core {
         listen_bucket_notification(const std::string &bucketName);
 
         minio::s3::MakeBucketResponse
-        make_bucket(const std::string &bucketName);
+        make_bucket(const std::string &bucketName) const;
 
         minio::s3::RemoveBucketResponse
         remove_bucket(const std::string &bucketName);
@@ -93,7 +93,7 @@ namespace storage_delight::core {
         set_bucket_versioning(const std::string &bucketName, bool status = true);
 
     private:
-        minio::s3::Client &client;
+        const std::shared_ptr<minio::s3::Client>& client;
     };
 } // namespace storage_delight::core
 

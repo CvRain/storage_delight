@@ -22,6 +22,8 @@ namespace service_delight {
         auto remove_one(const std::string_view& bucket_name) -> schema::result<bool, std::string_view>;
         auto is_exist(const bsoncxx::oid& bucket_id) -> schema::result<bool, std::string_view>;
         auto is_exist(const std::string_view& bucket_name) -> schema::result<bool, std::string_view>;
+        auto list() -> schema::result<std::vector<bsoncxx::document::value>, std::string_view>;
+        auto list(const bsoncxx::oid& id) -> schema::result<std::vector<bsoncxx::document::value>, std::string_view>;
 
     private:
         mongocxx::collection bucket_collection;
