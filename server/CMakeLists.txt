@@ -38,8 +38,6 @@ set(MODEL_SRC
         models/nlohmann_json_request.hpp
         models/type.hpp
         models/nlohmann_json_response.hpp
-        models/http_response.cpp
-        models/http_response.hpp
         models/schema_key.hpp
         models/basic_value.hpp
         models/db_schema.cpp
@@ -67,8 +65,6 @@ set(SERVICE_SRC
         service/log_service.hpp
         service/storage_service.cpp
         service/storage_service.hpp
-        service/bucket_service.cpp
-        service/bucket_service.hpp
 )
 
 include_directories(${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include)
@@ -93,8 +89,6 @@ add_executable(storage_server
 find_package(fmt CONFIG REQUIRED)
 find_package(Drogon CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
-find_package(unofficial-sqlite3 CONFIG REQUIRED)
-find_package(SqliteOrm CONFIG REQUIRED)
 find_package(mongoc-1.0 CONFIG REQUIRED)
 find_package(bsoncxx CONFIG REQUIRED)
 find_package(mongocxx CONFIG REQUIRED)
@@ -104,8 +98,6 @@ target_link_libraries(storage_server PRIVATE Drogon::Drogon)
 target_link_libraries(storage_server PRIVATE storage_delight_core)
 target_link_libraries(storage_server PUBLIC 
         nlohmann_json::nlohmann_json
-        unofficial::sqlite3::sqlite3
-        sqlite_orm::sqlite_orm
         fmt::fmt
         $<IF:$<TARGET_EXISTS:mongo::mongoc_shared>,mongo::mongoc_shared,mongo::mongoc_static>
         $<IF:$<TARGET_EXISTS:mongo::bsoncxx_static>,mongo::bsoncxx_static,mongo::bsoncxx_shared>

@@ -9,7 +9,6 @@
 #include <nlohmann/json.hpp>
 
 #include "db_schema.hpp"
-#include "http_response.hpp"
 #include "basic_value.hpp"
 
 namespace model_delight {
@@ -40,10 +39,6 @@ namespace model_delight {
     public:
         static drogon::HttpResponsePtr new_nlohmann_json_response(nlohmann::json&&json) {
             return drogon::HttpResponse::newCustomHttpResponse<nlohmann::json>(std::move(json));
-        }
-
-        static drogon::HttpResponsePtr new_common_response(HttpResponse *response) {
-            return response->to_response();
         }
     };
 }

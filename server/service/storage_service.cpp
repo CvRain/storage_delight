@@ -302,7 +302,7 @@ auto StorageService::inactive_all_storage() -> schema::result<bool, std::string_
     catch (const std::exception &e) {
         Logger::get_instance().log(
                 ConsoleLogger | BasicLogger, spdlog::level::err, "StorageService::inactive_all_storage {}", e.what());
-        return std::make_pair(nullptr, e.what());
+        return std::make_pair(std::nullopt, e.what());
     }
     return std::make_pair(true, "");
 }
@@ -330,14 +330,17 @@ auto StorageService::get_client(const bsoncxx::oid &source_id)
     std::lock_guard<std::mutex> lock(mutex_);
 
     Logger::get_instance().log(ConsoleLogger, "Enter StorageService::get_client");
-    if (client_group.is_exist(source_id)) {
-        Logger::get_instance().log(ConsoleLogger, "StorageService::get_client {} client exist", source_id.to_string());
+    try {
+        if (client_group.is_exist(source_id)) {
+            Logger::get_instance().log(
+                    ConsoleLogger, "StorageService::get_client {} client exist", source_id.to_string());
+            return client_group.get_client(source_id);
+        }
+        return std::nullopt;
     }
-    else {
-        Logger::get_instance().log(
-                ConsoleLogger, "StorageService::get_client {} client not exist", source_id.to_string());
+    catch (const std::exception &) {
+        throw;
     }
-    return client_group.get_client(source_id);
 }
 
 auto StorageService::generate_client(const bsoncxx::oid &source_id) -> std::shared_ptr<storage_delight::core::Client> {

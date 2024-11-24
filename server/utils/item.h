@@ -5,8 +5,10 @@
 #ifndef ITEM_H
 #define ITEM_H
 
-#include <string>
 #include <curl/curl.h>
+#include <string>
+
+#include "drogon_specialization.hpp"
 
 namespace util_delight {
     class Item {
@@ -23,11 +25,12 @@ namespace util_delight {
 
                 curl_easy_cleanup(curl);
                 return res == CURLE_OK;
-            }catch (std::exception& e) {
+            }
+            catch (std::exception& e) {
                 throw;
             }
         }
     };
-} // namespace util_delight
+}  // namespace util_delight
 
-#endif // ITEM_H
+#endif  // ITEM_H

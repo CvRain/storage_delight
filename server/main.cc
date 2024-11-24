@@ -4,7 +4,6 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/daily_file_sink.h>
 
-#include "service/bucket_service.hpp"
 #include "service/group_service.hpp"
 #include "service/log_service.hpp"
 #include "service/logger.hpp"
@@ -148,20 +147,7 @@ void service_init(const nlohmann::json &setting) {
     service_delight::StorageService::get_instance().init();
     service_delight::StorageService::get_instance().active_all_storage();
     service_delight::LogService::get_instance().init();
-    service_delight::BucketService::get_instance().init();
 }
 
 void debug_execute() {
-    service_delight::Logger::get_instance().log(service_delight::BasicLogger, spdlog::level::info, "Debug mode");
-    minio::s3::BaseUrl           base_url("http://127.0.0.1:9000", false);
-    minio::creds::StaticProvider provider("U4vtLhgcAwvcluonw5Ih", "GU3MaxaoqYNqDTXpDL7yLOT9NLE7lpdcjwA2CpWD");
-    minio::s3::Client            client(base_url, &provider);
-    std::cout << "session token" << provider.Fetch().session_token << std::endl;
-    const auto list_bucket_result = client.ListBuckets();
-    std::cout << list_bucket_result.buckets.size();
-    //
-    // storage_delight::core::ClientGroupV2<bsoncxx::oid> client_group{};
-    // client_group.push_back(bsoncxx::oid{"673ea940b4f544a2c2092b3d"}, std::make_shared<storage_delight::core::Client>(base_url, &provider));
-    // auto client   = client_group.get_client(bsoncxx::oid{"673ea940b4f544a2c2092b3d"});
-    // auto response = client->get()->get_bucket_operation().make_bucket("test");
 }

@@ -22,5 +22,6 @@ cmake-build-*
 
 bin
 vcpkg_installed
+vcpkg
 
 Folder.DotSettings.user

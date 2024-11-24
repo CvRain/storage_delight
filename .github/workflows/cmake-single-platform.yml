@@ -25,18 +25,11 @@ jobs:
       with:
         submodules: true  # 确保子模块被检出
 
-    - name: Cache vcpkg
-      uses: actions/cache@v3
-      with:
-        path: |
-          vcpkg_installed
-          vcpkg/downloads
-        key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
-        restore-keys: |
-          ${{ runner.os }}-vcpkg-
-      
     - name: Install Ninja
       run: sudo apt-get install -y ninja-build
+
+    - name: Install vcpkg
+      run: git clone https://github.com/microsoft/vcpkg.git
         
     - name: Configure CMake with Presets
       run: cmake --preset default-linux-release

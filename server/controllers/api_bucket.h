@@ -13,17 +13,11 @@ namespace api {
     public:
         METHOD_LIST_BEGIN
         METHOD_ADD(Bucket::add_bucket, "/add", Options, Put);
-        METHOD_ADD(Bucket::list_buckets, "/list", Options, Get);
+        METHOD_ADD(Bucket::list_bucket, "/list", Options, Get);
         METHOD_LIST_END
 
         static void add_bucket(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
-
-        static void list_buckets(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
-
-        static void remove_bucket(model_delight::NlohmannJsonRequestPtr        &&req,
-                                  std::function<void(const HttpResponsePtr &)> &&callback);
-
-        static void set_owner(model_delight::NlohmannJsonRequestPtr        &&req,
-                              std::function<void(const HttpResponsePtr &)> &&callback);
+        static void list_bucket(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
+        static void remove_bucket(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
     };
 }  // namespace api

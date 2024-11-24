@@ -2,12 +2,9 @@
   "name": "storage-delight",
   "version": "0.1.0",
   "dependencies": [
-    "cpprestsdk",
     "nlohmann-json",
     "minio-cpp",
     "spdlog",
-    "sqlite3",
-    "sqlite-orm",
     {
       "name": "drogon",
       "features": [
