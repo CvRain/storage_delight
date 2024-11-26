@@ -17,8 +17,6 @@ void Group::add_member(model_delight::NlohmannJsonRequestPtr        &&req,
 
     const auto json_body = req->getNlohmannJsonBody();
 
-    auto mongo_session = service_delight::MongoProvider::get_instance().start_session();
-    mongo_session.start_transaction();
     try {
         // 检查字段是否存在
         const auto request_exist = json_body.contains(schema::key::user_id) &&
@@ -45,17 +43,19 @@ void Group::add_member(model_delight::NlohmannJsonRequestPtr        &&req,
                                                     json_body.at(schema::key::user_id).get<std::string>());
 
         // 检查user_id是否存在
-        const auto [user_exist_result, user_exist_error] = service_delight::UserService::get_instance().is_exist(user_id);
-        if (not user_exist_result.has_value() || user_exist_result.value() == false) {
+        service_delight::Logger::get_instance().log(
+                service_delight::ConsoleLogger, spdlog::level::debug, "Group::add_member: Checking user_id existence");
+        if (const auto &[user_exist_result, user_exist_error] =
+                    service_delight::UserService::get_instance().is_exist(user_id);
+            not user_exist_result.has_value() || user_exist_result.value() == false)
+        {
             nlohmann::json response{{model_delight::basic_value::request::code, k400BadRequest},
                                     {model_delight::basic_value::request::message, "Invalid request"},
-                                    {model_delight::basic_value::request::result, "group owner not exist"},
+                                    {model_delight::basic_value::request::result, user_exist_error},
                                     {model_delight::basic_value::request::data, {}}};
             callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
             service_delight::Logger::get_instance().log(
-                    service_delight::ConsoleLogger,
-                    spdlog::level::debug,
-                    "Group::add_member: Failed to add member: group owner not exist");
+                    service_delight::ConsoleLogger, spdlog::level::debug, "Group::add_member: ", user_exist_error);
             return;
         }
 
@@ -113,20 +113,23 @@ void Group::add_member(model_delight::NlohmannJsonRequestPtr        &&req,
         member_ids.erase(std::ranges::unique(member_ids).begin(), member_ids.end());
 
         // 检查member_id中的用户是否存在
-        if (std::ranges::any_of(member_ids, [](const auto &member_id) {
-                const auto [user_exist_result,error] = service_delight::UserService::get_instance().is_exist(member_id);
-                return user_exist_result.has_value() && user_exist_result.value() == true;
-            }))
-        {
-            nlohmann::json response{{model_delight::basic_value::request::code, k400BadRequest},
-                                    {model_delight::basic_value::request::message, "Invalid request"},
-                                    {model_delight::basic_value::request::result, "user not exist"},
-                                    {model_delight::basic_value::request::data, {}}};
-            callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
-            service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
-                                                        spdlog::level::debug,
-                                                        "Group::add_member: Failed to add member: user not exist");
-            return;
+        for (const auto &member_id: member_ids) {
+            if (const auto [user_exist_result, user_exist_error] =
+                        service_delight::UserService::get_instance().is_exist(member_id);
+                not user_exist_result.has_value() || user_exist_result.value() == false)
+            {
+                model_delight::BasicResponse response{.code    = k400BadRequest,
+                                                      .message = "k400BadRequest",
+                                                      .result  = member_id.to_string() + "not exist",
+                                                      .data    = {}};
+                callback(newHttpJsonResponse(std::move(response.to_json())));
+                service_delight::Logger::get_instance().log(
+                        service_delight::ConsoleLogger,
+                        spdlog::level::debug,
+                        "Group::add_member: Failed to add member: user {} not exist",
+                        member_id.to_string());
+                return;
+            }
         }
 
         // 检查添加用户操作是否成功
@@ -151,8 +154,6 @@ void Group::add_member(model_delight::NlohmannJsonRequestPtr        &&req,
                                     {model_delight::basic_value::request::data, {}}};
             callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
 
-            mongo_session.abort_transaction();
-
             service_delight::Logger::get_instance().log(
                     service_delight::ConsoleLogger,
                     spdlog::level::debug,
@@ -173,8 +174,6 @@ void Group::add_member(model_delight::NlohmannJsonRequestPtr        &&req,
         operation_log.request_ip     = req->getRequest().getPeerAddr().toIp();
 
         service_delight::LogService::get_instance().record_operation(&operation_log);
-
-        mongo_session.commit_transaction();
     }
     catch (const std::exception &e) {
         nlohmann::json response{{model_delight::basic_value::request::code, k500InternalServerError},
@@ -182,8 +181,6 @@ void Group::add_member(model_delight::NlohmannJsonRequestPtr        &&req,
                                 {model_delight::basic_value::request::result, e.what()},
                                 {model_delight::basic_value::request::data, {}}};
         callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
-        service_delight::MongoProvider::abort_transaction(mongo_session);
-
         service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
                                                     spdlog::level::err,
                                                     "Failed to add member due to invalid request {}",
@@ -201,28 +198,13 @@ void Group::remove_member(model_delight::NlohmannJsonRequestPtr        &&req,
 
     auto mongo_session = service_delight::MongoProvider::get_instance().start_session();
     try {
-        // 检查请求字段是否存在
-        const auto request_field_exist = json_body.contains(schema::key::user_id) and
-                                         json_body.contains(schema::key::group_id) and
-                                         json_body.contains(schema::key::members_id);
-        if (!request_field_exist) {
-            nlohmann::json response{{model_delight::basic_value::request::code, k400BadRequest},
-                                    {model_delight::basic_value::request::message, "Invalid request"},
-                                    {model_delight::basic_value::request::result, "Missing field"},
-                                    {model_delight::basic_value::request::data, {}}};
-            callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
-            service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
-                                                        spdlog::level::debug,
-                                                        "Group::remove_member: Failed to remove member: missing field");
-            return;
-        }
         const auto field_user_id    = json_body.at(schema::key::user_id).get<std::string>();
         const auto field_group_id   = json_body.at(schema::key::group_id).get<std::string>();
         const auto field_members_id = json_body.at(schema::key::members_id).get<std::vector<std::string>>();
 
         // 检查用户是否存在
-        const auto [user_exist_result,error] = service_delight::UserService::get_instance().is_exist(field_user_id);
-        if(not user_exist_result.has_value()) {
+        const auto [user_exist_result, error] = service_delight::UserService::get_instance().is_exist(field_user_id);
+        if (not user_exist_result.has_value()) {
             nlohmann::json response{{model_delight::basic_value::request::code, k500InternalServerError},
                                     {model_delight::basic_value::request::message, "k500InternalServerError"},
                                     {model_delight::basic_value::request::result, error},
@@ -235,8 +217,7 @@ void Group::remove_member(model_delight::NlohmannJsonRequestPtr        &&req,
             return;
         }
 
-        if (user_exist_result.value()== false)
-        {
+        if (user_exist_result.value() == false) {
             nlohmann::json response{{model_delight::basic_value::request::code, k400BadRequest},
                                     {model_delight::basic_value::request::message, "Invalid request"},
                                     {model_delight::basic_value::request::result, "User not found"},
@@ -350,4 +331,77 @@ void Group::remove_member(model_delight::NlohmannJsonRequestPtr        &&req,
         callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
     }
 }
+
+void Group::add_bucket(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
+    try {
+        const auto &json_body   = fromRequest<nlohmann::json>(*req);
+        const auto &user_id     = json_body.at(schema::key::user_id).get<std::string>();
+        const auto &group_id    = json_body.at(schema::key::group_id).get<std::string>();
+        const auto &source_id   = json_body.at(schema::key::source_id).get<std::string>();
+        const auto &bucket_name = json_body.at(schema::key::bucket_name).get<std::string>();
+
+        const auto &[find_group, find_group_error] =
+                service_delight::GroupService::get_instance().get_one(bsoncxx::oid{group_id});
+
+        auto group = find_group.value();
+        group.buckets.insert(std::make_pair(bsoncxx::oid(source_id), bucket_name));
+
+        if (const auto &[update_result, update_error] =
+                    service_delight::GroupService::get_instance().update_one(&group);
+            not update_result.has_value())
+        {
+            service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
+                                                        spdlog::level::err,
+                                                        "Group::add_bucket: Failed to update group: {}",
+                                                        update_error);
+            throw exception::BaseException{model_delight::BasicResponse{.code    = k500InternalServerError,
+                                                                        .message = "Failed to update group",
+                                                                        .result  = update_error,
+                                                                        .data    = {}}};
+        }
+        service_delight::Logger::get_instance().log(
+                service_delight::ConsoleLogger, spdlog::level::info, "Group::add_bucket: Successfully added bucket");
+
+        model_delight::BasicResponse response{
+                .code = k200OK, .message = "k200OK", .result = "Success to add bucket", .data = group.to_json()};
+        callback(newHttpJsonResponse(response.to_json()));
+
+        schema::DbOperationLog operation_log{};
+        operation_log.action        = "add_bucket";
+        operation_log.bucket_name   = group.name;
+        operation_log.current_state = group.to_json().dump();
+        operation_log.source_id     = bsoncxx::oid{source_id};
+        operation_log.user_id       = bsoncxx::oid{user_id};
+        service_delight::LogService::get_instance().record_operation(&operation_log);
+    }
+    catch (const nlohmann::detail::exception &exception) {
+        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
+                                                    spdlog::level::err,
+                                                    "Group::add_bucket: nlohmann::detail::exception: {}",
+                                                    exception.what());
+        model_delight::BasicResponse response{
+                .code = k400BadRequest, .message = "k400BadRequest", .result = exception.what(), .data = {}};
+        callback(newHttpJsonResponse(response.to_json()));
+    }
+    catch (const exception::BaseException &exception) {
+        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
+                                                    spdlog::level::err,
+                                                    "Group::add_bucket: exception: {}",
+                                                    exception.what());
+        callback(newHttpJsonResponse(exception.response().to_json()));
+    }
+    catch (const std::exception &exception) {
+        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
+                                                    spdlog::level::err,
+                                                    "Group::add_bucket: std::exception: {}",
+                                                    exception.what());
+        model_delight::BasicResponse response{
+                .code = k500InternalServerError,
+        .message = "k500InternalServerError",
+        .result = exception.what(),
+        .data = {}};
+        callback(newHttpJsonResponse(response.to_json()));
+    }
+}
+
 

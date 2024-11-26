@@ -17,8 +17,7 @@ namespace service_delight {
     class UserService : public util_delight::Singleton<UserService> {
     public:
         void init();
-        auto add_one(schema::DbUser *user, mongocxx::client_session *session = nullptr)
-                -> schema::result<schema::DbUser, std::string>;
+        auto add_one(const bsoncxx::document::value &user) -> schema::result<bsoncxx::oid, std::string>;
         auto add_one_v2(const bsoncxx::document::value &user_document)
                 -> schema::result<bsoncxx::document::value, std::string>;
         auto get_by_id(const bsoncxx::oid &id) -> schema::result<bsoncxx::document::value, std::string>;

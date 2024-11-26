@@ -26,6 +26,7 @@ namespace schema::key {
     const std::string owner_id = "owner_id";
     const std::string members_id = "members_id";
     const std::string bucket_group_id = "bucket_group_id";
+    const std::string buckets = "buckets";
     const std::string allow_actions = "allow_actions";
     const std::string action = "action";
     const std::string description = "description";

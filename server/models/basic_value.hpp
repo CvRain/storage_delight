@@ -10,16 +10,16 @@
 
 namespace model_delight::basic_value {
     namespace request {
-        const std::string          status    = "status";
-        const std::string          message   = "message";
-        const std::string          data      = "data";
-        const std::string          code      = "code";
-        const std::string          error     = "error";
-        const std::string          success   = "success";
-        const std::string          result    = "result";
-        const std::string          total     = "total";
-        const std::string          page      = "page";
-        const std::string          page_size = "page_size";
+        const std::string status    = "status";
+        const std::string message   = "message";
+        const std::string data      = "data";
+        const std::string code      = "code";
+        const std::string error     = "error";
+        const std::string success   = "success";
+        const std::string result    = "result";
+        const std::string total     = "total";
+        const std::string page      = "page";
+        const std::string page_size = "page_size";
     }  // namespace request
 
     namespace header {
@@ -51,9 +51,11 @@ namespace model_delight::basic_value {
     }  // namespace jwt
 
     namespace middleware {
-        constexpr std::string_view LoginAuth = "drogon::middleware::LoginMiddleware";
-        constexpr std::string_view AdminAuth = "drogon::middleware::AdminAuth";
-        constexpr std::string_view UserExist = "drogon::middleware::UserExist";
+        constexpr auto LoginAuth  = "drogon::middleware::LoginMiddleware";
+        constexpr auto AdminAuth  = "drogon::middleware::AdminAuth";
+        constexpr auto UserExist  = "drogon::middleware::UserExist";
+        constexpr auto GroupExist = "drogon::middleware::GroupExist";
+        constexpr auto SourceExist = "drogon::middleware::SourceExist";
 
     }  // namespace middleware
 }  // namespace model_delight::basic_value
@@ -77,7 +79,7 @@ namespace model_delight::bson_operator {
         // 逻辑操作符
         constexpr std::string_view and_ = "$and";  // 使用逻辑 AND 连接查询子句将返回与两个子句的条件匹配的所有文档。
         constexpr std::string_view not_ = "$not";  // 反转查询谓词的效果，并返回与查询谓词不匹配的文档。
-        constexpr std::string_view or_ = "$or";  // 使用逻辑 NOR 的联接查询子句会返回无法匹配这两个子句的所有文档。
+        constexpr std::string_view or_  = "$or";  // 使用逻辑 NOR 的联接查询子句会返回无法匹配这两个子句的所有文档。
         constexpr std::string_view nor_ = "$nor";  // 使用逻辑 OR 连接多个查询子句会返回符合任一子句条件的所有文档。
         // 元素操作符
         constexpr std::string_view exists = "$exists";  // 匹配具有指定字段的文档。

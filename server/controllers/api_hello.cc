@@ -67,25 +67,13 @@ void Hello::get_user_model(model_delight::NlohmannJsonRequestPtr        &&ptr,
     callback(model_delight::NlohmannResponse::new_nlohmann_json_response(user.to_json()));
 }
 
-void Hello::get_bucket_model(model_delight::NlohmannJsonRequestPtr        &&ptr,
-                             std::function<void(const HttpResponsePtr &)> &&callback) {
-    schema::DbBucket bucket;
-    bucket.bucket_name   = "test bucket";
-    bucket.data_source   = bsoncxx::oid{};
-    bucket.group_id      = bsoncxx::oid{};
-    bucket.id            = bsoncxx::oid{};
-    bucket.permission_id = bsoncxx::oid{};
-    bucket.tags          = {"tag1", "tag2", "tag3"};
-    callback(model_delight::NlohmannResponse::new_nlohmann_json_response(bucket.to_json()));
-}
-
 void Hello::get_group_model(model_delight::NlohmannJsonRequestPtr        &&ptr,
                             std::function<void(const HttpResponsePtr &)> &&callback) {
     schema::DbGroup group;
-    group.bucket_group_id = {bsoncxx::oid{}, bsoncxx::oid{}};
-    group.members_id      = {bsoncxx::oid{}, bsoncxx::oid{}};
-    group.name            = "test group";
-    group.owner_id        = bsoncxx::oid{};
+    group.buckets    = {{bsoncxx::oid{}, "test bucket name"}, {bsoncxx::oid{}, "test bucket name2"}};
+    group.members_id = {bsoncxx::oid{}, bsoncxx::oid{}};
+    group.name       = "test group";
+    group.owner_id   = bsoncxx::oid{};
     callback(model_delight::NlohmannResponse::new_nlohmann_json_response(group.to_json()));
 }
 
@@ -103,8 +91,7 @@ void Hello::get_permission_model(model_delight::NlohmannJsonRequestPtr        &&
             {schema::key::permission::allow_write, {bsoncxx::oid{}, bsoncxx::oid{}}},
             {schema::key::permission::allow_revoke, {bsoncxx::oid{}, bsoncxx::oid{}}},
     };
-    permission.name        = "test permission";
-    permission.description = "test permission description";
+    permission.bucket = std::make_pair(bsoncxx::oid{}, "test bucket name");
     callback(model_delight::NlohmannResponse::new_nlohmann_json_response(permission.to_json()));
 }
 

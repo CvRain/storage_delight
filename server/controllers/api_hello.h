@@ -18,7 +18,6 @@ namespace api {
         METHOD_ADD(Hello::test_json_body, "/test_json_body", Options, Post);
         METHOD_ADD(Hello::test_request, "/test_request", Options, Post);
         METHOD_ADD(Hello::get_user_model, "/schema/user", Options, Get);
-        METHOD_ADD(Hello::get_bucket_model, "/schema/bucket", Options, Get);
         METHOD_ADD(Hello::get_group_model, "/schema/group", Options, Get);
         METHOD_ADD(Hello::get_permission_model, "/schema/permission", Options, Get);
         METHOD_ADD(Hello::get_operation_model, "/schema/operation", Options, Get);
@@ -39,9 +38,6 @@ namespace api {
                                  std::function<void(const HttpResponsePtr &)> &&callback);
 
         static void get_user_model(model_delight::NlohmannJsonRequestPtr &&ptr,
-            std::function<void(const HttpResponsePtr &)> &&callback);
-
-        static void get_bucket_model(model_delight::NlohmannJsonRequestPtr &&ptr,
             std::function<void(const HttpResponsePtr &)> &&callback);
 
         static void get_group_model(model_delight::NlohmannJsonRequestPtr &&ptr,

@@ -14,42 +14,22 @@ namespace service_delight {
 
         user_collection = MongoProvider::get_instance().get_collection(schema::key::collection::user.data());
     }
-
-    schema::result<schema::DbUser, std::string> UserService::add_one(schema::DbUser           *user,
-                                                                     mongocxx::client_session *session) {
+    auto UserService::add_one(const bsoncxx::document::value &user) -> schema::result<bsoncxx::oid, std::string> {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::add_user");
         try {
-            if (user == nullptr) {
-                Logger::get_instance().log(ConsoleLogger | BasicLogger, "UserService::add_user received null user");
-                return std::make_pair(std::nullopt, "User is null");
-            }
-
-            if (user->name.empty()) {
-                Logger::get_instance().log(ConsoleLogger | BasicLogger, "UserService::add_user received null user");
-                return std::make_pair(std::nullopt, "User name is empty");
-            }
-
-            if (is_exist(user->name).first) {
-                Logger::get_instance().log(
-                        ConsoleLogger | BasicLogger, "UserService::add_user {} already exist", user->name);
-                return std::make_pair(std::nullopt, "User already exist");
-            }
-
-            const auto user_document = user->get_document();
-            const auto result        = user_collection.insert_one(user_document.view());
-
-            if (!result.has_value()) {
+            const auto insert_result = user_collection.insert_one(user.view());
+            if (not insert_result.has_value()) {
                 Logger::get_instance().log(ConsoleLogger | BasicLogger, "UserService::add_user failed");
                 return std::make_pair(std::nullopt, "UserService::add_user failed");
             }
-            user->id = result.value().inserted_id().get_oid().value;
+            return std::make_pair(insert_result.value().inserted_id().get_oid().value, "");
+        }catch (const std::exception& exception) {
+            Logger::get_instance().log(ConsoleLogger | BasicLogger, spdlog::level::err,
+                "UserService::add_user failed: {}", exception.what());
+            return std::make_pair(std::nullopt, exception.what());
         }
-        catch (const std::exception &e) {
-            Logger::get_instance().log(ConsoleLogger | BasicLogger, "UserService::add_user failed: {}", e.what());
-            return std::make_pair(std::nullopt, e.what());
-        }
-        return std::make_pair(*user, "");
     }
+
 
     schema::result<bsoncxx::document::value, std::string> UserService::add_one_v2(
             const bsoncxx::document::value &value) {

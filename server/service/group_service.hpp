@@ -16,6 +16,8 @@ namespace service_delight {
         void init();
         auto add_one(schema::DbGroup *group) -> schema::result<std::string, std::string>;
 
+        auto add_one(const bsoncxx::document::value& group) -> schema::result<bsoncxx::oid, std::string>;
+
         auto get_one(const bsoncxx::oid &group_id) -> schema::result<schema::DbGroup, std::string>;
 
         auto get_one_to_bson(const bsoncxx::oid &group_id) -> schema::result<bsoncxx::document::value, std::string>;
@@ -48,11 +50,6 @@ namespace service_delight {
                 -> schema::result<bool, std::string>;
 
         auto remove_bucket(const bsoncxx::oid &group_id, const bsoncxx::oid &bucket_id)
-                -> schema::result<bool, std::string>;
-
-        auto get_bucket_ids(const bsoncxx::oid &group_id) -> schema::result<std::vector<bsoncxx::oid>, std::string>;
-
-        auto is_bucket_exist(const bsoncxx::oid &group_id, const bsoncxx::oid &bucket_id)
                 -> schema::result<bool, std::string>;
 
         auto get_owner(const bsoncxx::oid &group_id) -> schema::result<bsoncxx::oid, std::string>;

@@ -46,21 +46,6 @@ namespace schema {
         int32_t update_time;
     };
 
-    class DbBucket final : public MongoDocument
-    {
-    public:
-        bsoncxx::document::value get_document() override;
-        nlohmann::json to_json() override;
-        static DbBucket from_bson(const bsoncxx::document::value& value);
-
-        bsoncxx::oid data_source;
-        std::string bucket_name;
-        bsoncxx::oid group_id{};
-        bsoncxx::oid permission_id{};
-        std::vector<std::string> tags{};
-        int32_t update_time{};
-    };
-
     class DbDataSource final : public MongoDocument
     {
     public:
@@ -84,12 +69,10 @@ namespace schema {
         static DbGroup from_bson(const bsoncxx::document::value& value);
         nlohmann::json to_json() override;
 
-        bsoncxx::oid id;
-        std::string name;
-        bsoncxx::oid owner_id;
-        std::vector<bsoncxx::oid> members_id;
-        std::vector<bsoncxx::oid> bucket_group_id;
-        int32_t create_time;
+        std::string name{};
+        bsoncxx::oid owner_id{};
+        std::vector<bsoncxx::oid> members_id{};
+        std::map<bsoncxx::oid, std::string> buckets{};  //桶： 包括存储源id,桶名称
         int32_t update_time;
     };
 
@@ -103,10 +86,8 @@ namespace schema {
         bsoncxx::document::value get_document() override;
         nlohmann::json to_json() override;
 
-        bsoncxx::oid bucket_id;
-        std::string name;
-        std::map<std::string, std::vector<bsoncxx::oid>> allow_actions;
-        std::string description;
+        std::pair<bsoncxx::oid, std::string> bucket;    //桶： 包括存储源id,桶名称
+        std::map<std::string, std::vector<bsoncxx::oid>> allow_actions; //权限名称，用户id
         std::string create_time;
         std::string update_time;
     };

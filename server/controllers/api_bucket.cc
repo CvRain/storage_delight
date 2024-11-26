@@ -191,8 +191,11 @@ void Bucket::remove_bucket(const HttpRequestPtr& req, std::function<void(const H
         }
         service_delight::Logger::get_instance().log(
                 service_delight::ConsoleLogger, spdlog::level::info, "Success in Bucket::remove_bucket");
-        callback(newHttpJsonResponse(
-                nlohmann::json{.code = k200OK, .message = "k200OK", .result = "Success", .data = nlohmann::json{}}));
+
+        model_delight::BasicResponse response{
+                .code = k200OK, .message = "k200OK", .result = "Success", .data = nlohmann::json{}};
+        callback(newHttpJsonResponse(std::move(response.to_json())));
+
         schema::DbOperationLog operation_log{};
         operation_log.action        = "remove_bucket";
         operation_log.bucket_name   = request_body.at(schema::key::bucket_name).get<std::string>();
@@ -208,27 +211,17 @@ void Bucket::remove_bucket(const HttpRequestPtr& req, std::function<void(const H
                                                     spdlog::level::err,
                                                     "Error in Bucket::remove_bucket: {}",
                                                     exception.what());
-        callback(newHttpJsonResponse(exception.response().to_json()));
+        callback(newHttpJsonResponse(std::move(exception.response().to_json())));
     }
     catch (const std::exception& exception) {
         service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
                                                     spdlog::level::err,
                                                     "Error in Bucket::remove_bucket: {}",
-                                                    exception.what()
-        );
+                                                    exception.what());
         auto response = model_delight::BasicResponse{.code    = k400BadRequest,
                                                      .message = "k400BadRequest",
                                                      .result  = exception.what(),
                                                      .data    = nlohmann::json{}};
-        callback(newHttpJsonResponse(response.to_json()));
-    }
-    catch (const std::exception& exception) {
-        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
-                                                    spdlog::level::err,
-                                                    "Bucket::remove_bucket::", exception.what());
-        auto response = model_delight::BasicResponse{.code    = k400BadRequest,
-                                                     .message = "k400BadRequest",
-                                                     .result  = exception.what(),
-                                                    .data    = nlohmann::json{}};
+        callback(newHttpJsonResponse(std::move(response.to_json())));
     }
 }

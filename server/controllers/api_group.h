@@ -2,6 +2,7 @@
 
 #include <drogon/HttpController.h>
 
+#include "basic_value.hpp"
 #include "models/nlohmann_json_request.hpp"
 
 using namespace drogon;
@@ -9,17 +10,32 @@ using namespace drogon;
 namespace api {
     class Group final : public drogon::HttpController<Group> {
     public:
-        //todo: add middleware
+        // todo: add middleware
         METHOD_LIST_BEGIN
-        METHOD_ADD(Group::add_member, "/members/add", Options,Patch);
-        METHOD_ADD(Group::remove_member, "/members/remove", Options,Delete);
+        METHOD_ADD(
+                Group::add_member, "/members/add", Options, Patch, model_delight::basic_value::middleware::UserExist);
 
+        METHOD_ADD(Group::remove_member,
+                   "/members/remove",
+                   Options,
+                   Delete,
+                   model_delight::basic_value::middleware::UserExist);
+
+        METHOD_ADD(Group::add_bucket,
+                   "/buckets/add",
+                   Options,
+                   Patch,
+                   model_delight::basic_value::middleware::UserExist,
+                   model_delight::basic_value::middleware::GroupExist,
+                   model_delight::basic_value::middleware::SourceExist);
 
         METHOD_LIST_END
-        static void add_member(model_delight::NlohmannJsonRequestPtr &&req,
-                        std::function<void(const HttpResponsePtr &)> &&callback);
+        static void add_member(model_delight::NlohmannJsonRequestPtr        &&req,
+                               std::function<void(const HttpResponsePtr &)> &&callback);
 
-        static void remove_member(model_delight::NlohmannJsonRequestPtr &&req,
-                           std::function<void(const HttpResponsePtr &)> &&callback);
+        static void remove_member(model_delight::NlohmannJsonRequestPtr        &&req,
+                                  std::function<void(const HttpResponsePtr &)> &&callback);
+
+        static void add_bucket(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
     };
-} // namespace api
+}  // namespace api

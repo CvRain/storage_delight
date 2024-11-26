@@ -17,31 +17,31 @@ namespace api {
                    "/add",
                    Options,
                    Put,
-                   model_delight::basic_value::middleware::UserExist.data());
+                   model_delight::basic_value::middleware::UserExist);
 
         METHOD_ADD(StorageSource::remove_source,
                    "/remove",
                    Options,
                    Delete,
-                   model_delight::basic_value::middleware::UserExist.data());
+                   model_delight::basic_value::middleware::UserExist);
 
         METHOD_ADD(StorageSource::list_all_source,
                    "/list",
                    Options,
                    Get,
-                   model_delight::basic_value::middleware::UserExist.data());
+                   model_delight::basic_value::middleware::UserExist);
 
         METHOD_ADD(StorageSource::list_all_ids,
                    "/ids",
                    Options,
                    Get,
-                   model_delight::basic_value::middleware::UserExist.data());
+                   model_delight::basic_value::middleware::UserExist);
 
         METHOD_ADD(StorageSource::get_one_source,
                    "/one",
                    Options,
                    Get,
-                   model_delight::basic_value::middleware::UserExist.data());
+                   model_delight::basic_value::middleware::UserExist);
 
         METHOD_LIST_END
 

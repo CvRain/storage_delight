@@ -29,6 +29,8 @@ set(FILTER_SRC
         filters/user_filter.cpp
         filters/user_exist.cpp
         filters/user_exist.hpp
+        filters/group_exist.cpp
+        filters/group_exist.hpp
 )
 aux_source_directory(plugins PLUGIN_SRC)
 
@@ -65,6 +67,8 @@ set(SERVICE_SRC
         service/log_service.hpp
         service/storage_service.cpp
         service/storage_service.hpp
+        filters/source_exist.cpp
+        filters/source_exist.hpp
 )
 
 include_directories(${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include)

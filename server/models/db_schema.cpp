@@ -6,9 +6,9 @@
 
 #include <bsoncxx/builder/basic/array.hpp>
 #include <bsoncxx/builder/stream/document.hpp>
+#include <bsoncxx/json.hpp>
 
 #include "schema_key.hpp"
-#include "utils/date.h"
 
 using namespace schema;
 using namespace bsoncxx::builder::basic;
@@ -42,46 +42,6 @@ nlohmann::json DbUser::to_json() {
                           {key::group_id, group_id.to_string()},
                           {key::create_time, create_time},
                           {key::update_time, update_time}};
-}
-
-bsoncxx::document::value DbBucket::get_document() {
-    auto document = make_document(kvp(key::bson_id, bsoncxx::oid{id}),
-                                  kvp(key::data_source, data_source),
-                                  kvp(key::bucket_name, bucket_name),
-                                  kvp(key::group_id, group_id),
-                                  kvp(key::permission_id, permission_id),
-                                  kvp(key::tags, util_delight::make_bson_array(tags)),
-                                  kvp(key::create_time, create_time),
-                                  kvp(key::update_time, update_time));
-    return std::move(document);
-}
-
-nlohmann::json DbBucket::to_json() {
-    return nlohmann::json{{key::bson_id, id.to_string()},
-                          {key::data_source, data_source.to_string()},
-                          {key::bucket_name, bucket_name},
-                          {key::group_id, group_id.to_string()},
-                          {key::permission_id, permission_id.to_string()},
-                          {key::tags, tags},
-                          {key::create_time, create_time},
-                          {key::update_time, update_time}};
-}
-DbBucket DbBucket::from_bson(const bsoncxx::document::value& value) {
-    DbBucket bucket;
-
-    bucket.id          = value.view()[key::bson_id].get_oid().value;
-    bucket.bucket_name = value.view()[key::bucket_name].get_string();
-    bucket.data_source  = value.view()[key::data_source].get_oid().value;
-    bucket.group_id    = value.view()[key::group_id].get_oid().value;
-    bucket.permission_id = value.view()[key::permission_id].get_oid().value;
-    bucket.create_time = value.view()[key::create_time].get_int32();
-    bucket.update_time = value.view()[key::update_time].get_int32();
-
-    for(const auto tag : value.view()[key::tags].get_array().value) {
-        bucket.tags.emplace_back(tag.get_string());
-    }
-
-    return bucket;
 }
 
 bsoncxx::document::value DbDataSource::get_document() {
@@ -118,11 +78,17 @@ DbDataSource DbDataSource::from_bson(const bsoncxx::document::value& value) {
 }
 
 bsoncxx::document::value DbGroup::get_document() {
+    bsoncxx::builder::basic::array buckets_builder;
+    for (const auto& [source_id, bucket_name]: buckets) {
+        auto one_bucket = make_document(kvp(key::source_id, source_id), kvp(key::bucket_name, bucket_name));
+        buckets_builder.append(one_bucket.view());
+    }
+
     auto document = make_document(kvp(key::bson_id, id),
                                   kvp(key::name, name),
                                   kvp(key::owner_id, owner_id),
                                   kvp(key::members_id, util_delight::make_bson_array(members_id)),
-                                  kvp(key::bucket_group_id, util_delight::make_bson_array(bucket_group_id)),
+                                  kvp(key::buckets, buckets_builder.view()),
                                   kvp(key::create_time, create_time),
                                   kvp(key::update_time, update_time));
     return std::move(document);
@@ -140,10 +106,10 @@ DbGroup DbGroup::from_bson(const bsoncxx::document::value& value) {
         group.members_id.emplace_back(it.get_oid().value);
     }
 
-    for (const auto  bucket_group_id_value = value.view()[key::bucket_group_id].get_array().value;
-         const auto& it: bucket_group_id_value)
-    {
-        group.bucket_group_id.emplace_back(it.get_oid().value);
+    for (const auto buckets_document = value.view()[key::buckets].get_array().value; const auto& it: buckets_document) {
+        const auto source_id   = it.get_document().view()[key::source_id].get_oid().value;
+        const auto bucket_name = it.get_document().view()[key::bucket_name].get_string().value;
+        group.buckets.emplace(source_id, bucket_name);
     }
 
     group.create_time = value.view()[key::create_time].get_int32();
@@ -157,16 +123,18 @@ nlohmann::json DbGroup::to_json() {
         members_json.emplace_back(it.to_string());
     }
 
-    nlohmann::json bucket_group_json = nlohmann::json::array();
-    for (const auto& it: bucket_group_id) {
-        bucket_group_json.emplace_back(it.to_string());
+    nlohmann::json buckets_array = nlohmann::json::array();
+    for (const auto& [source_id, bucket_name]: buckets) {
+        auto one_bucket = nlohmann::json{{key::source_id, source_id.to_string()},
+                                          {key::bucket_name, bucket_name}};
+        buckets_array.emplace_back(one_bucket);
     }
 
     return nlohmann::json{{key::bson_id, id.to_string()},
                           {key::name, name},
                           {key::owner_id, owner_id.to_string()},
                           {key::members_id, members_json},
-                          {key::bucket_group_id, bucket_group_json},
+                          {key::buckets, buckets_array},
                           {key::create_time, create_time},
                           {key::update_time, update_time}};
 }
@@ -192,26 +160,30 @@ bsoncxx::document::value DbPermission::get_document() {
                           kvp(key::permission::allow_list,
                               util_delight::make_bson_array(allow_actions.at(key::permission::allow_list))));
 
+    auto one_bucket = make_document(kvp(key::source_id, bucket.first), kvp(key::bucket_name, bucket.second));
+
     auto document = make_document(kvp(key::bson_id, bsoncxx::oid{id}),
-                                  kvp(key::name, name),
-                                  kvp(key::description, description),
-                                  kvp(key::bucket_id, bucket_id),
+                                  kvp(key::buckets, std::move(one_bucket)),
                                   kvp(key::allow_actions, std::move(permission_document)));
 
     return std::move(document);
 }
 
 nlohmann::json DbPermission::to_json() {
-    nlohmann::json allow_actions_json = nlohmann::json::object();
+    nlohmann::json allow_actions_json{};
     for (const auto& [fst, snd]: allow_actions) {
         for (const auto& it: snd) {
             allow_actions_json[fst].emplace_back(it.to_string());
         }
     }
+
+    nlohmann::json one_bucket{
+        {key::source_id, bucket.first.to_string()},
+        {key::bucket_name, bucket.second}
+    };
+
     return nlohmann::json{{key::bson_id, id.to_string()},
-                          {key::name, name},
-                          {key::description, description},
-                          {key::bucket_id, bucket_id.to_string()},
+                          {key::buckets, one_bucket},
                           {key::allow_actions, allow_actions_json},
                           {key::create_time, create_time},
                           {key::update_time, update_time}};
