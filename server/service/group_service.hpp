@@ -46,10 +46,10 @@ namespace service_delight {
 
         auto remove_one(const bsoncxx::oid &group_id) -> schema::result<bool, std::string>;
 
-        auto add_bucket(const bsoncxx::oid &group_id, const bsoncxx::oid &bucket_id)
+        auto add_bucket(const bsoncxx::oid &group_id, const std::string& bucket_name)
                 -> schema::result<bool, std::string>;
 
-        auto remove_bucket(const bsoncxx::oid &group_id, const bsoncxx::oid &bucket_id)
+        auto remove_bucket(const bsoncxx::oid &group_id, const std::string& bucket_name)
                 -> schema::result<bool, std::string>;
 
         auto get_owner(const bsoncxx::oid &group_id) -> schema::result<bsoncxx::oid, std::string>;

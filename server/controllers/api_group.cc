@@ -5,6 +5,7 @@
 #include "service/group_service.hpp"
 #include "service/log_service.hpp"
 #include "service/logger.hpp"
+#include "service/storage_service.hpp"
 #include "service/user_service.hpp"
 #include "utils/item.h"
 
@@ -332,6 +333,9 @@ void Group::remove_member(model_delight::NlohmannJsonRequestPtr        &&req,
     }
 }
 
+// 感觉自己有点呆，在写remove_bucket的时候发现自己溜了一个remove_bucket的函数接口，但是没记得自己写。
+// 跳转回去看了一眼发现自己add_bucket的接口也没有实现。突然冷汗出来了，那自己的这个controller怎么完成的。
+// 看了一眼发现是直接获取了group在里面修改了然后update --cvrain 2024.11.28
 void Group::add_bucket(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
     try {
         const auto &json_body   = fromRequest<nlohmann::json>(*req);
@@ -372,6 +376,7 @@ void Group::add_bucket(const HttpRequestPtr &req, std::function<void(const HttpR
         operation_log.current_state = group.to_json().dump();
         operation_log.source_id     = bsoncxx::oid{source_id};
         operation_log.user_id       = bsoncxx::oid{user_id};
+        operation_log.request_ip    = req->getPeerAddr().toIp();
         service_delight::LogService::get_instance().record_operation(&operation_log);
     }
     catch (const nlohmann::detail::exception &exception) {
@@ -395,13 +400,79 @@ void Group::add_bucket(const HttpRequestPtr &req, std::function<void(const HttpR
                                                     spdlog::level::err,
                                                     "Group::add_bucket: std::exception: {}",
                                                     exception.what());
-        model_delight::BasicResponse response{
-                .code = k500InternalServerError,
-        .message = "k500InternalServerError",
-        .result = exception.what(),
-        .data = {}};
+        model_delight::BasicResponse response{.code    = k500InternalServerError,
+                                              .message = "k500InternalServerError",
+                                              .result  = exception.what(),
+                                              .data    = {}};
         callback(newHttpJsonResponse(response.to_json()));
     }
+}
+void Group::remove_bucket(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
+    try {
+        const auto &json_body   = fromRequest<nlohmann::json>(*req);
+        const auto &user_id     = json_body.at(schema::key::user_id).get<std::string>();
+        const auto &group_id    = json_body.at(schema::key::group_id).get<std::string>();
+        const auto &source_id   = json_body.at(schema::key::source_id).get<std::string>();
+        const auto &bucket_name = json_body.at(schema::key::bucket_name).get<std::string>();
+
+        const auto [remove_result, remove_result_error] =
+                service_delight::GroupService::get_instance().remove_bucket(bsoncxx::oid{source_id}, bucket_name);
+        if (not remove_result.has_value()) {
+            service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
+                                                        spdlog::level::err,
+                                                        "Group::remove_bucket: Failed to remove bucket: {}",
+                                                        remove_result_error);
+            throw exception::BaseException{model_delight::BasicResponse{
+                    .code    = k500InternalServerError,
+                    .message = "Failed to remove bucket",
+                    .result  = remove_result_error,
+            }};
+        }
+        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
+                                                    spdlog::level::info,
+                                                    "Group::remove_bucket: Successfully removed bucket");
+        model_delight::BasicResponse response{
+                .code = k200OK, .message = "k200OK", .result = "Success to remove bucket", .data = {}};
+        callback(newHttpJsonResponse(response.to_json()));
+        schema::DbOperationLog operation_log{};
+        operation_log.action        = "remove_bucket";
+        operation_log.bucket_name   = bucket_name;
+        operation_log.current_state = "removed";
+        operation_log.source_id     = bsoncxx::oid{source_id};
+        operation_log.user_id       = bsoncxx::oid{user_id};
+        operation_log.request_ip    = req->getPeerAddr().toIp();
+        service_delight::LogService::get_instance().record_operation(&operation_log);
+    }
+    catch (const nlohmann::detail::exception &exception) {
+        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
+                                                    spdlog::level::err,
+                                                    "Group::remove_bucket: nlohmann::detail::exception: {}",
+                                                    exception.what());
+        model_delight::BasicResponse response{
+                .code = k400BadRequest, .message = "k400BadRequest", .result = exception.what(), .data = {}};
+        callback(newHttpJsonResponse(response.to_json()));
+    }
+    catch (const exception::BaseException &exception) {
+        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
+                                                    spdlog::level::err,
+                                                    "Group::remove_bucket: exception: {}",
+                                                    exception.what());
+        callback(newHttpJsonResponse(exception.response().to_json()));
+    }
+    catch (const std::exception &exception) {
+        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
+                                                    spdlog::level::err,
+                                                    "Group::remove_bucket: std::exception: {}",
+                                                    exception.what());
+        model_delight::BasicResponse response{.code    = k500InternalServerError,
+                                              .message = "k500InternalServerError",
+                                              .result  = exception.what(),
+                                              .data    = {}};
+        callback(newHttpJsonResponse(response.to_json()));
+    }
+}
+
+void Group::list_bucket(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback){
 }
 
 

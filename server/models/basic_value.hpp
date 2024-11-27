@@ -56,6 +56,7 @@ namespace model_delight::basic_value {
         constexpr auto UserExist  = "drogon::middleware::UserExist";
         constexpr auto GroupExist = "drogon::middleware::GroupExist";
         constexpr auto SourceExist = "drogon::middleware::SourceExist";
+        constexpr auto GroupOwner = "drogon::middleware::GroupOwner";
 
     }  // namespace middleware
 }  // namespace model_delight::basic_value

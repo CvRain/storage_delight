@@ -345,6 +345,15 @@ namespace service_delight {
         }
     }
 
+    // todo
+    auto GroupService::add_bucket(const bsoncxx::oid &group_id, const std::string &bucket_name)
+            -> schema::result<bool, std::string> {}
+
+    //todo
+    auto GroupService::remove_bucket(const bsoncxx::oid &group_id, const std::string &bucket_name)
+            -> schema::result<bool, std::string>{
+}
+
     auto GroupService::get_owner(const bsoncxx::oid &group_id) -> schema::result<bsoncxx::oid, std::string> {
         Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::get_group_owner");
         try {
@@ -355,10 +364,8 @@ namespace service_delight {
             return std::make_pair(std::nullopt, "GroupService::get_group_owner failed");
         }
         catch (const std::exception &e) {
-            Logger::get_instance().log(BasicLogger | ConsoleLogger,
-                                       spdlog::level::err,
-                                       "GroupService::get_group_owner: {}",
-                                       e.what());
+            Logger::get_instance().log(
+                    BasicLogger | ConsoleLogger, spdlog::level::err, "GroupService::get_group_owner: {}", e.what());
             return std::make_pair(std::nullopt, e.what());
         }
     }

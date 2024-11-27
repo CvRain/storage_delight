@@ -31,6 +31,8 @@ set(FILTER_SRC
         filters/user_exist.hpp
         filters/group_exist.cpp
         filters/group_exist.hpp
+        filters/group_owner.cpp
+        filters/group_owner.hpp
 )
 aux_source_directory(plugins PLUGIN_SRC)
 
