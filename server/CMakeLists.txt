@@ -54,6 +54,8 @@ set(UTILS_SRC
         utils/string.cpp
         utils/singleton_prototype.hpp
         utils/item.h
+        utils/exception_handler.cpp
+        utils/exception_handler.hpp
 )
 
 set(SERVICE_SRC

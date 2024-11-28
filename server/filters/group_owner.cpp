@@ -8,6 +8,7 @@
 #include "schema_key.hpp"
 #include "service/group_service.hpp"
 #include "service/logger.hpp"
+#include "utils/exception_handler.hpp"
 
 void drogon::middleware::GroupOwner::invoke(const HttpRequestPtr&    req,
                                             MiddlewareNextCallback&& nextCb,
@@ -40,31 +41,7 @@ void drogon::middleware::GroupOwner::invoke(const HttpRequestPtr&    req,
                                                     group_id);
         nextCb([&, mcb = std::move(mcb)](const HttpResponsePtr& resp) { mcb(resp); });
     }
-    catch (const nlohmann::detail::exception& exception) {
-        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
-                                                    spdlog::level::err,
-                                                    "Error in middleware::GroupExist::invoke {}",
-                                                    exception.what());
-        model_delight::BasicResponse response{
-                .code = k400BadRequest, .message = "k400BadRequest", .result = exception.what(), .data = {}};
-        mcb(newHttpJsonResponse(std::move(response.to_json())));
-    }
-    catch (const exception::BaseException& exception) {
-        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
-                                                    spdlog::level::err,
-                                                    "Error in middleware::GroupExist::invoke {}",
-                                                    exception.what());
-        mcb(newHttpJsonResponse(std::move(exception.response().to_json())));
-    }
-    catch (const std::exception& exception) {
-        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
-                                                    spdlog::level::err,
-                                                    "Error in middleware::GroupExist::invoke {}",
-                                                    exception.what());
-        model_delight::BasicResponse response{.code    = k500InternalServerError,
-                                              .message = "k500InternalServerError",
-                                              .result  = exception.what(),
-                                              .data    = {}};
-        mcb(newHttpJsonResponse(std::move(response.to_json())));
+    catch (const std::exception &exception) {
+        exception::ExceptionHandler::handle(req, std::move(mcb), exception);
     }
 }

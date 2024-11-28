@@ -14,6 +14,7 @@ namespace api {
         METHOD_LIST_BEGIN
         METHOD_ADD(Bucket::add_bucket, "/add", Options, Put);
         METHOD_ADD(Bucket::list_bucket, "/list", Options, Get);
+        METHOD_ADD(Bucket::remove_bucket, "/remove", Options, Delete);
         METHOD_LIST_END
 
         static void add_bucket(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);

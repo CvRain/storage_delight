@@ -68,7 +68,7 @@ namespace exception {
                 .code = error.code, .message = error.message, .result = error.result, .data = error.data}) {}
 
     inline const char* BaseException::what() const noexcept{
-        return base_error.message.data();
+        return base_error.result.data();
     }
 
     inline model_delight::BasicResponse BaseException::response() const{

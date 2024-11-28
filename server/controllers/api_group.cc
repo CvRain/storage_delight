@@ -7,6 +7,7 @@
 #include "service/logger.hpp"
 #include "service/storage_service.hpp"
 #include "service/user_service.hpp"
+#include "utils/exception_handler.hpp"
 #include "utils/item.h"
 
 using namespace api;
@@ -349,6 +350,30 @@ void Group::add_bucket(const HttpRequestPtr &req, std::function<void(const HttpR
 
         auto        group                = find_group.value();
         const auto &group_previous_state = group.to_json().dump();
+
+        // 检查bucket name是否存在于source中
+        const auto client = service_delight::StorageService::get_instance().get_client(bsoncxx::oid{source_id});
+        if (not client.has_value() || client.value() == nullptr) {
+            throw exception::BaseException{model_delight::BasicResponse{.code    = k500InternalServerError,
+                                                                        .message = "k500InternalServerError",
+                                                                        .result  = "Failed to get client"}};
+        }
+
+        const auto bucket_list_response = client.value()->get_bucket_operation()->list_buckets();
+        if (!bucket_list_response) {
+            throw exception::BaseException{
+                    model_delight::BasicResponse{.code    = k500InternalServerError,
+                                                 .message = "k500InternalServerError",
+                                                 .result  = bucket_list_response.Error().String()}};
+        }
+        const auto find_result = std::ranges::find_if(bucket_list_response.buckets, [&bucket_name](const auto &bucket) {
+            return bucket.name == bucket_name;
+        });
+        if (find_result == bucket_list_response.buckets.end()) {
+            throw exception::BaseException{model_delight::BasicResponse{
+                    .code = k400BadRequest, .message = "Bucket not found", .result = "Bucket not found"}};
+        }
+
         group.buckets.insert(std::make_pair(bsoncxx::oid(source_id), bucket_name));
 
         if (const auto &[update_result, update_error] =
@@ -381,32 +406,8 @@ void Group::add_bucket(const HttpRequestPtr &req, std::function<void(const HttpR
         operation_log.previous_state = group_previous_state;
         service_delight::LogService::get_instance().record_operation(&operation_log);
     }
-    catch (const nlohmann::detail::exception &exception) {
-        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
-                                                    spdlog::level::err,
-                                                    "Group::add_bucket: nlohmann::detail::exception: {}",
-                                                    exception.what());
-        model_delight::BasicResponse response{
-                .code = k400BadRequest, .message = "k400BadRequest", .result = exception.what(), .data = {}};
-        callback(newHttpJsonResponse(response.to_json()));
-    }
-    catch (const exception::BaseException &exception) {
-        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
-                                                    spdlog::level::err,
-                                                    "Group::add_bucket: exception: {}",
-                                                    exception.what());
-        callback(newHttpJsonResponse(exception.response().to_json()));
-    }
     catch (const std::exception &exception) {
-        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
-                                                    spdlog::level::err,
-                                                    "Group::add_bucket: std::exception: {}",
-                                                    exception.what());
-        model_delight::BasicResponse response{.code    = k500InternalServerError,
-                                              .message = "k500InternalServerError",
-                                              .result  = exception.what(),
-                                              .data    = {}};
-        callback(newHttpJsonResponse(response.to_json()));
+        exception::ExceptionHandler::handle(req, std::move(callback), exception);
     }
 }
 
@@ -449,32 +450,8 @@ void Group::remove_bucket(const HttpRequestPtr &req, std::function<void(const Ht
         operation_log.request_ip     = req->getPeerAddr().toIp();
         service_delight::LogService::get_instance().record_operation(&operation_log);
     }
-    catch (const nlohmann::detail::exception &exception) {
-        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
-                                                    spdlog::level::err,
-                                                    "Group::remove_bucket: nlohmann::detail::exception: {}",
-                                                    exception.what());
-        model_delight::BasicResponse response{
-                .code = k400BadRequest, .message = "k400BadRequest", .result = exception.what(), .data = {}};
-        callback(newHttpJsonResponse(response.to_json()));
-    }
-    catch (const exception::BaseException &exception) {
-        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
-                                                    spdlog::level::err,
-                                                    "Group::remove_bucket: exception: {}",
-                                                    exception.what());
-        callback(newHttpJsonResponse(exception.response().to_json()));
-    }
     catch (const std::exception &exception) {
-        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
-                                                    spdlog::level::err,
-                                                    "Group::remove_bucket: std::exception: {}",
-                                                    exception.what());
-        model_delight::BasicResponse response{.code    = k500InternalServerError,
-                                              .message = "k500InternalServerError",
-                                              .result  = exception.what(),
-                                              .data    = {}};
-        callback(newHttpJsonResponse(response.to_json()));
+        exception::ExceptionHandler::handle(req, std::move(callback), exception);
     }
 }
 

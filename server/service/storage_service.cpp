@@ -334,6 +334,13 @@ auto StorageService::get_client(const bsoncxx::oid &source_id)
         if (client_group.is_exist(source_id)) {
             Logger::get_instance().log(
                     ConsoleLogger, "StorageService::get_client {} client exist", source_id.to_string());
+            if (const auto client = client_group.get_client(source_id); client == nullptr) {
+                Logger::get_instance().log(ConsoleLogger | BasicLogger,
+                                           spdlog::level::err,
+                                           "StorageService::get_client {} client null",
+                                           source_id.to_string());
+                return std::nullopt;
+            }
             return client_group.get_client(source_id);
         }
         return std::nullopt;
