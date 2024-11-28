@@ -25,6 +25,11 @@ cmake --preset default-linux-release
 ```bash
 cmake --build --preset default-linux-release
 ```
+
+## 辅助连接
+- api接口文档 https://apifox.com/apidoc/shared-6e6fa672-e83e-4f4b-b501-6b02b9105941
+- MinIO地址 https://dl.min.io/server/minio/release/
+
 ## 简介
 存储乐事构建了一套独立的对象存储服套件，依托于MinIO的存储服务和特性，项目的搭建并不困难。
 由于项目采用了前后端分离的结构，所以可以快乐的将服务部署在不同的服务器上，单独部署更加方便。 

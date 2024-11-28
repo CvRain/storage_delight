@@ -347,7 +347,8 @@ void Group::add_bucket(const HttpRequestPtr &req, std::function<void(const HttpR
         const auto &[find_group, find_group_error] =
                 service_delight::GroupService::get_instance().get_one(bsoncxx::oid{group_id});
 
-        auto group = find_group.value();
+        auto        group                = find_group.value();
+        const auto &group_previous_state = group.to_json().dump();
         group.buckets.insert(std::make_pair(bsoncxx::oid(source_id), bucket_name));
 
         if (const auto &[update_result, update_error] =
@@ -371,12 +372,13 @@ void Group::add_bucket(const HttpRequestPtr &req, std::function<void(const HttpR
         callback(newHttpJsonResponse(response.to_json()));
 
         schema::DbOperationLog operation_log{};
-        operation_log.action        = "add_bucket";
-        operation_log.bucket_name   = group.name;
-        operation_log.current_state = group.to_json().dump();
-        operation_log.source_id     = bsoncxx::oid{source_id};
-        operation_log.user_id       = bsoncxx::oid{user_id};
-        operation_log.request_ip    = req->getPeerAddr().toIp();
+        operation_log.action         = "add_bucket";
+        operation_log.bucket_name    = group.name;
+        operation_log.current_state  = group.to_json().dump();
+        operation_log.source_id      = bsoncxx::oid{source_id};
+        operation_log.user_id        = bsoncxx::oid{user_id};
+        operation_log.request_ip     = req->getPeerAddr().toIp();
+        operation_log.previous_state = group_previous_state;
         service_delight::LogService::get_instance().record_operation(&operation_log);
     }
     catch (const nlohmann::detail::exception &exception) {
@@ -407,6 +409,7 @@ void Group::add_bucket(const HttpRequestPtr &req, std::function<void(const HttpR
         callback(newHttpJsonResponse(response.to_json()));
     }
 }
+
 void Group::remove_bucket(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
     try {
         const auto &json_body   = fromRequest<nlohmann::json>(*req);
@@ -415,32 +418,35 @@ void Group::remove_bucket(const HttpRequestPtr &req, std::function<void(const Ht
         const auto &source_id   = json_body.at(schema::key::source_id).get<std::string>();
         const auto &bucket_name = json_body.at(schema::key::bucket_name).get<std::string>();
 
-        const auto [remove_result, remove_result_error] =
-                service_delight::GroupService::get_instance().remove_bucket(bsoncxx::oid{source_id}, bucket_name);
-        if (not remove_result.has_value()) {
+        auto        group = service_delight::GroupService::get_instance().get_one(bsoncxx::oid{group_id}).first.value();
+        const auto &group_previous_state = group.to_json().dump();
+        group.buckets.erase(bsoncxx::oid{source_id});
+
+        if (const auto &[update_result, update_error] =
+                    service_delight::GroupService::get_instance().update_one(&group);
+            not update_result.has_value())
+        {
             service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
                                                         spdlog::level::err,
-                                                        "Group::remove_bucket: Failed to remove bucket: {}",
-                                                        remove_result_error);
-            throw exception::BaseException{model_delight::BasicResponse{
-                    .code    = k500InternalServerError,
-                    .message = "Failed to remove bucket",
-                    .result  = remove_result_error,
-            }};
+                                                        "Group::remove_bucket: Failed to update group: {}",
+                                                        update_error);
         }
+
         service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
                                                     spdlog::level::info,
                                                     "Group::remove_bucket: Successfully removed bucket");
         model_delight::BasicResponse response{
                 .code = k200OK, .message = "k200OK", .result = "Success to remove bucket", .data = {}};
         callback(newHttpJsonResponse(response.to_json()));
+
         schema::DbOperationLog operation_log{};
-        operation_log.action        = "remove_bucket";
-        operation_log.bucket_name   = bucket_name;
-        operation_log.current_state = "removed";
-        operation_log.source_id     = bsoncxx::oid{source_id};
-        operation_log.user_id       = bsoncxx::oid{user_id};
-        operation_log.request_ip    = req->getPeerAddr().toIp();
+        operation_log.action         = "remove_bucket";
+        operation_log.bucket_name    = bucket_name;
+        operation_log.current_state  = group.to_json().dump();
+        operation_log.previous_state = group_previous_state;
+        operation_log.source_id      = bsoncxx::oid{source_id};
+        operation_log.user_id        = bsoncxx::oid{user_id};
+        operation_log.request_ip     = req->getPeerAddr().toIp();
         service_delight::LogService::get_instance().record_operation(&operation_log);
     }
     catch (const nlohmann::detail::exception &exception) {
