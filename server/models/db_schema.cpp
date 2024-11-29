@@ -77,11 +77,41 @@ DbDataSource DbDataSource::from_bson(const bsoncxx::document::value& value) {
     return dataSource;
 }
 
+/**
+ * 获得Bson格式的DbGroup
+ <code>
+    {
+      "_id": {
+        "$oid": "67459983948109dbd1079575"
+      },
+      "name": "group for cvrain",
+      "owner_id": {
+        "$oid": "67459983948109dbd1079573"
+      },
+      "members_id": [
+        {
+          "$oid": "67459978948109dbd1079568"
+        },
+        {
+          "$oid": "67459986948109dbd107957e"
+        }
+      ],
+      "buckets": [
+        {"source_id":"", "bucket_name":"" },
+        {"source_id":"", "bucket_name":"" },
+      ],
+      "create_time": 1732614531,
+      "update_time": 1732614531
+    }
+ </code>
+ */
 bsoncxx::document::value DbGroup::get_document() {
     bsoncxx::builder::basic::array buckets_builder;
     for (const auto& [source_id, bucket_name]: buckets) {
-        auto one_bucket = make_document(kvp(key::source_id, source_id), kvp(key::bucket_name, bucket_name));
-        buckets_builder.append(one_bucket.view());
+        bsoncxx::builder::basic::document bucket_document;
+        bucket_document.append(kvp(key::source_id, source_id));
+        bucket_document.append(kvp(key::bucket_name, bucket_name));
+        buckets_builder.append(bucket_document.extract());
     }
 
     auto document = make_document(kvp(key::bson_id, id),
@@ -94,26 +124,29 @@ bsoncxx::document::value DbGroup::get_document() {
     return std::move(document);
 }
 
+/**
+ * 将 bson数据转换为DbGroup对象
+ * @param value 接受来自DbGroup collection的bson数据
+ * @return
+ */
 DbGroup DbGroup::from_bson(const bsoncxx::document::value& value) {
     DbGroup group;
-    group.id       = value.view()[key::bson_id].get_oid().value;
-    group.name     = value.view()[key::name].get_string();
-    group.owner_id = value.view()[key::owner_id].get_oid().value;
-
-    for (const auto  members_id_value = value.view()[key::members_id].get_array().value;
-         const auto& it: members_id_value)
-    {
-        group.members_id.emplace_back(it.get_oid().value);
-    }
-
-    for (const auto buckets_document = value.view()[key::buckets].get_array().value; const auto& it: buckets_document) {
-        const auto source_id   = it.get_document().view()[key::source_id].get_oid().value;
-        const auto bucket_name = it.get_document().view()[key::bucket_name].get_string().value;
-        group.buckets.emplace(source_id, bucket_name);
-    }
-
+    group.id          = value.view()[key::bson_id].get_oid().value;
+    group.name        = value.view()[key::name].get_string();
+    group.owner_id    = value.view()[key::owner_id].get_oid().value;
     group.create_time = value.view()[key::create_time].get_int32();
     group.update_time = value.view()[key::update_time].get_int32();
+
+    for (const auto& bucket_view: value.view().find(key::buckets)->get_array().value) {
+        auto bucket_name = bucket_view[key::bucket_name].get_string();
+        auto source_id   = bucket_view[key::source_id].get_oid().value;
+        group.buckets.emplace_back(source_id, bucket_name);
+    }
+
+    for (const auto& member_id_view: value.view().find(key::members_id)->get_array().value) {
+        group.members_id.emplace_back(member_id_view.get_oid().value);
+    }
+
     return group;
 }
 
@@ -125,9 +158,8 @@ nlohmann::json DbGroup::to_json() {
 
     nlohmann::json buckets_array = nlohmann::json::array();
     for (const auto& [source_id, bucket_name]: buckets) {
-        auto one_bucket = nlohmann::json{{key::source_id, source_id.to_string()},
-                                          {key::bucket_name, bucket_name}};
-        buckets_array.emplace_back(one_bucket);
+        buckets_array.emplace_back(
+                nlohmann::json{{key::source_id, source_id.to_string()}, {key::bucket_name, bucket_name}});
     }
 
     return nlohmann::json{{key::bson_id, id.to_string()},
@@ -177,10 +209,7 @@ nlohmann::json DbPermission::to_json() {
         }
     }
 
-    nlohmann::json one_bucket{
-        {key::source_id, bucket.first.to_string()},
-        {key::bucket_name, bucket.second}
-    };
+    nlohmann::json one_bucket{{key::source_id, bucket.first.to_string()}, {key::bucket_name, bucket.second}};
 
     return nlohmann::json{{key::bson_id, id.to_string()},
                           {key::buckets, one_bucket},

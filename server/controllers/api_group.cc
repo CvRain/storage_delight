@@ -369,12 +369,20 @@ void Group::add_bucket(const HttpRequestPtr &req, std::function<void(const HttpR
         const auto find_result = std::ranges::find_if(bucket_list_response.buckets, [&bucket_name](const auto &bucket) {
             return bucket.name == bucket_name;
         });
+
         if (find_result == bucket_list_response.buckets.end()) {
             throw exception::BaseException{model_delight::BasicResponse{
                     .code = k400BadRequest, .message = "Bucket not found", .result = "Bucket not found"}};
         }
 
-        group.buckets.insert(std::make_pair(bsoncxx::oid(source_id), bucket_name));
+
+        if (not std::ranges::any_of(group.buckets, [&](const auto &bucket) {
+                return bucket.first == bsoncxx::oid{source_id} && bucket.second == bucket_name;
+            }))
+        {
+            group.buckets.emplace_back(bsoncxx::oid{source_id}, bucket_name);
+        }
+
 
         if (const auto &[update_result, update_error] =
                     service_delight::GroupService::get_instance().update_one(&group);
@@ -421,7 +429,13 @@ void Group::remove_bucket(const HttpRequestPtr &req, std::function<void(const Ht
 
         auto        group = service_delight::GroupService::get_instance().get_one(bsoncxx::oid{group_id}).first.value();
         const auto &group_previous_state = group.to_json().dump();
-        group.buckets.erase(bsoncxx::oid{source_id});
+
+        // 使用 std::remove_if 和 vector::erase 来删除元素
+        auto new_end = std::ranges::remove_if(group.buckets, [&](const auto &bucket) {
+            return bucket.first == bsoncxx::oid{source_id} && bucket.second == bucket_name;
+        }).begin();
+
+        group.buckets.erase(new_end, group.buckets.end());
 
         if (const auto &[update_result, update_error] =
                     service_delight::GroupService::get_instance().update_one(&group);
@@ -457,5 +471,3 @@ void Group::remove_bucket(const HttpRequestPtr &req, std::function<void(const Ht
 
 void Group::list_bucket(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback){
 }
-
-

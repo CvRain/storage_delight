@@ -4,9 +4,13 @@
 #include "service/log_service.hpp"
 #include "service/logger.hpp"
 #include "service/storage_service.hpp"
+#include "utils/exception_handler.hpp"
 
 using namespace api;
 
+/**
+ * 为用户组添加存储桶
+ */
 void Bucket::add_bucket(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback) {
     service_delight::Logger::get_instance().log(
             service_delight::ConsoleLogger, spdlog::level::info, "Enter Bucket::add_bucket");
@@ -65,36 +69,14 @@ void Bucket::add_bucket(const HttpRequestPtr& req, std::function<void(const Http
         operation_log.timestamp   = util_delight::Date::get_current_timestamp_32();
         service_delight::LogService::get_instance().record_operation(&operation_log);
     }
-    catch (const nlohmann::detail::out_of_range& exception) {
-        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
-                                                    spdlog::level::err,
-                                                    "Error in Bucket::add_bucket: {}",
-                                                    exception.what());
-        auto response    = model_delight::BasicResponse{};
-        response.code    = k400BadRequest;
-        response.message = "k400BadRequest";
-        response.result  = exception.what();
-        callback(newHttpJsonResponse(response.to_json()));
-    }
-    catch (const exception::BaseException& exception) {
-        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
-                                                    spdlog::level::err,
-                                                    "Error in Bucket::add_bucket: {}",
-                                                    exception.what());
-        callback(newHttpJsonResponse(exception.response().to_json()));
-    }
     catch (const std::exception& exception) {
-        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
-                                                    spdlog::level::err,
-                                                    "Error in Bucket::add_bucket: {}",
-                                                    exception.what());
-        auto response    = model_delight::BasicResponse{};
-        response.code    = k500InternalServerError;
-        response.message = "k500InternalServerError";
-        response.result  = exception.what();
-        callback(newHttpJsonResponse(response.to_json()));
+        exception::ExceptionHandler::handle(req, std::move(callback), exception);
     }
 }
+
+/**
+ * 列出某个数据源下的所有桶
+ */
 void Bucket::list_bucket(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback) {
     service_delight::Logger::get_instance().log(
             service_delight::ConsoleLogger, spdlog::level::info, "Start in Bucket::list_bucket");
@@ -137,25 +119,14 @@ void Bucket::list_bucket(const HttpRequestPtr& req, std::function<void(const Htt
         service_delight::Logger::get_instance().log(
                 service_delight::ConsoleLogger, spdlog::level::info, "Success in Bucket::list_bucket");
     }
-    catch (const exception::BaseException& exception) {
-        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
-                                                    spdlog::level::err,
-                                                    "Error in Bucket::list_bucket: {}",
-                                                    exception.what());
-        callback(newHttpJsonResponse(exception.response().to_json()));
-    }
     catch (const std::exception& exception) {
-        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
-                                                    spdlog::level::err,
-                                                    "Error in Bucket::list_bucket: {}",
-                                                    exception.what());
-        auto response = model_delight::BasicResponse{.code    = k400BadRequest,
-                                                     .message = "k400BadRequest",
-                                                     .result  = exception.what(),
-                                                     .data    = nlohmann::json{}};
-        callback(newHttpJsonResponse(response.to_json()));
+        exception::ExceptionHandler::handle(req, std::move(callback), exception);
     }
 }
+
+/**
+ * 删除某个数据源下的某个桶
+ */
 void Bucket::remove_bucket(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback) {
     service_delight::Logger::get_instance().log(
             service_delight::ConsoleLogger, spdlog::level::info, "Start in Bucket::remove_bucket");
@@ -206,22 +177,7 @@ void Bucket::remove_bucket(const HttpRequestPtr& req, std::function<void(const H
 
         service_delight::LogService::get_instance().record_operation(&operation_log);
     }
-    catch (const exception::BaseException& exception) {
-        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
-                                                    spdlog::level::err,
-                                                    "Error in Bucket::remove_bucket: {}",
-                                                    exception.what());
-        callback(newHttpJsonResponse(std::move(exception.response().to_json())));
-    }
     catch (const std::exception& exception) {
-        service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
-                                                    spdlog::level::err,
-                                                    "Error in Bucket::remove_bucket: {}",
-                                                    exception.what());
-        auto response = model_delight::BasicResponse{.code    = k400BadRequest,
-                                                     .message = "k400BadRequest",
-                                                     .result  = exception.what(),
-                                                     .data    = nlohmann::json{}};
-        callback(newHttpJsonResponse(std::move(response.to_json())));
+        exception::ExceptionHandler::handle(req, std::move(callback), exception);
     }
 }

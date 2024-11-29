@@ -72,7 +72,7 @@ namespace schema {
         std::string name{};
         bsoncxx::oid owner_id{};
         std::vector<bsoncxx::oid> members_id{};
-        std::map<bsoncxx::oid, std::string> buckets{};  //桶： 包括存储源id,桶名称
+        std::vector<std::pair<bsoncxx::oid, std::string>> buckets{};  //桶： 包括存储源id,桶名称
         int32_t update_time;
     };
 
