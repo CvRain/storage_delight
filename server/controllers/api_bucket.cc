@@ -79,7 +79,7 @@ void Bucket::add_bucket(const HttpRequestPtr& req, std::function<void(const Http
  */
 void Bucket::list_bucket(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback) {
     service_delight::Logger::get_instance().log(
-            service_delight::ConsoleLogger, spdlog::level::info, "Start in Bucket::list_bucket");
+            service_delight::ConsoleLogger, spdlog::level::debug, "Start in Bucket::list_bucket");
     try {
         const auto request_body     = fromRequest<nlohmann::json>(*req);
         auto&& [user_id, source_id] = std::make_tuple(request_body.at(schema::key::user_id).get<std::string>(),
@@ -129,7 +129,7 @@ void Bucket::list_bucket(const HttpRequestPtr& req, std::function<void(const Htt
  */
 void Bucket::remove_bucket(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback) {
     service_delight::Logger::get_instance().log(
-            service_delight::ConsoleLogger, spdlog::level::info, "Start in Bucket::remove_bucket");
+            service_delight::ConsoleLogger, spdlog::level::debug, "Start in Bucket::remove_bucket");
     try {
         const auto request_body     = fromRequest<nlohmann::json>(*req);
         auto&& [user_id, source_id] = std::make_tuple(request_body.at(schema::key::user_id).get<std::string>(),
@@ -176,6 +176,57 @@ void Bucket::remove_bucket(const HttpRequestPtr& req, std::function<void(const H
         operation_log.user_id       = bsoncxx::oid{user_id};
 
         service_delight::LogService::get_instance().record_operation(&operation_log);
+    }
+    catch (const std::exception& exception) {
+        exception::ExceptionHandler::handle(req, std::move(callback), exception);
+    }
+}
+
+void Bucket::all_bucket(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback) {
+    service_delight::Logger::get_instance().log(
+            service_delight::ConsoleLogger, spdlog::level::debug, "Start in Bucket::all_bucket");
+    try {
+        const auto& [sources, error] = service_delight::StorageService::get_instance().list_all_storage_ids();
+        if (not sources.has_value()) {
+            service_delight::Logger::get_instance().log(
+                    service_delight::ConsoleLogger, spdlog::level::err, "Bucket::all_bucket: {}", error);
+            throw exception::BaseException{model_delight::BasicResponse{.code    = k500InternalServerError,
+                                                                        .message = "k500InternalServerError",
+                                                                        .result  = error,
+                                                                        .data    = {}}};
+        }
+        nlohmann::json data;
+        for (const auto& source: sources.value()) {
+            const auto client = service_delight::StorageService::get_instance().get_client(source);
+            if (not client.has_value() || client.value() == nullptr) {
+                service_delight::Logger::get_instance().log(
+                        service_delight::ConsoleLogger, spdlog::level::err, "Bucket::all_bucket: client not found");
+                throw exception::BaseException{
+                        model_delight::BasicResponse{.code    = k400BadRequest,
+                                                     .message = "k400BadRequest",
+                                                     .result  = "Error in Bucket::all_bucket: client not found",
+                                                     .data    = {}}};
+            }
+            const auto bucket_list_response = client.value()->get_bucket_operation()->list_buckets();
+            if (not bucket_list_response) {
+                service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
+                                                            spdlog::level::err,
+                                                            "Bucket::all_bucket: {}",
+                                                            bucket_list_response.Error().String());
+                throw exception::BaseException{
+                        model_delight::BasicResponse{.code    = k400BadRequest,
+                                                     .message = "k400BadRequest",
+                                                     .result  = bucket_list_response.Error().String()}};
+            }
+            const auto& buckets    = bucket_list_response.buckets;
+            const auto  source_str = source.to_string();
+            for (const auto& it: buckets) {
+                data.push_back(
+                        nlohmann::json{{schema::key::source_id, source_str}, {schema::key::bucket_name, it.name}});
+            }
+        }
+        model_delight::BasicResponse response{.code = k200OK, .message = "k200OK", .result = "Success", .data = data};
+        callback(newHttpJsonResponse(std::move(response.to_json())));
     }
     catch (const std::exception& exception) {
         exception::ExceptionHandler::handle(req, std::move(callback), exception);

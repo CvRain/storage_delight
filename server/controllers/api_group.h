@@ -38,8 +38,13 @@ namespace api {
                    model_delight::basic_value::middleware::SourceExist,
                    model_delight::basic_value::middleware::GroupOwner);
 
-        METHOD_ADD(
-                Group::list_bucket, "/buckets/list", Options, Get, model_delight::basic_value::middleware::UserExist);
+        METHOD_ADD(Group::list_bucket,
+                   "/buckets/list",
+                   Options,
+                   Get,
+                   model_delight::basic_value::middleware::UserExist,
+                   model_delight::basic_value::middleware::GroupExist,
+                   model_delight::basic_value::middleware::GroupOwner);
 
         METHOD_LIST_END
         static void add_member(model_delight::NlohmannJsonRequestPtr        &&req,

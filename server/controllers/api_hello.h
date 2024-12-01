@@ -22,6 +22,8 @@ namespace api {
         METHOD_ADD(Hello::get_permission_model, "/schema/permission", Options, Get);
         METHOD_ADD(Hello::get_operation_model, "/schema/operation", Options, Get);
         METHOD_ADD(Hello::get_date_source_model, "/schema/data_source", Options, Get);
+        METHOD_ADD(Hello::object_upload, "/upload", Options, Post);
+        METHOD_ADD(Hello::object_download, "/download", Options, Get);
         METHOD_LIST_END
 
         static void say(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
@@ -51,5 +53,9 @@ namespace api {
 
         static void get_date_source_model(model_delight::NlohmannJsonRequestPtr &&ptr,
             std::function<void(const HttpResponsePtr &)> &&callback);
+
+        static void object_upload(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
+
+        static void object_download(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
     };
 } // namespace api

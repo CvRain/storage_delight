@@ -121,3 +121,25 @@ void Hello::get_date_source_model(model_delight::NlohmannJsonRequestPtr        &
     data_source.is_https    = false;
     callback(model_delight::NlohmannResponse::new_nlohmann_json_response(data_source.to_json()));
 }
+
+void Hello::object_upload(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
+    MultiPartParser multi_part_parser;
+    multi_part_parser.parse(req);
+    auto &files = multi_part_parser.getFiles();
+    if (files.empty()) {
+        model_delight::BasicResponse response{
+                .code = k400BadRequest, .message = "k400BadRequest", .result = "No file found"};
+        callback(newHttpJsonResponse(response.to_json()));
+    }
+
+    nlohmann::json file_info;
+    for (const auto &file: files) {
+        file_info.push_back(
+                nlohmann::json{{"name", file.getFileName()}, {"size", file.fileLength()}, {"md5", file.getMd5()}});
+    }
+    model_delight::BasicResponse response{
+            .code = k202Accepted, .message = "k202Accepted", .result = "OK", .data = std::move(file_info)};
+    callback(newHttpJsonResponse(response.to_json()));
+}
+
+void Hello::object_download(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {}

@@ -338,6 +338,8 @@ void Group::remove_member(model_delight::NlohmannJsonRequestPtr        &&req,
 // 跳转回去看了一眼发现自己add_bucket的接口也没有实现。突然冷汗出来了，那自己的这个controller怎么完成的。
 // 看了一眼发现是直接获取了group在里面修改了然后update --cvrain 2024.11.28
 void Group::add_bucket(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
+    service_delight::Logger::get_instance().log(
+            service_delight::ConsoleLogger, spdlog::level::debug, "Enter Group::add_bucket");
     try {
         const auto &json_body   = fromRequest<nlohmann::json>(*req);
         const auto &user_id     = json_body.at(schema::key::user_id).get<std::string>();
@@ -420,6 +422,8 @@ void Group::add_bucket(const HttpRequestPtr &req, std::function<void(const HttpR
 }
 
 void Group::remove_bucket(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
+    service_delight::Logger::get_instance().log(
+                service_delight::ConsoleLogger, spdlog::level::debug, "Enter Group::remove_bucket");
     try {
         const auto &json_body   = fromRequest<nlohmann::json>(*req);
         const auto &user_id     = json_body.at(schema::key::user_id).get<std::string>();
@@ -432,8 +436,8 @@ void Group::remove_bucket(const HttpRequestPtr &req, std::function<void(const Ht
 
         // 使用 std::remove_if 和 vector::erase 来删除元素
         auto new_end = std::ranges::remove_if(group.buckets, [&](const auto &bucket) {
-            return bucket.first == bsoncxx::oid{source_id} && bucket.second == bucket_name;
-        }).begin();
+                           return bucket.first == bsoncxx::oid{source_id} && bucket.second == bucket_name;
+                       }).begin();
 
         group.buckets.erase(new_end, group.buckets.end());
 
@@ -469,5 +473,25 @@ void Group::remove_bucket(const HttpRequestPtr &req, std::function<void(const Ht
     }
 }
 
-void Group::list_bucket(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback){
+void Group::list_bucket(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
+    service_delight::Logger::get_instance().log(
+                service_delight::ConsoleLogger, spdlog::level::debug, "Enter Group::list_bucket");
+    try {
+        const auto &json_body = fromRequest<nlohmann::json>(*req);
+        const auto &group_id  = json_body.at(schema::key::group_id).get<std::string>();
+
+        const auto &group = service_delight::GroupService::get_instance().get_one(bsoncxx::oid{group_id}).first.value();
+        nlohmann::json bucket_info{};
+        for (const auto &[source_id, bucket_name]: group.buckets) {
+            bucket_info.push_back(nlohmann::json{{schema::key::source_id, source_id.to_string()},
+                    {schema::key::bucket_name, bucket_name}
+                });
+        }
+        model_delight::BasicResponse response{
+                .code = k200OK, .message = "k200OK", .result = "Success to list bucket", .data = bucket_info};
+        callback(newHttpJsonResponse(response.to_json()));
+    }
+    catch (const std::exception &exception) {
+        exception::ExceptionHandler::handle(req, std::move(callback), exception);
+    }
 }

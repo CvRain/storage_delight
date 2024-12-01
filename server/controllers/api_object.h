@@ -4,18 +4,17 @@
 
 using namespace drogon;
 
-namespace api
-{
-class Object : public drogon::HttpController<Object>
-{
-  public:
-    METHOD_LIST_BEGIN
-    METHOD_ADD(Object::upload, "/upload", Options,Post);
+namespace api {
+    class Object final : public HttpController<Object> {
+    public:
+        METHOD_LIST_BEGIN
+        METHOD_ADD(Object::upload, "/upload", Options, Post);
+        METHOD_ADD(Object::download, "/download", Options, Get);
+        METHOD_LIST_END
 
-    METHOD_LIST_END
-    // your declaration of processing function maybe like this:
-    // void get(const HttpRequestPtr& req, std::function<void (const HttpResponsePtr &)> &&callback, int p1, std::string p2);
-    // void your_method_name(const HttpRequestPtr& req, std::function<void (const HttpResponsePtr &)> &&callback, double p1, int p2) const;
-    static void upload(const HttpRequestPtr& req, std::function<void (const HttpResponsePtr &)> &&callback) ;
-};
-}
+        static void upload(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
+        static void download(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
+        static void list_objects(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
+        static void remove_objects(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
+    };
+}  // namespace api
