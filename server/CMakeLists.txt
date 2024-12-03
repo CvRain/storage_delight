@@ -33,6 +33,8 @@ set(FILTER_SRC
         filters/group_exist.hpp
         filters/group_owner.cpp
         filters/group_owner.hpp
+        filters/bucket_exist.cpp
+        filters/bucket_exist.hpp
 )
 aux_source_directory(plugins PLUGIN_SRC)
 

@@ -44,7 +44,22 @@ int main() {
         return 1;
     }
     nlohmann::json config_json;
-    config_file >> config_json;
+    try {
+        config_file >> config_json;
+        config_file.close();
+    }catch (const nlohmann::detail::parse_error& exception) {
+        service_delight::Logger::get_instance().log(
+                service_delight::ConsoleLogger,
+                spdlog::level::err,
+                "Failed to parse config file: {}",
+                exception.what());
+        return 1;
+    }
+
+    //检查downloads目录是否存在，没有则创建
+    if (!std::filesystem::exists("downloads")) {
+        std::filesystem::create_directory("downloads");
+    }
 
     service_init(config_json);
     debug_execute();

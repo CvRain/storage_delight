@@ -21,32 +21,32 @@ namespace drogon {
         return req;
     }
 
-    template <>
+    template<>
     inline std::shared_ptr<nlohmann::json> fromRequest(const HttpRequest &req) {
-        if (const auto& json_ptr = req.jsonObject()) {
+        if (const auto &json_ptr = req.jsonObject()) {
             return std::make_shared<nlohmann::json>(req.body());
         }
-        return {}; // 返回空的JSON对象
+        return {};  // 返回空的JSON对象
     }
 
-    template <>
+    template<>
     inline nlohmann::json fromRequest<nlohmann::json>(const HttpRequest &req) {
-        if (const auto& json_ptr = req.jsonObject()) {
+        if (const auto &json_ptr = req.jsonObject()) {
             return nlohmann::json::parse(req.body());
         }
-        return {}; // 返回空的JSON对象
+        return {};  // 返回空的JSON对象
     }
 
-    template <>
+    template<>
     inline HttpRequestPtr toRequest<nlohmann::json>(nlohmann::json &&json) {
         return newHttpJsonRequest(std::move(json));
     }
 
-    template <>
+    template<>
     inline HttpRequestPtr toRequest(const nlohmann::json &j) {
         auto req = HttpRequest::newHttpRequest();
         req->setContentTypeCode(CT_APPLICATION_JSON);
-        req->setBody(j.dump()); // 将nlohmann/json对象转换为字符串
+        req->setBody(j.dump());  // 将nlohmann/json对象转换为字符串
         return req;
     }
 
@@ -61,20 +61,20 @@ namespace drogon {
     inline HttpResponsePtr toResponse<nlohmann::json>(nlohmann::json &&j) {
         auto resp = HttpResponse::newHttpResponse();
         resp->setContentTypeCode(CT_APPLICATION_JSON);
-        resp->setBody(j.dump()); // 将nlohmann/json对象转换为字符串
+        resp->setBody(j.dump());  // 将nlohmann/json对象转换为字符串
         return resp;
     }
 
     template<>
-    inline HttpResponsePtr toResponse<const nlohmann::json& >(const nlohmann::json &j) {
+    inline HttpResponsePtr toResponse<const nlohmann::json &>(const nlohmann::json &j) {
         auto resp = HttpResponse::newHttpResponse();
         resp->setContentTypeCode(CT_APPLICATION_JSON);
-        resp->setBody(j.dump()); // 将nlohmann/json对象转换为字符串
+        resp->setBody(j.dump());  // 将nlohmann/json对象转换为字符串
         return resp;
     }
 
-    inline HttpResponsePtr newHttpJsonResponse(const nlohmann::json& json) {
-        return toResponse<const nlohmann::json& >(json);
+    inline HttpResponsePtr newHttpJsonResponse(const nlohmann::json &json) {
+        return toResponse<const nlohmann::json & >(json);
     }
 }  // namespace drogon
 

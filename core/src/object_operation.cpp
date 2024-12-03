@@ -8,7 +8,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
-
+#include <functional>
 namespace storage_delight::core {
 
     ObjectOperation::ObjectOperation(const std::shared_ptr<minio::s3::Client> &client) : client(client) {}
@@ -68,17 +68,23 @@ namespace storage_delight::core {
 
     minio::s3::GetObjectResponse ObjectOperation::get_object(const std::string_view &bucketName,
                                                              const std::string_view &objectName) {
+        auto data_func = [](const minio::http::DataFunctionArgs &args) {
+            // do something
+            spdlog::debug("receive data: {} bytes", args.datachunk.length());
+            return true;
+        };
+
         return execute_operation(
                 [&]() {
                     minio::s3::GetObjectArgs args;
                     args.bucket   = bucketName;
                     args.object   = objectName;
-                    args.datafunc = [](const minio::http::DataFunctionArgs &args) {
-                        // do something
-                        return true;
-                    };
+                    args.datafunc = data_func;
 
-                    return client->GetObject(args);
+
+                    const auto response = client->GetObject(args);
+                    spdlog::debug("get_object: length {}",response.data.length());
+                    return response;
                 },
                 "get_object");
     }
