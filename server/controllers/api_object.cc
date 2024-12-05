@@ -37,6 +37,7 @@ void Object::upload(const HttpRequestPtr &req, std::function<void(const HttpResp
         }
 
         nlohmann::json data{};
+        nlohmann::json file_names_json{};
         for (const auto &file: files) {
             const auto &file_name    = file.getFileName();
             const auto &file_size    = file.fileLength();
@@ -46,6 +47,7 @@ void Object::upload(const HttpRequestPtr &req, std::function<void(const HttpResp
                     {"object_name", file_name},
                     {"object_size", file_size},
             };
+            file_names_json["name"].push_back(file_name);
 
             const auto put_object_response =
                     client->get_object_operation()->put_object(bucket_name, file_name, file_content);
@@ -67,6 +69,15 @@ void Object::upload(const HttpRequestPtr &req, std::function<void(const HttpResp
         model_delight::BasicResponse response{
                 .code = k201Created, .message = "k201Created", .result = "Ok", .data = data};
         callback(newHttpJsonResponse(response.to_json()));
+
+        // record operation
+        schema::DbOperationLog operation_log{};
+        operation_log.action        = "upload object";
+        operation_log.bucket_name  = bucket_name;
+        operation_log.object_name  = file_names_json.dump();
+        operation_log.user_id      = bsoncxx::oid{user_id};
+        operation_log.source_id    = bsoncxx::oid{source_id};
+        service_delight::LogService::get_instance().record_operation(&operation_log);
     }
     catch (const std::exception &exception) {
         exception::ExceptionHandler::handle(req, std::move(callback), exception);
@@ -107,7 +118,7 @@ void Object::download(const HttpRequestPtr &req, std::function<void(const HttpRe
         uint file_size{};
         bool is_selected_file = false;
         for (; list_object_result; ++list_object_result) {
-            auto item = *list_object_result;
+            const auto& item = *list_object_result;
             if (not item) {
                 continue;
             }
@@ -123,7 +134,7 @@ void Object::download(const HttpRequestPtr &req, std::function<void(const HttpRe
                                                         spdlog::level::warn,
                                                         "list object failed");
             throw exception::BaseException{{.code    = k404NotFound,
-                                            .message = 'k404NotFound',
+                                            .message = "k404NotFound",
                                             .result  = "list object failed: not found",
                                             .data    = {}}};
         }
@@ -163,14 +174,12 @@ void Object::download(const HttpRequestPtr &req, std::function<void(const HttpRe
                                                         error_str);
             throw exception::BaseException{{.code    = k503ServiceUnavailable,
                                             .message = "k503ServiceUnavailable",
-                                            .result  = error_str.data(),
+                                            .result  = error_str,
                                             .data    = {}}};
         }
 
         callback(HttpResponse::newFileResponse(
                 temp_save_path, 0, file_size, true, object_name, CT_NONE));
-
-        //std::filesystem::remove(temp_save_path);
     }
     catch (const std::exception &exception) {
         exception::ExceptionHandler::handle(req, std::move(callback), exception);
