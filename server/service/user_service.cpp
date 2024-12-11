@@ -107,11 +107,11 @@ namespace service_delight {
             if (const auto result = user_collection.find_one(filter.view()); result) {
                 Logger::get_instance().log(
                         ConsoleLogger, spdlog::level::debug, "UserService::user_is_exist {} found", user_name);
-                return std::make_pair(true, "");
+                return std::make_pair(true, "Found user");
             }
             Logger::get_instance().log(
                     ConsoleLogger, spdlog::level::debug, "UserService::user_is_exist {} not found", user_name);
-            return std::make_pair(false, "");
+            return std::make_pair(false, "User not exist");
         }
         catch (const std::exception &e) {
             Logger::get_instance().log(ConsoleLogger, "UserService::user_is_exist failed: {}", e.what());

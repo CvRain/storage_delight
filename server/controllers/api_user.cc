@@ -53,6 +53,19 @@ void User::add_user(model_delight::NlohmannJsonRequestPtr        &&req,
         return;
     }
 
+    // 检查用户名是否存在
+    if (const auto [isExist, error] = service_delight::UserService::get_instance().is_exist(
+                json_body.at(schema::key::name).get<std::string>());
+        not isExist.has_value() || isExist.value() == true)
+    {
+        nlohmann::json response{{model_delight::basic_value::request::code, k400BadRequest},
+                                {model_delight::basic_value::request::message, error},
+                                {model_delight::basic_value::request::result, "k400BadRequest"},
+                                {model_delight::basic_value::request::data, nlohmann::json{}}};
+        callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
+        return;
+    }
+
     schema::DbUser user;
     user.name        = json_body.at(schema::key::name).get<std::string>();
     user.password    = util_delight::StringEncryption::sha256(json_body.at(schema::key::password).get<std::string>());
