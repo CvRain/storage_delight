@@ -24,7 +24,7 @@ namespace api {
         METHOD_ADD(Group::add_bucket,
                    "/buckets/add",
                    Options,
-                   Patch,
+                   Patch, Post,
                    model_delight::basic_value::middleware::UserExist,
                    model_delight::basic_value::middleware::GroupExist,
                    model_delight::basic_value::middleware::SourceExist);
@@ -32,7 +32,7 @@ namespace api {
         METHOD_ADD(Group::remove_bucket,
                    "/buckets/remove",
                    Options,
-                   Delete,
+                   Delete, Post,
                    model_delight::basic_value::middleware::UserExist,
                    model_delight::basic_value::middleware::GroupExist,
                    model_delight::basic_value::middleware::SourceExist,

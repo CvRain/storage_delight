@@ -193,10 +193,12 @@ void User::login(model_delight::NlohmannJsonRequestPtr &&req, std::function<void
     if (const auto user_password = user_bson.value().view()[schema::key::password].get_string().value;
         util_delight::StringEncryption::sha256(password) != user_password)
     {
-        nlohmann::json response;
-        response[model_delight::basic_value::request::code]    = k400BadRequest;
-        response[model_delight::basic_value::request::message] = "Password is incorrect";
-        callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
+        model_delight::BasicResponse response{
+        .code = k400BadRequest,
+        .message = "Failed to login",
+        .result = "k400BadRequest",
+        .data = {}};
+        callback(newHttpJsonResponse(response.to_json()));
         service_delight::Logger::get_instance().log(
                 service_delight::ConsoleLogger, "Login failed {} : password is incorrect", client_ip);
         return;

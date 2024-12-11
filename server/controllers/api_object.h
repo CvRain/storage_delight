@@ -34,14 +34,14 @@ namespace api {
         METHOD_ADD(Object::remove_objects,
                    "/remove",
                    Options,
-                   Delete,
+                   Delete, Post,
                    model_delight::basic_value::middleware::UserExist,
                    model_delight::basic_value::middleware::SourceExist,
                    model_delight::basic_value::middleware::BucketExist);
         METHOD_ADD(Object::rename,
                    "/rename",
                    Options,
-                   Patch,
+                   Patch, Post,
                    model_delight::basic_value::middleware::UserExist,
                    model_delight::basic_value::middleware::SourceExist,
                    model_delight::basic_value::middleware::BucketExist);

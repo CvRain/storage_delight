@@ -14,7 +14,7 @@ namespace api {
         METHOD_LIST_BEGIN
         METHOD_ADD(Bucket::add_bucket, "/add", Options, Put);
         METHOD_ADD(Bucket::list_bucket, "/list", Options, Get);
-        METHOD_ADD(Bucket::remove_bucket, "/remove", Options, Delete);
+        METHOD_ADD(Bucket::remove_bucket, "/remove", Options, Delete, Post);
         METHOD_ADD(Bucket::all_bucket, "/all", Options, Get, model_delight::basic_value::middleware::UserExist);
         METHOD_LIST_END
 
