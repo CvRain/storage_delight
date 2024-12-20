@@ -8,6 +8,7 @@
 #include "service/log_service.hpp"
 #include "service/logger.hpp"
 #include "service/user_service.hpp"
+#include "utils/exception_handler.hpp"
 #include "utils/string.hpp"
 
 using namespace api;
@@ -194,10 +195,7 @@ void User::login(model_delight::NlohmannJsonRequestPtr &&req, std::function<void
         util_delight::StringEncryption::sha256(password) != user_password)
     {
         model_delight::BasicResponse response{
-        .code = k400BadRequest,
-        .message = "Failed to login",
-        .result = "k400BadRequest",
-        .data = {}};
+                .code = k400BadRequest, .message = "Failed to login", .result = "k400BadRequest", .data = {}};
         callback(newHttpJsonResponse(response.to_json()));
         service_delight::Logger::get_instance().log(
                 service_delight::ConsoleLogger, "Login failed {} : password is incorrect", client_ip);
@@ -349,8 +347,32 @@ void User::get_user_by_id(model_delight::NlohmannJsonRequestPtr        &&req,
                 service_delight::ConsoleLogger, spdlog::level::warn, "User::get_user_by_id failed: {}", e.what());
         nlohmann::json response{{model_delight::basic_value::request::code, k500InternalServerError},
                                 {model_delight::basic_value::request::message, "Internal server error"},
-                                {model_delight::basic_value::request::result, e.what()}
-        };
+                                {model_delight::basic_value::request::result, e.what()}};
         callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
+    }
+}
+
+void User::user_info(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
+    service_delight::Logger::get_instance().log(
+            service_delight::ConsoleLogger, spdlog::level::debug, "User::user_info");
+    try {
+        const auto request_body       = fromRequest<nlohmann::json>(*req);
+        const auto search_id          = bsoncxx::oid{request_body.at("search_id").get<std::string>()};
+        const auto [user_info, error] = service_delight::UserService::get_instance().get_by_id(search_id);
+        if (!user_info.has_value()) {
+            service_delight::Logger::get_instance().log(
+                    service_delight::ConsoleLogger, spdlog::level::warn, "User::user_info failed: {}", error);
+            nlohmann::json response{{model_delight::basic_value::request::code, k500InternalServerError},
+                                    {model_delight::basic_value::request::message, "User not found"},
+                                    {model_delight::basic_value::request::result, error}};
+            callback(newHttpJsonResponse(std::move(response)));
+        }
+        const auto                  &user_value = schema::DbUser::to_json(user_info.value());
+        model_delight::BasicResponse response{
+                .code = k200OK, .message = "k200OK", .result = "ok", .data = std::move(user_value)};
+        callback(newHttpJsonResponse(response.to_json()));
+    }
+    catch (const std::exception &exception) {
+        exception::ExceptionHandler::handle(req, std::move(callback), exception);
     }
 }

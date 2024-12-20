@@ -15,16 +15,19 @@ namespace api {
         METHOD_ADD(User::add_user, "/add", Options, Post);
         METHOD_ADD(User::login, "/login", Options, Post);
         METHOD_ADD(User::get_user_by_id, "/id/{user_id}", Options, Get);
+        METHOD_ADD(User::user_info, "/info", Options, Get, model_delight::basic_value::middleware::UserExist);
 
         METHOD_LIST_END
 
-        static void add_user(model_delight::NlohmannJsonRequestPtr &&req,
+        static void add_user(model_delight::NlohmannJsonRequestPtr        &&req,
                              std::function<void(const HttpResponsePtr &)> &&callback);
 
-        static void login(model_delight::NlohmannJsonRequestPtr &&req,
+        static void login(model_delight::NlohmannJsonRequestPtr        &&req,
                           std::function<void(const HttpResponsePtr &)> &&callback);
 
-        static void get_user_by_id(model_delight::NlohmannJsonRequestPtr &&req,
+        static void get_user_by_id(model_delight::NlohmannJsonRequestPtr        &&req,
                                    std::function<void(const HttpResponsePtr &)> &&callback);
+
+        static void user_info(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
     };
-} // namespace api
+}  // namespace api
