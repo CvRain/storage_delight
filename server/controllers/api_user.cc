@@ -369,10 +369,34 @@ void User::user_info(const HttpRequestPtr &req, std::function<void(const HttpRes
         }
         const auto                  &user_value = schema::DbUser::to_json(user_info.value());
         model_delight::BasicResponse response{
-                .code = k200OK, .message = "k200OK", .result = "ok", .data = std::move(user_value)};
+                .code = k200OK, .message = "k200OK", .result = "ok", .data = user_value};
         callback(newHttpJsonResponse(response.to_json()));
     }
     catch (const std::exception &exception) {
+        exception::ExceptionHandler::handle(req, std::move(callback), exception);
+    }
+}
+
+void User::all_user_info(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
+    service_delight::Logger::get_instance().log(
+            service_delight::ConsoleLogger, spdlog::level::debug, "User::all_user_info");
+    try {
+        const auto [user_info, error] = service_delight::UserService::get_instance().list_users();
+        if (!user_info.has_value()) {
+            service_delight::Logger::get_instance().log(
+                    service_delight::ConsoleLogger, spdlog::level::warn, "User::all_user_info failed: {}", error);
+            nlohmann::json response{{model_delight::basic_value::request::code, k500InternalServerError},
+                                    {model_delight::basic_value::request::message, "User not found"},
+                                    {model_delight::basic_value::request::result, error}};
+        }
+        nlohmann::json user_info_array{};
+        for (const auto &it: user_info.value()) {
+            user_info_array.push_back(nlohmann::json::parse(bsoncxx::to_json(it)));
+        }
+        model_delight::BasicResponse response{
+                .code = k200OK, .message = "k200OK", .result = "ok", .data = std::move(user_info_array)};
+        callback(newHttpJsonResponse(response.to_json()));
+    }catch (const std::exception &exception) {
         exception::ExceptionHandler::handle(req, std::move(callback), exception);
     }
 }
