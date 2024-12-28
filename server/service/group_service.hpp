@@ -35,6 +35,8 @@ namespace service_delight {
         auto remove_member(const bsoncxx::oid &group_id, const bsoncxx::oid &member_id)
                 -> schema::result<bool, std::string>;
 
+        auto remove_by_owner(const bsoncxx::oid& owner_id) -> schema::result<bool, std::string>;
+
         auto get_members(const bsoncxx::oid &group_id) -> schema::result<std::vector<bsoncxx::oid>, std::string>;
 
         auto rename(const bsoncxx::oid &group_id, const std::string &new_name) -> schema::result<bool, std::string>;

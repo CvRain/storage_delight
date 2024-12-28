@@ -368,8 +368,7 @@ void User::user_info(const HttpRequestPtr &req, std::function<void(const HttpRes
             callback(newHttpJsonResponse(std::move(response)));
         }
         const auto                  &user_value = schema::DbUser::to_json(user_info.value());
-        model_delight::BasicResponse response{
-                .code = k200OK, .message = "k200OK", .result = "ok", .data = user_value};
+        model_delight::BasicResponse response{.code = k200OK, .message = "k200OK", .result = "ok", .data = user_value};
         callback(newHttpJsonResponse(response.to_json()));
     }
     catch (const std::exception &exception) {
@@ -396,6 +395,42 @@ void User::all_user_info(const HttpRequestPtr &req, std::function<void(const Htt
         model_delight::BasicResponse response{
                 .code = k200OK, .message = "k200OK", .result = "ok", .data = std::move(user_info_array)};
         callback(newHttpJsonResponse(response.to_json()));
+    }
+    catch (const std::exception &exception) {
+        exception::ExceptionHandler::handle(req, std::move(callback), exception);
+    }
+}
+void User::remove_user(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
+    service_delight::Logger::get_instance().log(
+            service_delight::ConsoleLogger, spdlog::level::debug, "User::remove_user");
+    try {
+        const auto request_body = fromRequest<nlohmann::json>(*req);
+        const auto user_id      = bsoncxx::oid{request_body.at("user_id").get<std::string>()};
+        // remove user
+        const auto [user_info, error] = service_delight::UserService::get_instance().remove_one(user_id);
+        if (!user_info.has_value()) {
+            service_delight::Logger::get_instance().log(
+                    service_delight::ConsoleLogger, spdlog::level::warn, "User::remove_user failed: {}", error);
+            nlohmann::json response{{model_delight::basic_value::request::code, k500InternalServerError},
+                                    {model_delight::basic_value::request::message, "User not found"},
+                                    {model_delight::basic_value::request::result, error}};
+            callback(newHttpJsonResponse(std::move(response)));
+        }
+
+        // remove user's group
+        const auto [group_info, remove_error] = service_delight::GroupService::get_instance().remove_by_owner(user_id);
+        if (const auto value = group_info.value_or(false); !value) {
+            service_delight::Logger::get_instance().log(
+                    service_delight::ConsoleLogger, spdlog::level::warn, "User::remove_user failed: {}", remove_error);
+            nlohmann::json response{{model_delight::basic_value::request::code, k500InternalServerError},
+                                    {model_delight::basic_value::request::message, "User not found"},
+                                    {model_delight::basic_value::request::result, remove_error}};
+            callback(newHttpJsonResponse(std::move(response)));
+        }
+
+        model_delight::BasicResponse response{.code = k200OK, .message = "k200OK", .result = "ok"};
+        callback(newHttpJsonResponse(response.to_json()));
+        //todo record operation
     }catch (const std::exception &exception) {
         exception::ExceptionHandler::handle(req, std::move(callback), exception);
     }

@@ -237,6 +237,29 @@ namespace service_delight {
         }
     }
 
+    /// <summary>
+    /// remove all groups which by owner id
+    /// </summary>
+    auto GroupService::remove_by_owner(const bsoncxx::oid &owner_id) -> schema::result<bool, std::string> {
+        Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::remove_by_owner");
+        try {
+            const auto filter = make_document(kvp(schema::key::owner_id, owner_id));
+            if (const auto result = group_collection.delete_many(filter.view()); !result.has_value()) {
+                Logger::get_instance().log(
+                        BasicLogger | ConsoleLogger, spdlog::level::err, "GroupService::remove_by_owner failed");
+                return std::make_pair(false, "GroupService::remove_by_owner failed");
+            }
+            return std::make_pair(true, "");
+        }
+        catch (const std::exception &e) {
+            Logger::get_instance().log(BasicLogger | ConsoleLogger,
+                                       spdlog::level::err,
+                                       "Exception in GroupService::remove_by_owner: {}",
+                                       e.what());
+            return std::make_pair(false, e.what());
+        }
+    }
+
     auto GroupService::get_members(const bsoncxx::oid &group_id)
             -> schema::result<std::vector<bsoncxx::oid>, std::string> {
         Logger::get_instance().log(BasicLogger | ConsoleLogger, "Enter GroupService::get_members");

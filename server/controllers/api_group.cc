@@ -423,7 +423,7 @@ void Group::add_bucket(const HttpRequestPtr &req, std::function<void(const HttpR
 
 void Group::remove_bucket(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
     service_delight::Logger::get_instance().log(
-                service_delight::ConsoleLogger, spdlog::level::debug, "Enter Group::remove_bucket");
+            service_delight::ConsoleLogger, spdlog::level::debug, "Enter Group::remove_bucket");
     try {
         const auto &json_body   = fromRequest<nlohmann::json>(*req);
         const auto &user_id     = json_body.at(schema::key::user_id).get<std::string>();
@@ -475,7 +475,7 @@ void Group::remove_bucket(const HttpRequestPtr &req, std::function<void(const Ht
 
 void Group::list_bucket(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
     service_delight::Logger::get_instance().log(
-                service_delight::ConsoleLogger, spdlog::level::debug, "Enter Group::list_bucket");
+            service_delight::ConsoleLogger, spdlog::level::debug, "Enter Group::list_bucket");
     try {
         const auto &json_body = fromRequest<nlohmann::json>(*req);
         const auto &group_id  = json_body.at(schema::key::group_id).get<std::string>();
@@ -484,14 +484,43 @@ void Group::list_bucket(const HttpRequestPtr &req, std::function<void(const Http
         nlohmann::json bucket_info{};
         for (const auto &[source_id, bucket_name]: group.buckets) {
             bucket_info.push_back(nlohmann::json{{schema::key::source_id, source_id.to_string()},
-                    {schema::key::bucket_name, bucket_name}
-                });
+                                                 {schema::key::bucket_name, bucket_name}});
         }
         model_delight::BasicResponse response{
                 .code = k200OK, .message = "k200OK", .result = "Success to list bucket", .data = bucket_info};
         callback(newHttpJsonResponse(response.to_json()));
     }
     catch (const std::exception &exception) {
+        exception::ExceptionHandler::handle(req, std::move(callback), exception);
+    }
+}
+
+void Group::group_info(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
+    service_delight::Logger::get_instance().log(
+            service_delight::ConsoleLogger, spdlog::level::debug, "Enter Group::group_info");
+    try {
+        const auto &json_body = fromRequest<nlohmann::json>(*req);
+        const auto &group_id  = json_body.at(schema::key::group_id).get<std::string>();
+
+        auto [group_info, group_error] = service_delight::GroupService::get_instance().get_one(bsoncxx::oid{group_id});
+        if (not group_info.has_value()) {
+            service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
+                                                        spdlog::level::err,
+                                                        "Group::group_info: Failed to get group: {}",
+                                                        group_error);
+            model_delight::BasicResponse response{
+                    .code = k400BadRequest, .message = "k400BadRequest", .result = "Failed to get group", .data = {}};
+            callback(newHttpJsonResponse(response.to_json()));
+        }
+        model_delight::BasicResponse response{
+        .code = k200OK,
+        .message = "k200OK",
+        .result = "Ok",
+        .data = group_info->to_json()
+        };
+        callback(newHttpJsonResponse(response.to_json()));
+
+    }catch (const std::exception &exception) {
         exception::ExceptionHandler::handle(req, std::move(callback), exception);
     }
 }

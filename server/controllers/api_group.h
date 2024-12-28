@@ -24,7 +24,8 @@ namespace api {
         METHOD_ADD(Group::add_bucket,
                    "/buckets/add",
                    Options,
-                   Patch, Post,
+                   Patch,
+                   Post,
                    model_delight::basic_value::middleware::UserExist,
                    model_delight::basic_value::middleware::GroupExist,
                    model_delight::basic_value::middleware::SourceExist);
@@ -32,7 +33,8 @@ namespace api {
         METHOD_ADD(Group::remove_bucket,
                    "/buckets/remove",
                    Options,
-                   Delete, Post,
+                   Delete,
+                   Post,
                    model_delight::basic_value::middleware::UserExist,
                    model_delight::basic_value::middleware::GroupExist,
                    model_delight::basic_value::middleware::SourceExist,
@@ -46,6 +48,12 @@ namespace api {
                    model_delight::basic_value::middleware::GroupExist,
                    model_delight::basic_value::middleware::GroupOwner);
 
+        METHOD_ADD(Group::group_info,
+                   "/info",
+                   Options,
+                   Get,
+                   model_delight::basic_value::middleware::UserExist);
+
         METHOD_LIST_END
         static void add_member(model_delight::NlohmannJsonRequestPtr        &&req,
                                std::function<void(const HttpResponsePtr &)> &&callback);
@@ -58,5 +66,7 @@ namespace api {
         static void remove_bucket(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
 
         static void list_bucket(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
+
+        static void group_info(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
     };
 }  // namespace api
