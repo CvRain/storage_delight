@@ -18,6 +18,7 @@ namespace api {
         METHOD_ADD(User::user_info, "/info", Options, Get, model_delight::basic_value::middleware::UserExist);
         METHOD_ADD(User::all_user_info, "/info/all", Options, Get);
         METHOD_ADD(User::remove_user, "/remove", Options, Delete, model_delight::basic_value::middleware::UserExist);
+        METHOD_ADD(User::get_user_name, "/name", Options, Get);
 
         METHOD_LIST_END
 
@@ -35,5 +36,7 @@ namespace api {
         static void all_user_info(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
 
         static void remove_user(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
+
+        static void get_user_name(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
     };
 }  // namespace api

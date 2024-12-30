@@ -19,7 +19,9 @@ namespace api {
                    "/members/remove",
                    Options,
                    Delete,
-                   model_delight::basic_value::middleware::UserExist);
+                   model_delight::basic_value::middleware::UserExist,
+                   model_delight::basic_value::middleware::GroupExist,
+                   model_delight::basic_value::middleware::GroupOwner);
 
         METHOD_ADD(Group::add_bucket,
                    "/buckets/add",

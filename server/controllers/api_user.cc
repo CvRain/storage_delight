@@ -430,8 +430,53 @@ void User::remove_user(const HttpRequestPtr &req, std::function<void(const HttpR
 
         model_delight::BasicResponse response{.code = k200OK, .message = "k200OK", .result = "ok"};
         callback(newHttpJsonResponse(response.to_json()));
-        //todo record operation
-    }catch (const std::exception &exception) {
+        // todo record operation
+    }
+    catch (const std::exception &exception) {
+        exception::ExceptionHandler::handle(req, std::move(callback), exception);
+    }
+}
+
+/// <summary>
+/// 接受一串用户id并且返回对应的用户名
+/// 接收
+/// <code type="json">
+/// {"user_ids": [
+///  "xxx", "xxx"
+/// ]}
+/// </code>
+/// 返回
+/// <code type="json">
+/// {"user_names": [
+///     {{"id":"xxx},{"name":"xxx"}},
+///     {{"id":"xxx},{"name":"xxx"}}
+/// ]}
+/// </code>
+/// </summary>
+void User::get_user_name(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback){
+    service_delight::Logger::get_instance().log(
+            service_delight::ConsoleLogger, spdlog::level::debug, "User::get_user_name");
+    try {
+        const auto request_body = fromRequest<nlohmann::json>(*req);
+        const auto user_ids = request_body.at("user_ids").get<std::vector<std::string>>();
+        std::vector<nlohmann::json> user_names{};
+        for (const auto& user_id: user_ids) {
+            const auto [user_info, error] = service_delight::UserService::get_instance().get_by_id(bsoncxx::oid{user_id});
+            if (!user_info.has_value()) {
+                service_delight::Logger::get_instance().log(
+                        service_delight::ConsoleLogger, spdlog::level::warn, "User::get_user_name failed: {}", error);
+                nlohmann::json response{{model_delight::basic_value::request::code, k500InternalServerError},
+                                        {model_delight::basic_value::request::message, "User not found"},
+                                        {model_delight::basic_value::request::result, error}};
+                return callback(newHttpJsonResponse(std::move(response)));
+            }
+            const auto& name = user_info.value().find("name")->get_string();
+            user_names.push_back(nlohmann::json{{"id", user_id}, {"name", name}});
+        }
+        model_delight::BasicResponse response{.code = k200OK, .message = "k200OK", .result = "ok", .data = std::move(user_names)};
+        callback(newHttpJsonResponse(response.to_json()));
+    }
+    catch (const std::exception& exception) {
         exception::ExceptionHandler::handle(req, std::move(callback), exception);
     }
 }

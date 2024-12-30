@@ -204,34 +204,6 @@ void Group::remove_member(model_delight::NlohmannJsonRequestPtr        &&req,
         const auto field_group_id   = json_body.at(schema::key::group_id).get<std::string>();
         const auto field_members_id = json_body.at(schema::key::members_id).get<std::vector<std::string>>();
 
-        // 检查用户是否存在
-        const auto [user_exist_result, error] = service_delight::UserService::get_instance().is_exist(field_user_id);
-        if (not user_exist_result.has_value()) {
-            nlohmann::json response{{model_delight::basic_value::request::code, k500InternalServerError},
-                                    {model_delight::basic_value::request::message, "k500InternalServerError"},
-                                    {model_delight::basic_value::request::result, error},
-                                    {model_delight::basic_value::request::data, {}}};
-            callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
-            service_delight::Logger::get_instance().log(
-                    service_delight::ConsoleLogger,
-                    spdlog::level::debug,
-                    "Group::remove_member: Failed to remove member: user not found");
-            return;
-        }
-
-        if (user_exist_result.value() == false) {
-            nlohmann::json response{{model_delight::basic_value::request::code, k400BadRequest},
-                                    {model_delight::basic_value::request::message, "Invalid request"},
-                                    {model_delight::basic_value::request::result, "User not found"},
-                                    {model_delight::basic_value::request::data, {}}};
-            callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
-            service_delight::Logger::get_instance().log(
-                    service_delight::ConsoleLogger,
-                    spdlog::level::debug,
-                    "Group::remove_member: Failed to remove member: user not found");
-            return;
-        }
-
         // 获得当前状态的用户组信息
         auto [group_info, group_info_err] =
                 service_delight::GroupService::get_instance().get_one(bsoncxx::oid{field_group_id});
@@ -250,20 +222,6 @@ void Group::remove_member(model_delight::NlohmannJsonRequestPtr        &&req,
         const auto previous_state     = group_info.value().to_json();
         auto       current_group_info = group_info.value();
 
-        // 检查用户组的owner_id是否是user_id
-        if (current_group_info.owner_id != bsoncxx::oid{field_user_id}) {
-            nlohmann::json response{{model_delight::basic_value::request::code, k400BadRequest},
-                                    {model_delight::basic_value::request::message, "Invalid request"},
-                                    {model_delight::basic_value::request::result, "User is not the owner"},
-                                    {model_delight::basic_value::request::data, {}}};
-            callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
-            service_delight::Logger::get_instance().log(
-                    service_delight::ConsoleLogger,
-                    spdlog::level::debug,
-                    "Group::remove_member: Failed to remove member: user is not the owner");
-            return;
-        }
-
         // 获得 std::vector<bsoncxx::oid>格式的members_id
         std::vector<bsoncxx::oid> members_id;
         std::ranges::for_each(field_members_id,
@@ -276,7 +234,7 @@ void Group::remove_member(model_delight::NlohmannJsonRequestPtr        &&req,
         if (!all_contained) {
             nlohmann::json response{{model_delight::basic_value::request::code, k400BadRequest},
                                     {model_delight::basic_value::request::message, "Invalid request"},
-                                    {model_delight::basic_value::request::result, "Member not found"},
+                                    {model_delight::basic_value::request::result, "Group member not found in db"},
                                     {model_delight::basic_value::request::data, {}}};
             callback(model_delight::NlohmannResponse::new_nlohmann_json_response(std::move(response)));
             service_delight::Logger::get_instance().log(
