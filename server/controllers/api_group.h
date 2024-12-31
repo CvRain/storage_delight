@@ -50,11 +50,9 @@ namespace api {
                    model_delight::basic_value::middleware::GroupExist,
                    model_delight::basic_value::middleware::GroupOwner);
 
-        METHOD_ADD(Group::group_info,
-                   "/info",
-                   Options,
-                   Get,
-                   model_delight::basic_value::middleware::UserExist);
+        METHOD_ADD(Group::group_info, "/info", Options, Get, model_delight::basic_value::middleware::UserExist);
+
+        METHOD_ADD(Group::group_all, "/all", Options, Get);
 
         METHOD_LIST_END
         static void add_member(model_delight::NlohmannJsonRequestPtr        &&req,
@@ -70,5 +68,7 @@ namespace api {
         static void list_bucket(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
 
         static void group_info(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
+
+        static void group_all(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
     };
 }  // namespace api

@@ -13,10 +13,7 @@ namespace api {
         METHOD_ADD(Object::upload,
                    "/upload",
                    Options,
-                   Post,
-                   model_delight::basic_value::middleware::UserExist,
-                   model_delight::basic_value::middleware::SourceExist,
-                   model_delight::basic_value::middleware::BucketExist);
+                   Post);
         METHOD_ADD(Object::download,
                    "/download",
                    Options,

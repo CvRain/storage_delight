@@ -482,3 +482,40 @@ void Group::group_info(const HttpRequestPtr &req, std::function<void(const HttpR
         exception::ExceptionHandler::handle(req, std::move(callback), exception);
     }
 }
+
+/**
+ * 返回所有群组信息
+ */
+void Group::group_all(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback){
+    service_delight::Logger::get_instance().log(
+            service_delight::ConsoleLogger, spdlog::level::debug, "Enter Group::group_all");
+    try {
+        auto [group_info, group_error] = service_delight::GroupService::get_instance().get_all();
+        if (not group_info.has_value()) {
+            service_delight::Logger::get_instance().log(service_delight::ConsoleLogger | service_delight::BasicLogger,
+                                                        spdlog::level::err,
+                                                        "Group::group_all: Failed to get group: {}",
+                                                        group_error);
+            model_delight::BasicResponse response{
+                    .code = k400BadRequest, .message = "k400BadRequest", .result = "Failed to get group", .data = {}};
+            callback(newHttpJsonResponse(response.to_json()));
+        }
+        const auto group_info_value = group_info.value();
+        nlohmann::json groups = nlohmann::json::array();
+
+        for (const auto& it : group_info_value) {
+            groups.push_back(schema::DbGroup::from_bson(it).to_json());
+        }
+
+        model_delight::BasicResponse response{
+                .code = k200OK,
+                .message = "k200OK",
+                .result = "Ok",
+                .data = groups
+        };
+        callback(newHttpJsonResponse(response.to_json()));
+
+    }catch (const std::exception &exception) {
+        exception::ExceptionHandler::handle(req, std::move(callback), exception);
+    }
+}
