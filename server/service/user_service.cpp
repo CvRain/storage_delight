@@ -154,6 +154,14 @@ namespace service_delight {
             return false;
         }
     }
+    bool UserService::is_admin(const bsoncxx::oid &id) {
+        Logger::get_instance().log(ConsoleLogger, "Enter UserService::is_admin");
+        //检查此id下的role是否为0
+        return user_collection.find_one(make_document(kvp(schema::key::bson_id, id)))
+                .value()[schema::key::user_role]
+                .get_int32() == static_cast<int32_t>(schema::UserRole::TypeAdmin);
+    }
+
     auto UserService::list_ids() -> schema::result<std::vector<bsoncxx::oid>, std::string> {
         Logger::get_instance().log(ConsoleLogger, "Enter UserService::list_user_ids");
         try {

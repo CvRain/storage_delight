@@ -25,6 +25,7 @@ namespace service_delight {
         auto is_exist(const std::string &user_name) -> schema::result<bool, std::string>;
         auto is_exist(const bsoncxx::oid &id) -> schema::result<bool, std::string>;
         bool admin_is_exist();
+        bool is_admin(const bsoncxx::oid &id);
 
         auto list_ids() -> schema::result<std::vector<bsoncxx::oid>, std::string>;
         auto list_users() -> schema::result<std::vector<bsoncxx::document::value>, std::string>;

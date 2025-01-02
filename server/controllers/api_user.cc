@@ -453,15 +453,16 @@ void User::remove_user(const HttpRequestPtr &req, std::function<void(const HttpR
 /// ]}
 /// </code>
 /// </summary>
-void User::get_user_name(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback){
+void User::get_user_name(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
     service_delight::Logger::get_instance().log(
             service_delight::ConsoleLogger, spdlog::level::debug, "User::get_user_name");
     try {
-        const auto request_body = fromRequest<nlohmann::json>(*req);
-        const auto user_ids = request_body.at("user_ids").get<std::vector<std::string>>();
+        const auto                  request_body = fromRequest<nlohmann::json>(*req);
+        const auto                  user_ids     = request_body.at("user_ids").get<std::vector<std::string>>();
         std::vector<nlohmann::json> user_names{};
-        for (const auto& user_id: user_ids) {
-            const auto [user_info, error] = service_delight::UserService::get_instance().get_by_id(bsoncxx::oid{user_id});
+        for (const auto &user_id: user_ids) {
+            const auto [user_info, error] =
+                    service_delight::UserService::get_instance().get_by_id(bsoncxx::oid{user_id});
             if (!user_info.has_value()) {
                 service_delight::Logger::get_instance().log(
                         service_delight::ConsoleLogger, spdlog::level::warn, "User::get_user_name failed: {}", error);
@@ -470,13 +471,33 @@ void User::get_user_name(const HttpRequestPtr& req, std::function<void(const Htt
                                         {model_delight::basic_value::request::result, error}};
                 return callback(newHttpJsonResponse(std::move(response)));
             }
-            const auto& name = user_info.value().find("name")->get_string();
+            const auto &name = user_info.value().find("name")->get_string();
             user_names.push_back(nlohmann::json{{"id", user_id}, {"name", name}});
         }
-        model_delight::BasicResponse response{.code = k200OK, .message = "k200OK", .result = "ok", .data = std::move(user_names)};
+        model_delight::BasicResponse response{
+                .code = k200OK, .message = "k200OK", .result = "ok", .data = std::move(user_names)};
         callback(newHttpJsonResponse(response.to_json()));
     }
-    catch (const std::exception& exception) {
+    catch (const std::exception &exception) {
+        exception::ExceptionHandler::handle(req, std::move(callback), exception);
+    }
+}
+
+void User::is_admin_account(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback){
+    service_delight::Logger::get_instance().log(
+            service_delight::ConsoleLogger, spdlog::level::debug, "User::is_admin_account");
+    try {
+        const auto request_body = fromRequest<nlohmann::json>(*req);
+        const auto user_id      = bsoncxx::oid{request_body.at("user_id").get<std::string>()};
+        const auto is_admin_result = service_delight::UserService::get_instance().is_admin(user_id);
+        model_delight::BasicResponse response{
+        .code = is_admin_result ? k200OK : k404NotFound,
+        .message = is_admin_result ? "k200OK" : "k404NotFound",
+        .result = is_admin_result ? "is admin" : "not admin",
+        .data = {}};
+        callback(newHttpJsonResponse(response.to_json()));
+    }
+    catch (const std::exception &exception) {
         exception::ExceptionHandler::handle(req, std::move(callback), exception);
     }
 }

@@ -30,7 +30,8 @@ namespace api {
                    Post,
                    model_delight::basic_value::middleware::UserExist,
                    model_delight::basic_value::middleware::GroupExist,
-                   model_delight::basic_value::middleware::SourceExist);
+                   model_delight::basic_value::middleware::SourceExist,
+                   model_delight::basic_value::middleware::GroupOwner);
 
         METHOD_ADD(Group::remove_bucket,
                    "/buckets/remove",
