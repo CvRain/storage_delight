@@ -321,6 +321,10 @@ void Group::add_bucket(const HttpRequestPtr &req, std::function<void(const HttpR
 
         const auto bucket_list_response = client.value()->get_bucket_operation()->list_buckets();
         if (!bucket_list_response) {
+            service_delight::Logger::get_instance().log(service_delight::ConsoleLogger,
+                                                        spdlog::level::err,
+                                                        "Group::add_bucket: Failed to get bucket list: {}",
+                                                        bucket_list_response.Error().String());
             throw exception::BaseException{
                     model_delight::BasicResponse{.code    = k500InternalServerError,
                                                  .message = "k500InternalServerError",

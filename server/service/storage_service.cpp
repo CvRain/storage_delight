@@ -67,6 +67,7 @@ auto StorageService::append_storage(schema::DbDataSource *data_source)
             result.has_value() && result.value().result().inserted_count() == 1)
         {
             Logger::get_instance().log(ConsoleLogger, "StorageService append_storage: insert storage success");
+            active_all_storage();
             return std::make_pair(result.value().inserted_id().get_oid().value, "");
         }
         throw std::runtime_error("insert storage failed");
