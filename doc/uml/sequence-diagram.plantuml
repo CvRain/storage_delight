@@ -1,0 +1,17 @@
+@startuml sequence-diagram
+participant User
+participant Group
+participant Bucket
+participant StorageSource
+participant StorageServer
+participant Object
+
+User -> Group: 请求访问存储桶
+Group -> Bucket: 验证用户权限
+Bucket -> StorageSource: 获取存储源信息
+StorageSource -> StorageServer: 请求存储服务
+StorageServer -> Bucket: 返回存储桶信息
+Bucket -> Object: 获取对象列表
+Object -> User: 返回对象列表
+
+@enduml

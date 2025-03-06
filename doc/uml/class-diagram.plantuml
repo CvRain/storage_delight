@@ -1,0 +1,109 @@
+@startuml class-diagram
+
+skinparam componentStyle rectangle
+skinparam defaultFontName = "Ubuntu Nerd Font"
+skinparam defaultFontSize = 16
+skinparam dpi 300
+
+left to right direction
+
+class User{
+    id: oid
+    name: string
+    password: string
+    role: int32_t
+    update_time: int32_t
+    create_time: int32_t
+}
+
+class DataSource{
+    id: oid
+    name: string
+    url: string
+    access_key: string
+    secret_key: string
+    is_https: bool
+    update_time: int32_t
+    create_time: int32_t
+}
+
+class Group{
+    id: oid
+    name: string
+    owner_id: oid
+    members_id: oid
+    buckes: vector<map<oid, string>>>
+    update_time: int32_t
+    create_time: int32_t
+}
+
+class OperationLog{
+    id: oid
+    user_id: oid
+    action: string
+    object_name: string
+    bucket_name: string
+    source_id: oid
+    timestamp: int32_t
+    previous_state: string
+    current_state: string
+    request_ip: string
+    create_time: int32_t
+}
+
+class StorageServer{
+    name: string
+    regin: string
+    endpoint: string
+    owner: string
+    create_time: int32_t
+}
+
+class Bucket{
+    name: string
+    create_time: int32_t
+    encryption: string
+    life_cycle: string
+    notification: string
+    policy: string
+    replication: string
+    tags: string
+    versioning: string
+    storage_source_id: oid
+}
+
+class Object{
+    name: string
+    bucket: string
+    size: int32_t
+    create_time: int32_t
+    last_modified_time: int32_t
+    type: string
+    access_control: string
+    meta_data: string
+    tage: string
+}
+
+interface AccessKey{
+    id: oid
+    access_key: string
+    secret_key: string
+    permissions: string
+    create_time: int32_t
+    data_source_id: oid
+}
+
+
+User "1..*" -- "1..*" Group : belongs to >
+Group "1" -- "1" User : owner >
+Group "0..*" -- "0..*" Bucket : has >
+User "0..*" -- "0..*" OperationLog : generates >
+DataSource "1" -- "1" AccessKey : uses >
+DataSource "1" -right- "0..*" Bucket : access >
+StorageServer "1" -- "0..*" AccessKey : provides >
+Bucket "1" -right- "0..*" Object : contains >
+AccessKey "1" -- "1" DataSource : generate by >
+AccessKey "1" -- "0..*" StorageServer : used by >
+StorageServer "1" -- "0..*" Bucket : has >
+
+@enduml

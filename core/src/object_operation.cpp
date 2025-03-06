@@ -81,7 +81,6 @@ namespace storage_delight::core {
                     args.object   = objectName;
                     args.datafunc = data_func;
 
-
                     const auto response = client->GetObject(args);
                     spdlog::debug("get_object: length {}",response.data.length());
                     return response;
@@ -170,7 +169,9 @@ namespace storage_delight::core {
     }
 
     minio::s3::DownloadObjectResponse ObjectOperation::download_object(const minio::s3::DownloadObjectArgs &args) {
-        return execute_operation([&]() { return client->DownloadObject(args); }, "download_object");
+        return execute_operation([&]() {
+            return client->DownloadObject(args);
+        }, "download_object");
     }
 
     minio::s3::DownloadObjectResponse ObjectOperation::download_object(const std::string_view &bucketName,

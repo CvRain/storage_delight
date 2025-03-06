@@ -211,39 +211,6 @@ void User::login(model_delight::NlohmannJsonRequestPtr &&req, std::function<void
     service_delight::Logger::get_instance().log(
             service_delight::ConsoleLogger, spdlog::level::debug, "Find role {}", user_role);
 
-    // 返回jwt token
-    // Json::Value header;
-    // header["alg"] = "HS256";
-    // header["typ"] = "JWT";
-    //
-    // const auto current_time = util_delight::Date::get_current_timestamp_32();
-    // Json::Value payload;
-    // payload["iss"] = "storage_delight";
-    // payload["exp"] = current_time + 7200;
-    // payload["sub"] = "login";
-    // payload["iat"] = current_time;
-    // payload["aud"] = user_role;
-    // payload["user_id"] = user_id;
-    //
-    // const auto jwt = util_delight::StringEncryption::generate_jwt(header.toStyledString(), payload.toStyledString(),
-    //                                                               util_delight::StringEncryption::secret_string);
-    //
-    // //record operation log
-    // schema::DbOperationLog operation_log{};
-    // operation_log.action = "login";
-    // operation_log.current_state = "success";
-    // operation_log.description = fmt::to_string(fmt::format("user {} login success in ip: {}", user_name, client_ip));
-    // operation_log.id = bsoncxx::oid{user_id};
-    // service_delight::LogService::get_instance().record_operation(&operation_log);
-    //
-    // Json::Value json_response{};
-    // json_response["code"] = k200OK;
-    // json_response["message"] = "Login successfully";
-    // json_response["user_id"] = user_id;
-    // json_response["user_name"] = user_name;
-    // json_response["token"] = jwt;
-    // callback(HttpResponse::newHttpJsonResponse(json_response));
-
     // 使用nlohmann::json进行重构
     nlohmann::json header{{model_delight::basic_value::jwt::alg, "HS256"},
                           {model_delight::basic_value::jwt::typ, "JWT"}};
